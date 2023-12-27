@@ -25,3 +25,9 @@ export class LogInInputModel {
   @IsString()
   password: string;
 }
+
+@Injectable()
+export class CodeInputModel {
+  @IsString()
+  code: string;
+}

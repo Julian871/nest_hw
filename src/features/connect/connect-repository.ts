@@ -33,4 +33,30 @@ export class ConnectRepository {
   async deleteAllCollection() {
     await this.ConnectModel.deleteMany();
   }
+
+  async getDeviceList(userId: string) {
+    return this.ConnectModel.find({ userId: userId }).lean();
+  }
+
+  async findDeviceId(deviceId: string) {
+    return this.ConnectModel.findOne({ deviceId: deviceId });
+  }
+
+  async deleteByDeviceId(deviceId: string) {
+    await this.ConnectModel.deleteMany({ deviceId: deviceId });
+  }
+
+  async deleteUserSession(userId: string | null, deviceId: string) {
+    await this.ConnectModel.deleteMany({
+      userId: userId,
+      deviceId: { $not: { $regex: deviceId } },
+    });
+  }
+
+  async updateConnectDate(deviceId: string) {
+    await this.ConnectModel.updateOne(
+      { deviceId: deviceId },
+      { $set: { lastActiveDate: +new Date() } },
+    );
+  }
 }

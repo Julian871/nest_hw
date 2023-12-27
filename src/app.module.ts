@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TestingController } from './features/testing-controller';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 import { AppController } from './app/app.controller';
 import { AppService } from './app/app.service';
@@ -33,7 +34,14 @@ import { ConnectRepository } from './features/connect/connect-repository';
 import dotenv from 'dotenv';
 import { AuthController } from './features/auth/api/auth.controller';
 import { AuthService } from './features/auth/application/auth-service';
-import { JwtService } from '@nestjs/jwt';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { EmailManager } from './email/email-manager';
+import { LikesPostService } from './features/likes/likes-post-service';
+import { JwtModule } from '@nestjs/jwt';
+import { LikesCommentsService } from './features/likes/likes-comment-service';
+import { DevicesController } from './features/devices/api/devices.controllers';
+import { join } from 'path';
+import { BlackList, BlackListSchema } from './features/auth/blackList-schema';
 dotenv.config();
 
 @Module({
@@ -42,6 +50,29 @@ dotenv.config();
     MongooseModule.forRoot(process.env.MONGO_URL || 'local connectio', {
       dbName: 'hw3',
     }),
+    MailerModule.forRootAsync({
+      useFactory: () => ({
+        transport: {
+          port: 465,
+          host: 'smtp.gmail.com',
+          auth: {
+            user: process.env.EMAIL,
+            pass: process.env.EMAIL_PASSWORD,
+          },
+        },
+        defaults: {
+          from: 'Julian <process.env.EMAIL>',
+        },
+        template: {
+          dir: join(__dirname + '/templates'),
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
+        },
+      }),
+    }),
+    JwtModule.register({}),
     MongooseModule.forFeature([
       {
         name: User.name,
@@ -63,6 +94,10 @@ dotenv.config();
         name: Connect.name,
         schema: ConnectSchema,
       },
+      {
+        name: BlackList.name,
+        schema: BlackListSchema,
+      },
     ]),
   ],
   controllers: [
@@ -73,6 +108,7 @@ dotenv.config();
     PostsController,
     CommentsController,
     AuthController,
+    DevicesController,
   ],
   providers: [
     AppService,
@@ -87,7 +123,9 @@ dotenv.config();
     ConnectService,
     ConnectRepository,
     AuthService,
-    JwtService,
+    EmailManager,
+    LikesPostService,
+    LikesCommentsService,
   ],
 })
 export class AppModule {}

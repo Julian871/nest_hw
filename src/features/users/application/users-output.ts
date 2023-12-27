@@ -11,3 +11,15 @@ export class UserInformation {
     this.createdAt = createdAt.toISOString();
   }
 }
+
+export class UserInfoToMe {
+  login: string;
+  email: string;
+  userId: string;
+
+  constructor(userId: string, login: string, email: string) {
+    this.userId = userId;
+    this.login = login;
+    this.email = email;
+  }
+}

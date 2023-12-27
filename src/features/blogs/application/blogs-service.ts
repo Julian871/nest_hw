@@ -8,6 +8,8 @@ import { PostCreator } from '../../posts/application/posts-input';
 import { PostInformation } from '../../posts/application/posts-output';
 import { PostsRepository } from '../../posts/infrastructure/posts-repository';
 import { BlogsDefaultQuery } from '../default-query';
+import { CreateBlogInputModel } from '../blogs-models';
+import { CreatePostForBlogInputModel } from '../../posts/posts-models';
 
 @Injectable()
 export class BlogsService {
@@ -15,7 +17,7 @@ export class BlogsService {
     private readonly blogsRepository: BlogsRepository,
     private readonly postsRepository: PostsRepository,
   ) {}
-  async createNewBlog(data: any) {
+  async createNewBlog(data: CreateBlogInputModel) {
     const newBlog = new BlogCreator(
       data.name,
       data.description,
@@ -54,14 +56,17 @@ export class BlogsService {
     );
   }
 
-  async createNewPostByBlogId(blogId: string, data: any) {
+  async createNewPostByBlogId(
+    blogId: string,
+    dto: CreatePostForBlogInputModel,
+  ) {
     const blog = await this.blogsRepository.getBlogById(blogId);
     if (!blog) return false;
 
     const newPost = new PostCreator(
-      data.title,
-      data.shortDescription,
-      data.content,
+      dto.title,
+      dto.shortDescription,
+      dto.content,
       blogId,
     );
     const post = await this.postsRepository.createNewPost(newPost);

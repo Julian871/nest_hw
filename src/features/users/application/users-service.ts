@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users-repository';
 import { UsersQuery } from '../users-query';
-import { UserInformation } from './users-output';
+import { UserInformation, UserInfoToMe } from './users-output';
 import { PageInformation } from '../../page-information';
 import * as bcrypt from 'bcrypt';
 import { UserCreator } from './users-input';
@@ -9,12 +9,14 @@ import { CreateUserInputModel } from '../users-models';
 import { v4 as uuidv4 } from 'uuid';
 import { LogInInputModel, NewPasswordInputModel } from '../../auth/auth-model';
 import { ConnectRepository } from '../../connect/connect-repository';
+import { EmailManager } from '../../../email/email-manager';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly connectRepository: ConnectRepository,
+    private readonly emailManager: EmailManager,
   ) {}
   async createNewUser(dto: CreateUserInputModel): Promise<UserInformation> {
     const passwordSalt = await bcrypt.genSalt(10);
@@ -65,7 +67,8 @@ export class UsersService {
 
   async sendRecoveryCode(email: string) {
     const newRecoveryCode = uuidv4();
-    //await this.emailManager.sendRecoveryCode(email, newRecoveryCode);
+    console.log('newRecoveryCode: ', newRecoveryCode);
+    await this.emailManager.sendRecoveryCode(email, newRecoveryCode);
     await this.usersRepository.updateRecoveryCode(email, newRecoveryCode);
   }
 
@@ -98,13 +101,13 @@ export class UsersService {
     return true;
   }
 
-  async checkCredentials(body: LogInInputModel) {
+  async checkCredentials(dto: LogInInputModel) {
     const user = await this.usersRepository.findUserByLoginOrEmail(
-      body.loginOrEmail,
+      dto.loginOrEmail,
     );
     if (!user) return null;
     const passwordHash = await this._generateHash(
-      body.password,
+      dto.password,
       user.accountData.passwordSalt,
     );
     if (user.accountData.passwordHash !== passwordHash) {
@@ -123,5 +126,64 @@ export class UsersService {
 
   async getUserByEmail(email: any) {
     return await this.usersRepository.getUserByEmail(email);
+  }
+
+  async checkConfirmationCode(code: string, deviceId: string) {
+    const user = await this.usersRepository.getUserByConfirmationCode(code);
+    if (!user) {
+      return { errorsMessages: [{ message: 'Incorrect code', field: 'code' }] };
+    } else if (!user.emailConfirmation.isConfirmation) {
+      await this.connectRepository.updateUserId(user._id.toString(), deviceId);
+      await this.emailManager.sendConfirmationLink(
+        user.accountData.email,
+        user.emailConfirmation.confirmationCode,
+      );
+      await this.usersRepository.updateConfirmStatus(user._id.toString());
+      return true;
+    } else {
+      return { errorsMessages: [{ message: 'code confirm', field: 'code' }] };
+    }
+  }
+
+  async finalOfRegistration(user: UserInformation, deviceId: string) {
+    const fullUser = await this.usersRepository.getUserById(user.id);
+    console.log('deviceId: ', deviceId);
+    await this.connectRepository.updateUserId(user.id, deviceId);
+    await this.emailManager.sendConfirmationLink(
+      user.email,
+      fullUser!.emailConfirmation.confirmationCode,
+    );
+  }
+
+  async checkEmail(email: string, deviceId: string) {
+    const user = await this.usersRepository.checkUserByEmail(email);
+    const newConfirmationCode = uuidv4();
+    if (!user) {
+      return {
+        errorsMessages: [{ message: 'Incorrect email', field: 'email' }],
+      };
+    } else if (!user.emailConfirmation.isConfirmation) {
+      await this.connectRepository.updateUserId(user._id.toString(), deviceId);
+      await this.emailManager.sendConfirmationLink(
+        user.accountData.email,
+        newConfirmationCode,
+      );
+      await this.usersRepository.updateConfirmCode(
+        user._id.toString(),
+        newConfirmationCode,
+      );
+      return true;
+    } else {
+      return { errorsMessages: [{ message: 'no confirm', field: 'email' }] };
+    }
+  }
+
+  async getUserToMe(userId: string) {
+    const user = await this.usersRepository.getUserById(userId);
+    return new UserInfoToMe(
+      userId,
+      user!.accountData.login,
+      user!.accountData.email,
+    );
   }
 }

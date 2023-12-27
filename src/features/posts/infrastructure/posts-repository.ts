@@ -75,4 +75,93 @@ export class PostsRepository {
       idPost: { $regex: id ? id : '', $options: 'i' },
     });
   }
+
+  async getLikeStatus(postId: string, userId: string) {
+    return this.PostsModel.findOne({
+      _id: postId,
+      'extendedLikesInfo.likeList.userId': userId,
+    });
+  }
+
+  async getDislikeStatus(postId: string, userId: string) {
+    return this.PostsModel.findOne({
+      _id: postId,
+      'extendedLikesInfo.dislikeList': userId,
+    });
+  }
+
+  async updateLikeStatus(postId: string, newLike: any) {
+    await this.PostsModel.updateOne(
+      { _id: postId },
+      {
+        $inc: { 'extendedLikesInfo.countLike': 1 },
+        $push: { 'extendedLikesInfo.likeList': newLike },
+      },
+    );
+  }
+
+  async updateDislikeStatus(postId: string, userId: string) {
+    await this.PostsModel.updateOne(
+      { _id: postId },
+      {
+        $inc: { 'extendedLikesInfo.countDislike': 1 },
+        $push: { 'extendedLikesInfo.dislikeList': userId },
+      },
+    );
+  }
+
+  async updateLikeToNoneStatus(postId: string, userId: string) {
+    await this.PostsModel.updateOne(
+      { _id: postId },
+      {
+        $pull: { 'extendedLikesInfo.likeList': { userId: userId } },
+        $inc: { 'extendedLikesInfo.countLike': -1 },
+      },
+    );
+  }
+
+  async updateDislikeToNoneStatus(postId: string, userId: string) {
+    await this.PostsModel.updateOne(
+      { _id: postId },
+      {
+        $pull: { 'extendedLikesInfo.dislikeList': userId },
+        $inc: { 'extendedLikesInfo.countDislike': -1 },
+      },
+    );
+  }
+
+  async updateLikeToDislike(postId: string, userId: string) {
+    await this.PostsModel.updateOne(
+      { _id: postId },
+      {
+        $pull: { 'extendedLikesInfo.likeList': { userId: userId } },
+        $inc: {
+          'extendedLikesInfo.countLike': -1,
+          'extendedLikesInfo.countDislike': 1,
+        },
+        $push: { 'extendedLikesInfo.dislikeList': userId },
+      },
+    );
+  }
+
+  async updateDislikeToLike(postId: string, newLike: any, userId: string) {
+    await this.PostsModel.updateOne(
+      { _id: postId },
+      {
+        $pull: { 'extendedLikesInfo.dislikeList': userId },
+        $inc: {
+          'extendedLikesInfo.countDislike': -1,
+          'extendedLikesInfo.countLike': 1,
+        },
+        $push: { 'extendedLikesInfo.likeList': newLike },
+      },
+    );
+  }
+
+  async getLikeListToPost(postId: string) {
+    return this.PostsModel.findOne(
+      { _id: postId },
+      { 'extendedLikesInfo.likeList': { $slice: -3 } },
+    );
+  }
 }

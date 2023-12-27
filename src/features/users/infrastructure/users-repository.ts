@@ -3,11 +3,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, userDocument } from '../users-schema';
 import { UsersQuery } from '../users-query';
+import { BlackList, blackListDocument } from '../../auth/blackList-schema';
 
 @Injectable()
 export class UsersRepository {
   constructor(
     @InjectModel(User.name) private UsersModel: Model<userDocument>,
+    @InjectModel(BlackList.name)
+    private BlackListModel: Model<blackListDocument>,
   ) {}
   async createNewUser(newUser: any) {
     return await this.UsersModel.create(newUser);
@@ -64,6 +67,7 @@ export class UsersRepository {
 
   async deleteAllCollection() {
     await this.UsersModel.deleteMany();
+    await this.BlackListModel.deleteMany();
   }
 
   async updateRecoveryCode(email: string, newRecoveryCode: string) {
@@ -122,5 +126,45 @@ export class UsersRepository {
 
   async getUserByEmail(email: string) {
     return this.UsersModel.findOne({ 'accountData.email': email });
+  }
+
+  async getUserById(userId: string) {
+    return this.UsersModel.findOne({ _id: userId });
+  }
+
+  async updateBlackList(refreshToken: string) {
+    await this.BlackListModel.create({ token: refreshToken });
+  }
+
+  async getUserByConfirmationCode(code: string) {
+    return this.UsersModel.findOne({
+      'emailConfirmation.confirmationCode': code,
+    });
+  }
+
+  async updateConfirmStatus(userId: string) {
+    await this.UsersModel.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          'emailConfirmation.isConfirmation': true,
+        },
+      },
+    );
+  }
+
+  async checkUserByEmail(email: string) {
+    return this.UsersModel.findOne({ 'accountData.email': email });
+  }
+
+  async updateConfirmCode(userId: string, newConfirmationCode: string) {
+    await this.UsersModel.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          'emailConfirmation.confirmationCode': newConfirmationCode,
+        },
+      },
+    );
   }
 }

@@ -6,17 +6,26 @@ import { PageInformation } from '../../page-information';
 import { PostCreator } from './posts-input';
 import { CommentCreator } from '../../comments/application/comments-input';
 import { CommentInformation } from '../../comments/application/comments-output';
+import { LikesPostService } from '../../likes/likes-post-service';
+import { UsersRepository } from '../../users/infrastructure/users-repository';
+import { LikesCommentsService } from '../../likes/likes-comment-service';
+import { CreatePostInputModel } from '../posts-models';
 
 @Injectable()
 export class PostsService {
-  constructor(private readonly postsRepository: PostsRepository) {}
+  constructor(
+    private readonly postsRepository: PostsRepository,
+    private readonly likesPostService: LikesPostService,
+    private readonly usersRepository: UsersRepository,
+    private readonly likesCommentsService: LikesCommentsService,
+  ) {}
 
-  async createNewPost(data: any) {
+  async createNewPost(dto: CreatePostInputModel) {
     const newPost = new PostCreator(
-      data.title,
-      data.shortDescription,
-      data.content,
-      data.blogId,
+      dto.title,
+      dto.shortDescription,
+      dto.content,
+      dto.blogId,
     );
     const post = await this.postsRepository.createNewPost(newPost);
 
@@ -35,19 +44,20 @@ export class PostsService {
     );
   }
 
-  async createNewPostComment(postId: string, data: any) {
+  async createNewPostComment(postId: string, content: string, userId: string) {
+    const user = await this.usersRepository.getUserById(userId);
     const newComment = new CommentCreator(
-      data.content,
-      'userId',
-      'userlogin',
+      content,
+      userId,
+      user!.accountData.login,
       postId,
     );
     const comment = await this.postsRepository.createNewPostComment(newComment);
     return new CommentInformation(
       comment._id.toString(),
-      data.content,
-      'userId',
-      'userLogin',
+      content,
+      userId,
+      comment.commentatorInfo.userLogin,
       comment.createdAt,
       0,
       0,
@@ -55,7 +65,7 @@ export class PostsService {
     );
   }
 
-  async getAllPosts(query: PostsDefaultQuery) {
+  async getAllPosts(query: PostsDefaultQuery, userId: string | null) {
     const countPosts = await this.postsRepository.countPosts();
     const allPosts = await this.postsRepository.getAllPosts(query);
     const filterPosts = await Promise.all(
@@ -71,8 +81,11 @@ export class PostsService {
             p.createdAt,
             p.extendedLikesInfo.countLike,
             p.extendedLikesInfo.countDislike,
-            'None',
-            [],
+            await this.likesPostService.getMyStatusToPost(
+              p._id.toString(),
+              userId,
+            ),
+            await this.likesPostService.getLikeListToPost(p._id.toString()),
           ),
       ),
     );
@@ -84,13 +97,13 @@ export class PostsService {
     );
   }
 
-  async getPostById(id: string) {
-    const post = await this.postsRepository.getPostById(id);
+  async getPostById(postId: string, userId: string) {
+    const post = await this.postsRepository.getPostById(postId);
     if (!post) {
       return null;
     }
     return new PostInformation(
-      id,
+      postId,
       post.title,
       post.shortDescription,
       post.content,
@@ -99,8 +112,8 @@ export class PostsService {
       post.createdAt,
       post.extendedLikesInfo.countLike,
       post.extendedLikesInfo.countDislike,
-      'None',
-      [],
+      await this.likesPostService.getMyStatusToPost(postId, userId),
+      await this.likesPostService.getLikeListToPost(postId),
     );
   }
 
@@ -117,12 +130,15 @@ export class PostsService {
           new CommentInformation(
             postId,
             p.content,
-            'userId',
+            p.commentatorInfo.userId,
             p.commentatorInfo.userLogin,
             p.createdAt,
             p.likesInfo.countLike,
             p.likesInfo.countDislike,
-            'None',
+            await this.likesCommentsService.getMyStatus(
+              p._id.toString(),
+              p.commentatorInfo.userId,
+            ),
           ),
       ),
     );

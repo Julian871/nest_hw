@@ -224,6 +224,14 @@ export class AuthController {
       res.sendStatus(429);
       return;
     }
+    const checkInputDto = await this.usersService.checkDto(
+      dto.login,
+      dto.email,
+    );
+    if (checkInputDto) {
+      res.status(400).send(checkInputDto);
+      return;
+    }
     const newUser = await this.usersService.createNewUser(dto);
     await this.usersService.finalOfRegistration(newUser, connection.deviceId);
     return true;

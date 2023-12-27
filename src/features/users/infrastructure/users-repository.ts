@@ -128,6 +128,10 @@ export class UsersRepository {
     return this.UsersModel.findOne({ 'accountData.email': email });
   }
 
+  async getUserByLogin(login: string) {
+    return this.UsersModel.findOne({ 'accountData.login': login });
+  }
+
   async getUserById(userId: string) {
     return this.UsersModel.findOne({ _id: userId });
   }

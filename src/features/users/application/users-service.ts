@@ -57,6 +57,20 @@ export class UsersService {
     );
   }
 
+  async checkDto(login: string, email: string) {
+    const checkLogin = await this.usersRepository.getUserByLogin(login);
+    if (checkLogin)
+      return {
+        errorsMessages: [{ message: 'Login exist', field: 'login' }],
+      };
+    const checkEmail = await this.usersRepository.getUserByEmail(email);
+    if (checkEmail)
+      return {
+        errorsMessages: [{ message: 'Email exist', field: 'email' }],
+      };
+    return false;
+  }
+
   async deleteUserById(userId: string) {
     return await this.usersRepository.deleteUserById(userId);
   }

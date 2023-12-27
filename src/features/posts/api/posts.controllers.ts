@@ -58,9 +58,13 @@ export class PostsController {
 
   @Get()
   async getPosts(@Query() query: PostsDefaultQuery, @Req() req: Re) {
-    const userId = await this.authService.getUserIdFromRefreshToken(
-      req.cookies.refreshToken,
-    );
+    const userId =
+      (await this.authService.getUserIdFromRefreshToken(
+        req.cookies.refreshToken,
+      )) ??
+      (await this.authService.getUserIdFromAccessToken(
+        req.headers.authorization!,
+      ));
     return await this.postsService.getAllPosts(query, userId);
   }
 
@@ -70,9 +74,13 @@ export class PostsController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    const userId = await this.authService.getUserIdFromRefreshToken(
-      req.cookies.refreshToken,
-    );
+    const userId =
+      (await this.authService.getUserIdFromRefreshToken(
+        req.cookies.refreshToken,
+      )) ??
+      (await this.authService.getUserIdFromAccessToken(
+        req.headers.authorization!,
+      ));
     const post = await this.postsService.getPostById(postId, userId);
     if (!post) {
       res.status(HttpStatus.NOT_FOUND);
@@ -91,6 +99,7 @@ export class PostsController {
     } else res.status(HttpStatus.OK).send(comments);
   }
 
+  @UseGuards(BasicAuthGuard)
   @Put('/:id')
   async updatePost(
     @Param('id') postId: string,
@@ -128,6 +137,7 @@ export class PostsController {
     return true;
   }
 
+  @UseGuards(BasicAuthGuard)
   @Delete('/:id')
   async deletePost(
     @Param('id') postId: string,

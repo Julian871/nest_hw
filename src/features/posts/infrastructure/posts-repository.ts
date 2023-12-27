@@ -28,8 +28,8 @@ export class PostsRepository {
       .lean();
   }
 
-  async getPostById(id: string) {
-    return this.PostsModel.findOne({ _id: id });
+  async getPostById(postId: string) {
+    return this.PostsModel.findOne({ _id: postId });
   }
 
   async getAllPostsComments(query: PostsDefaultQuery, id: string) {

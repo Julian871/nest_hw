@@ -25,7 +25,18 @@ export class UsersController {
 
   @Post()
   @HttpCode(201)
-  async createUser(@Body() dto: CreateUserInputModel) {
+  async createUser(
+    @Body() dto: CreateUserInputModel,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const checkInputDto = await this.usersService.checkDto(
+      dto.login,
+      dto.email,
+    );
+    if (checkInputDto) {
+      res.status(400).send(checkInputDto);
+      return;
+    }
     return await this.usersService.createNewUser(dto);
   }
 

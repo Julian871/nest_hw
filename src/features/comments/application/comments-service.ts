@@ -18,7 +18,10 @@ export class CommentsService {
     return {
       id: commentInfo._id.toString(),
       content: commentInfo.content,
-      commentatorInfo: commentInfo.commentatorInfo,
+      commentatorInfo: {
+        userId: commentInfo.commentatorInfo.userId,
+        userLogin: commentInfo.commentatorInfo.userLogin,
+      },
       createdAt: commentInfo.createdAt,
       likesInfo: {
         likesCount: commentInfo.likesInfo.countLike,

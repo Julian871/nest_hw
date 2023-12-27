@@ -5,6 +5,7 @@ import { BlogsQuery } from '../blogs-query';
 import { Blog, blogDocument } from '../blogs-schema';
 import { Post, postDocument } from '../../posts/posts-schema';
 import { BlogsDefaultQuery } from '../default-query';
+import { UpdateBlogInputModel } from '../blogs-models';
 
 @Injectable()
 export class BlogsRepository {
@@ -43,7 +44,7 @@ export class BlogsRepository {
       .lean();
   }
 
-  async updateBlogById(id: string, dto: any) {
+  async updateBlogById(id: string, dto: UpdateBlogInputModel) {
     const result = await this.BlogsModel.updateOne(
       { _id: id },
       {

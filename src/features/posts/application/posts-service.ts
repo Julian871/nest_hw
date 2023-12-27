@@ -118,6 +118,8 @@ export class PostsService {
   }
 
   async getAllPostsComments(query: PostsDefaultQuery, postId: string) {
+    const isFindPost = await this.postsRepository.getPostById(postId);
+    if (!isFindPost) return false;
     const countPostsComments =
       await this.postsRepository.countPostsComments(postId);
     const allPostsComments = await this.postsRepository.getAllPostsComments(

@@ -17,7 +17,7 @@ import { BlogsService } from '../application/blogs-service';
 import { Response } from 'express';
 import { BlogsDefaultQuery } from '../default-query';
 import { BasicAuthGuard } from '../../../security/auth-guard';
-import { CreateBlogInputModel } from '../blogs-models';
+import { CreateBlogInputModel, UpdateBlogInputModel } from '../blogs-models';
 import { CreatePostForBlogInputModel } from '../../posts/posts-models';
 
 @Controller('blogs')
@@ -75,7 +75,7 @@ export class BlogsController {
   @Put('/:id')
   async updateBlog(
     @Param('id') blogId: string,
-    @Body() dto: any,
+    @Body() dto: UpdateBlogInputModel,
     @Res({ passthrough: true }) res: Response,
   ) {
     const isUpdate = await this.blogsService.updateBlogById(blogId, dto);

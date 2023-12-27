@@ -8,7 +8,7 @@ import { PostCreator } from '../../posts/application/posts-input';
 import { PostInformation } from '../../posts/application/posts-output';
 import { PostsRepository } from '../../posts/infrastructure/posts-repository';
 import { BlogsDefaultQuery } from '../default-query';
-import { CreateBlogInputModel } from '../blogs-models';
+import { CreateBlogInputModel, UpdateBlogInputModel } from '../blogs-models';
 import { CreatePostForBlogInputModel } from '../../posts/posts-models';
 
 @Injectable()
@@ -129,7 +129,7 @@ export class BlogsService {
     );
   }
 
-  async updateBlogById(id: string, dto: any) {
+  async updateBlogById(id: string, dto: UpdateBlogInputModel) {
     return await this.blogsRepository.updateBlogById(id, dto);
   }
 

@@ -16,7 +16,7 @@ import { UsersService } from '../application/users-service';
 import { UsersQuery } from '../users-query';
 import { CreateUserInputModel } from '../users-models';
 import { BasicAuthGuard } from '../../../security/auth-guard';
-import { ObjectIdPipe } from '../../../utils';
+import { ObjectIdPipe } from '../../../pipes/objectID.pipe';
 
 @UseGuards(BasicAuthGuard)
 @Controller('users')

@@ -29,11 +29,22 @@ export class CommentsController {
     private readonly likesCommentService: LikesCommentsService,
   ) {}
   @Get(':id')
-  async createBlog(
+  async getComment(
     @Res({ passthrough: true }) res: Response,
     @Param('id') commentId: string,
+    @Req() req: Re,
   ) {
-    const comment = await this.commentsService.getCommentById(commentId);
+    const userId =
+      (await this.authService.getUserIdFromAccessToken(
+        req.headers.authorization!,
+      )) ??
+      (await this.authService.getUserIdFromRefreshToken(
+        req.cookies.refreshToken,
+      ));
+    const comment = await this.commentsService.getCommentById(
+      commentId,
+      userId,
+    );
     if (!comment) {
       res.status(HttpStatus.NOT_FOUND);
     } else res.status(HttpStatus.OK).send(comment);

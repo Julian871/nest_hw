@@ -4,8 +4,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TestingController } from './features/testing-controller';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
-import { AppController } from './app/app.controller';
-import { AppService } from './app/app.service';
+import { AppController } from './features/app/app.controller';
+import { AppService } from './features/app/app.service';
 
 import { User, UserSchema } from './features/users/users-schema';
 import { UsersController } from './features/users/api/users.controller';

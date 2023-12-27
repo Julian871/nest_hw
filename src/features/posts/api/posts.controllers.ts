@@ -44,16 +44,22 @@ export class PostsController {
   async createCommentToPost(
     @Body() dto: CreateCommentInputModel,
     @Param('id') postId: string,
+    @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
     const userId = await this.authService.getUserIdFromAccessToken(
       req.headers.authorization!,
     );
-    return await this.postsService.createNewPostComment(
+    const comment = await this.postsService.createNewPostComment(
       postId,
       dto.content,
       userId,
     );
+    if (!comment) {
+      res.sendStatus(404);
+      return;
+    }
+    return comment;
   }
 
   @Get()
@@ -103,7 +109,7 @@ export class PostsController {
   @Put('/:id')
   async updatePost(
     @Param('id') postId: string,
-    @Body() dto: any,
+    @Body() dto: CreatePostInputModel,
     @Res({ passthrough: true }) res: Response,
   ) {
     const isUpdate = await this.postsService.updatePostById(postId, dto);

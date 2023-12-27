@@ -11,8 +11,8 @@ export class CommentsService {
     private readonly authService: AuthService,
   ) {}
 
-  async getCommentById(id: string) {
-    const commentInfo = await this.commentsRepository.getCommentById(id);
+  async getCommentById(commentId: string, userId: string) {
+    const commentInfo = await this.commentsRepository.getCommentById(commentId);
     if (!commentInfo) return false;
 
     return {
@@ -28,7 +28,7 @@ export class CommentsService {
         dislikesCount: commentInfo.likesInfo.countDislike,
         myStatus: await this.likesCommentService.getMyStatus(
           commentInfo._id.toString(),
-          commentInfo.commentatorInfo.userId,
+          userId,
         ),
       },
     };

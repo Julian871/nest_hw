@@ -45,6 +45,8 @@ export class PostsService {
   }
 
   async createNewPostComment(postId: string, content: string, userId: string) {
+    const checkPost = await this.postsRepository.getPostById(postId);
+    if (!checkPost) return false;
     const user = await this.usersRepository.getUserById(userId);
     const newComment = new CommentCreator(
       content,

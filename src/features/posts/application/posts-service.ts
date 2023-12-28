@@ -64,7 +64,7 @@ export class PostsService {
       content,
       userId,
       comment.commentatorInfo.userLogin,
-      comment.createdAt,
+      comment.createdAt.toString(),
       0,
       0,
       'None',

@@ -40,7 +40,7 @@ export class Comment {
   @Prop({ type: CommentatorInfoSchema, default: new CommentatorInfo() })
   commentatorInfo: CommentatorInfo;
 
-  @Prop({ default: new Date().toISOString() })
+  @Prop({ require: true })
   createdAt: string;
 
   @Prop({ required: true })

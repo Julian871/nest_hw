@@ -5,6 +5,7 @@ export class CommentCreator {
     userLogin: string;
   };
   idPost: string;
+  createdAt: string;
 
   constructor(
     content: string,
@@ -18,5 +19,6 @@ export class CommentCreator {
       userLogin: userLogin,
     };
     this.idPost = idPost;
+    this.createdAt = new Date().toISOString();
   }
 }

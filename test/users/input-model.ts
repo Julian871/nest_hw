@@ -17,7 +17,7 @@ export const correctUser3 = {
 };
 
 export const incorrectUser1 = {
-  login: 1,
+  login: '  ',
   password: 'new34',
   email: '@mail',
 };

@@ -42,6 +42,7 @@ import { LikesCommentsService } from './features/likes/likes-comment-service';
 import { DevicesController } from './features/devices/api/devices.controllers';
 import { join } from 'path';
 import { BlackList, BlackListSchema } from './features/auth/blackList-schema';
+import { IsBlogExistConstraint } from './features/posts/application/blogId.exist';
 dotenv.config();
 
 @Module({
@@ -126,6 +127,7 @@ dotenv.config();
     EmailManager,
     LikesPostService,
     LikesCommentsService,
+    IsBlogExistConstraint,
   ],
 })
 export class AppModule {}

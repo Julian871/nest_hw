@@ -11,7 +11,7 @@ export class PageInformation {
     totalCount: number,
     items: object,
   ) {
-    this.pagesCount = Math.ceil(totalCount / pageSize);
+    this.pagesCount = Math.max(Math.ceil(totalCount / pageSize), 1);
     this.page = +page;
     this.pageSize = +pageSize;
     this.totalCount = totalCount;

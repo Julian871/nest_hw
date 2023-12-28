@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IsNotEmpty, MaxLength } from 'class-validator';
 import { Transform, TransformFnParams } from 'class-transformer';
+import { isBlogExist } from './application/blogId.exist';
 
 @Injectable()
 export class CreatePostForBlogInputModel {
@@ -37,6 +38,7 @@ export class CreatePostInputModel {
   @MaxLength(1000)
   content: string;
 
+  @isBlogExist()
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
   blogId: string;

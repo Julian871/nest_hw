@@ -10,12 +10,14 @@ import { PostsRepository } from '../../posts/infrastructure/posts-repository';
 import { BlogsDefaultQuery } from '../default-query';
 import { CreateBlogInputModel, UpdateBlogInputModel } from '../blogs-models';
 import { CreatePostForBlogInputModel } from '../../posts/posts-models';
+import { LikesPostService } from '../../likes/likes-post-service';
 
 @Injectable()
 export class BlogsService {
   constructor(
     private readonly blogsRepository: BlogsRepository,
     private readonly postsRepository: PostsRepository,
+    private readonly likesPostService: LikesPostService,
   ) {}
   async createNewBlog(data: CreateBlogInputModel) {
     const newBlog = new BlogCreator(
@@ -98,7 +100,11 @@ export class BlogsService {
     );
   }
 
-  async getPostByBlogId(query: BlogsDefaultQuery, blogId: string) {
+  async getPostByBlogId(
+    query: BlogsDefaultQuery,
+    blogId: string,
+    userId: string,
+  ) {
     const blog = await this.blogsRepository.getBlogById(blogId);
     if (!blog) return false;
     const allPosts = await this.blogsRepository.getPostByBlogId(query, blogId);
@@ -116,8 +122,11 @@ export class BlogsService {
             p.createdAt,
             p.extendedLikesInfo.countLike,
             p.extendedLikesInfo.countDislike,
-            'None',
-            [],
+            await this.likesPostService.getMyStatusToPost(
+              p._id.toString(),
+              userId,
+            ),
+            await this.likesPostService.getLikeListToPost(p._id.toString()),
           ),
       ),
     );

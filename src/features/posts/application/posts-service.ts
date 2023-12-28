@@ -10,6 +10,7 @@ import { LikesPostService } from '../../likes/likes-post-service';
 import { UsersRepository } from '../../users/infrastructure/users-repository';
 import { LikesCommentsService } from '../../likes/likes-comment-service';
 import { CreatePostInputModel } from '../posts-models';
+import { BlogsRepository } from '../../blogs/infrastructure/blogs-repository';
 
 @Injectable()
 export class PostsService {
@@ -18,9 +19,12 @@ export class PostsService {
     private readonly likesPostService: LikesPostService,
     private readonly usersRepository: UsersRepository,
     private readonly likesCommentsService: LikesCommentsService,
+    private readonly blogsRepository: BlogsRepository,
   ) {}
 
   async createNewPost(dto: CreatePostInputModel) {
+    const blog = await this.blogsRepository.getBlogById(dto.blogId);
+    console.log('blog', blog);
     const newPost = new PostCreator(
       dto.title,
       dto.shortDescription,
@@ -132,7 +136,7 @@ export class PostsService {
       allPostsComments.map(
         async (p) =>
           new CommentInformation(
-            postId,
+            p._id.toString(),
             p.content,
             p.commentatorInfo.userId,
             p.commentatorInfo.userLogin,

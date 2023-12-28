@@ -9,20 +9,25 @@ import {
   Post,
   Put,
   Query,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
 import { BlogsQuery } from '../blogs-query';
 import { BlogsService } from '../application/blogs-service';
-import { Response } from 'express';
+import { Request as Re, Response } from 'express';
 import { BlogsDefaultQuery } from '../default-query';
 import { BasicAuthGuard } from '../../../security/auth-guard';
 import { CreateBlogInputModel, UpdateBlogInputModel } from '../blogs-models';
 import { CreatePostForBlogInputModel } from '../../posts/posts-models';
+import { AuthService } from '../../auth/application/auth-service';
 
 @Controller('blogs')
 export class BlogsController {
-  constructor(private readonly blogsService: BlogsService) {}
+  constructor(
+    private readonly blogsService: BlogsService,
+    private readonly authService: AuthService,
+  ) {}
   @UseGuards(BasicAuthGuard)
   @Post()
   @HttpCode(201)
@@ -64,8 +69,20 @@ export class BlogsController {
     @Param('id') blogId: string,
     @Query() query: BlogsDefaultQuery,
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Re,
   ) {
-    const postsList = await this.blogsService.getPostByBlogId(query, blogId);
+    const userId =
+      (await this.authService.getUserIdFromRefreshToken(
+        req.cookies.refreshToken,
+      )) ??
+      (await this.authService.getUserIdFromAccessToken(
+        req.headers.authorization!,
+      ));
+    const postsList = await this.blogsService.getPostByBlogId(
+      query,
+      blogId,
+      userId,
+    );
     if (!postsList) {
       res.status(HttpStatus.NOT_FOUND);
     } else res.status(HttpStatus.OK).send(postsList);

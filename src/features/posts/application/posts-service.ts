@@ -24,12 +24,12 @@ export class PostsService {
 
   async createNewPost(dto: CreatePostInputModel) {
     const blog = await this.blogsRepository.getBlogById(dto.blogId);
-    console.log('blog', blog);
     const newPost = new PostCreator(
       dto.title,
       dto.shortDescription,
       dto.content,
       dto.blogId,
+      blog!.name,
     );
     const post = await this.postsRepository.createNewPost(newPost);
 

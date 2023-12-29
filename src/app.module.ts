@@ -43,11 +43,16 @@ import { DevicesController } from './features/devices/api/devices.controllers';
 import { join } from 'path';
 import { BlackList, BlackListSchema } from './features/auth/blackList-schema';
 import { IsBlogExistConstraint } from './features/posts/application/blogId.exist';
+import { GetUsersUseCase } from './features/users/application/use-cases/get-users-use-case';
+import { DeleteUserUseCase } from './features/users/application/use-cases/delete-user-use-case';
+import { CqrsModule } from '@nestjs/cqrs';
+import { CreateUserUseCase } from './features/users/application/use-cases/create-user-use-case';
 dotenv.config();
 
 @Module({
   imports: [
     ConfigModule,
+    CqrsModule,
     MongooseModule.forRoot(process.env.MONGO_URL || 'local connectio', {
       dbName: 'hw3',
     }),
@@ -128,6 +133,9 @@ dotenv.config();
     LikesPostService,
     LikesCommentsService,
     IsBlogExistConstraint,
+    GetUsersUseCase,
+    DeleteUserUseCase,
+    CreateUserUseCase,
   ],
 })
 export class AppModule {}

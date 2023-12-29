@@ -20,11 +20,23 @@ export class ConnectService {
       URL,
     );
     if (countConnection >= 5) {
-      const newConnection = new ConnectCreator(IP, URL, deviceName, userId);
+      const newConnection = new ConnectCreator(
+        IP,
+        URL,
+        deviceName,
+        userId,
+        null,
+      );
       await this.connectRepository.createConnectionInfo(newConnection);
       return false;
     } else {
-      const newConnection = new ConnectCreator(IP, URL, deviceName, userId);
+      const newConnection = new ConnectCreator(
+        IP,
+        URL,
+        deviceName,
+        userId,
+        null,
+      );
       await this.connectRepository.createConnectionInfo(newConnection);
       return newConnection;
     }

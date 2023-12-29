@@ -13,12 +13,13 @@ export class ConnectCreator {
     URL: string,
     deviceName: string,
     userId: string | null,
+    deviceId: string | null,
   ) {
     this.IP = IP;
     this.URL = URL;
     this.lastActiveDate = new Date();
     this.deviceName = deviceName;
-    this.deviceId = uuidv4();
+    this.deviceId = deviceId ?? uuidv4();
     this.userId = userId;
   }
 }

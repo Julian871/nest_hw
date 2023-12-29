@@ -8,41 +8,48 @@ import {
   Param,
   Post,
   Query,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
-import { UsersService } from '../application/users-service';
+import { Response, Request as Re } from 'express';
 import { UsersQuery } from '../users-query';
 import { CreateUserInputModel } from '../users-models';
 import { BasicAuthGuard } from '../../../security/auth-guard';
 import { ObjectIdPipe } from '../../../pipes/objectID.pipe';
+import { CreateUserCommand } from '../application/use-cases/create-user-use-case';
+import { ConnectGuard } from '../../../security/connect-guard';
+import { GetUserCommand } from '../application/use-cases/get-users-use-case';
+import { DeleteUserCommand } from '../application/use-cases/delete-user-use-case';
+import { CommandBus } from '@nestjs/cqrs';
 
-@UseGuards(BasicAuthGuard)
+@UseGuards(BasicAuthGuard, ConnectGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private commandBus: CommandBus) {}
 
   @Post()
   @HttpCode(201)
   async createUser(
     @Body() dto: CreateUserInputModel,
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Re,
   ) {
-    const checkInputDto = await this.usersService.checkDto(
-      dto.login,
-      dto.email,
+    const createUser = await this.commandBus.execute(
+      new CreateUserCommand(dto, req.connect.deviceId),
     );
-    if (checkInputDto) {
-      res.status(400).send(checkInputDto);
+    if (!createUser) {
+      res.status(400).send({
+        errorsMessages: [{ message: 'Login or Email exist', field: 'exist' }],
+      });
       return;
     }
-    return await this.usersService.createNewUser(dto);
+    res.status(201).send(createUser);
   }
 
   @Get()
   async getUsers(@Query() query: UsersQuery) {
-    return await this.usersService.getAllUsers(query);
+    return await this.commandBus.execute(new GetUserCommand(query));
   }
 
   @Delete('/:id')
@@ -50,9 +57,14 @@ export class UsersController {
     @Param('id', ObjectIdPipe) userId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const isDelete = await this.usersService.deleteUserById(userId);
+    const isDelete = await this.commandBus.execute(
+      new DeleteUserCommand(userId),
+    );
     if (!isDelete) {
       res.status(HttpStatus.NOT_FOUND);
-    } else res.status(HttpStatus.NO_CONTENT);
+      return;
+    }
+    res.status(HttpStatus.NO_CONTENT);
+    return;
   }
 }

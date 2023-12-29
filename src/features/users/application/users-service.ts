@@ -1,11 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users-repository';
-import { UsersQuery } from '../users-query';
-import { UserInformation, UserInfoToMe } from './users-output';
-import { PageInformation } from '../../page-information';
+import { UserInfoToMe } from './users-output';
 import * as bcrypt from 'bcrypt';
-import { UserCreator } from './users-input';
-import { CreateUserInputModel } from '../users-models';
 import { v4 as uuidv4 } from 'uuid';
 import { LogInInputModel, NewPasswordInputModel } from '../../auth/auth-model';
 import { ConnectRepository } from '../../connect/connect-repository';
@@ -18,66 +14,6 @@ export class UsersService {
     private readonly connectRepository: ConnectRepository,
     private readonly emailManager: EmailManager,
   ) {}
-  async createNewUser(dto: CreateUserInputModel): Promise<UserInformation> {
-    const passwordSalt = await bcrypt.genSalt(10);
-    const passwordHash = await this._generateHash(dto.password, passwordSalt);
-    const newUser = new UserCreator(
-      dto.login,
-      dto.email,
-      passwordHash,
-      passwordSalt,
-    );
-
-    const user = await this.usersRepository.createNewUser(newUser);
-    return new UserInformation(
-      user._id.toString(),
-      dto.login,
-      dto.email,
-      user.accountData.createdAt,
-    );
-  }
-
-  async getAllUsers(query: UsersQuery) {
-    const usersCount = await this.usersRepository.usersCount(query);
-    const allUsers = await this.usersRepository.getAllUsers(query);
-    const filterUsers = allUsers.map(
-      (p) =>
-        new UserInformation(
-          p._id.toString(),
-          p.accountData.login,
-          p.accountData.email,
-          p.accountData.createdAt,
-        ),
-    );
-    return new PageInformation(
-      query.pageNumber,
-      query.pageSize,
-      usersCount,
-      filterUsers,
-    );
-  }
-
-  async checkDto(login: string, email: string) {
-    const checkLogin = await this.usersRepository.getUserByLogin(login);
-    if (checkLogin)
-      return {
-        errorsMessages: [{ message: 'Login exist', field: 'login' }],
-      };
-    const checkEmail = await this.usersRepository.getUserByEmail(email);
-    if (checkEmail)
-      return {
-        errorsMessages: [{ message: 'Email exist', field: 'email' }],
-      };
-    return false;
-  }
-
-  async deleteUserById(userId: string) {
-    return await this.usersRepository.deleteUserById(userId);
-  }
-
-  async _generateHash(password: string, salt: string) {
-    return await bcrypt.hash(password, salt);
-  }
 
   async sendRecoveryCode(email: string) {
     const newRecoveryCode = uuidv4();
@@ -102,10 +38,7 @@ export class UsersService {
     }
 
     const passwordSalt = await bcrypt.genSalt(10);
-    const passwordHash = await this._generateHash(
-      body.newPassword,
-      passwordSalt,
-    );
+    const passwordHash = await bcrypt.hash(body.newPassword, passwordSalt);
     await this.usersRepository.updatePassword(
       body.recoveryCode,
       passwordHash,
@@ -120,7 +53,7 @@ export class UsersService {
       dto.loginOrEmail,
     );
     if (!user) return null;
-    const passwordHash = await this._generateHash(
+    const passwordHash = await bcrypt.hash(
       dto.password,
       user.accountData.passwordSalt,
     );
@@ -130,16 +63,8 @@ export class UsersService {
     return user;
   }
 
-  async updateUserId(userId: string, deviceId: string) {
-    await this.connectRepository.updateUserId(userId, deviceId);
-  }
-
   async updateToken(token: string, userId: string) {
     await this.usersRepository.updateToken(token, userId);
-  }
-
-  async getUserByEmail(email: any) {
-    return await this.usersRepository.getUserByEmail(email);
   }
 
   async checkConfirmationCode(code: string, deviceId: string) {
@@ -157,16 +82,6 @@ export class UsersService {
     } else {
       return { errorsMessages: [{ message: 'code confirm', field: 'code' }] };
     }
-  }
-
-  async finalOfRegistration(user: UserInformation, deviceId: string) {
-    const fullUser = await this.usersRepository.getUserById(user.id);
-    console.log('deviceId: ', deviceId);
-    await this.connectRepository.updateUserId(user.id, deviceId);
-    await this.emailManager.sendConfirmationLink(
-      user.email,
-      fullUser!.emailConfirmation.confirmationCode,
-    );
   }
 
   async checkEmail(email: string, deviceId: string) {

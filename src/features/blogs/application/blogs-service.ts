@@ -70,6 +70,7 @@ export class BlogsService {
       dto.shortDescription,
       dto.content,
       blogId,
+      blog.name,
     );
     const post = await this.postsRepository.createNewPost(newPost);
     return new PostInformation(

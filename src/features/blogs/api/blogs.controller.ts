@@ -73,10 +73,10 @@ export class BlogsController {
   ) {
     const userId =
       (await this.authService.getUserIdFromRefreshToken(
-        req.cookies.refreshToken,
+        req.cookies?.refreshToken ?? '',
       )) ??
       (await this.authService.getUserIdFromAccessToken(
-        req.headers.authorization!,
+        req.headers?.authorization ?? '',
       ));
     const postsList = await this.blogsService.getPostByBlogId(
       query,

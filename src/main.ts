@@ -31,6 +31,6 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   const port = 3002;
   await app.listen(port, () => {});
-  console.log('App starting, listen port:', port);
+  console.log('App starting listen port:', port);
 }
 bootstrap();

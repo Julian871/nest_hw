@@ -26,11 +26,11 @@ export const AccountDataSchema = SchemaFactory.createForClass(AccountData);
 
 @Schema()
 export class EmailConfirmation {
-  @Prop({ default: uuidv4() })
+  @Prop({ required: true })
   confirmationCode: string;
 
   @Prop({
-    default: new Date(),
+    required: true,
   })
   expirationDate: Date;
 

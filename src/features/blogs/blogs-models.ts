@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IsNotEmpty, IsUrl, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsUrl, MaxLength } from 'class-validator';
 import { Transform, TransformFnParams } from 'class-transformer';
 
 @Injectable()
@@ -24,16 +24,19 @@ export class CreateBlogInputModel {
 @Injectable()
 export class UpdateBlogInputModel {
   @IsNotEmpty()
+  @IsString()
   @Transform(({ value }: TransformFnParams) => value?.trim())
   @MaxLength(15)
   name: string;
 
   @IsNotEmpty()
+  @IsString()
   @Transform(({ value }: TransformFnParams) => value?.trim())
   @MaxLength(500)
   description: string;
 
   @IsNotEmpty()
+  @IsString()
   @Transform(({ value }: TransformFnParams) => value?.trim())
   @MaxLength(100)
   @IsUrl()

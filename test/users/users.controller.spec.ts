@@ -9,7 +9,11 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppModule } from '../../src/app.module';
 import { HttpExceptionFilter } from '../../src/exeption-filter';
-import { correctUser1, correctUser2, incorrectUser1 } from './input-model';
+import {
+  correctUser1,
+  correctUser2,
+  incorrectUser1,
+} from './users-input-model';
 
 describe('Users testing', () => {
   let app: INestApplication;

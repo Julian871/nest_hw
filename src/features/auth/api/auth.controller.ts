@@ -24,6 +24,8 @@ import { UsersRepository } from '../../users/infrastructure/users-repository';
 import { ConnectRepository } from '../../connect/connect-repository';
 import { CreateUserInputModel } from '../../users/users-models';
 import { BearerAuthGuard } from '../../../security/auth-guard';
+import { CreateUserCommand } from '../../users/application/use-cases/create-user-use-case';
+import { CommandBus } from '@nestjs/cqrs';
 
 @Controller('auth')
 export class AuthController {
@@ -33,6 +35,7 @@ export class AuthController {
     private readonly connectService: ConnectService,
     private readonly connectRepository: ConnectRepository,
     private readonly usersRepository: UsersRepository,
+    private commandBus: CommandBus,
   ) {}
 
   @Post('/password-recovery')
@@ -224,17 +227,16 @@ export class AuthController {
       res.sendStatus(429);
       return;
     }
-    const checkInputDto = await this.usersService.checkDto(
-      dto.login,
-      dto.email,
+    const createUser = await this.commandBus.execute(
+      new CreateUserCommand(dto, 'deviceID'),
     );
-    if (checkInputDto) {
-      res.status(400).send(checkInputDto);
+    if (!createUser) {
+      res.status(400).send({
+        errorsMessages: [{ message: 'Login or Email exist', field: 'exist' }],
+      });
       return;
     }
-    const newUser = await this.usersService.createNewUser(dto);
-    await this.usersService.finalOfRegistration(newUser, connection.deviceId);
-    return true;
+    res.status(204);
   }
 
   @Post('/registration-email-resending')

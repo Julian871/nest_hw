@@ -124,6 +124,12 @@ export class UsersRepository {
     );
   }
 
+  async checkLoginAndEmail(login: string, email: string) {
+    return this.UsersModel.findOne({
+      $or: [{ 'accountData.email': email }, { 'accountData.login': login }],
+    });
+  }
+
   async getUserByEmail(email: string) {
     return this.UsersModel.findOne({ 'accountData.email': email });
   }

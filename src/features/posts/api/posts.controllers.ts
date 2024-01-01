@@ -19,11 +19,20 @@ import { PostsService } from '../application/posts-service';
 import { BasicAuthGuard, BearerAuthGuard } from '../../../security/auth-guard';
 import { LikeStatusInputModel } from '../../likes/likes-models';
 import { LikesPostService } from '../../likes/likes-post-service';
-import { AuthService } from '../../auth/application/auth-service';
+import { AuthService } from '../../../security/auth-service';
 import { PostsRepository } from '../infrastructure/posts-repository';
 import { CreateCommentInputModel } from '../../comments/comments-model';
 import { CreatePostInputModel } from '../posts-models';
+import { ConnectGuard } from '../../../security/connect-guard';
+import { ObjectIdPipe } from '../../../pipes/objectID.pipe';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreatePostCommand } from '../application/use-cases/create-post-use-case';
+import { GetAllPostsCommand } from '../application/use-cases/get-all-posts-use-case';
+import { GetPostByIdCommand } from '../application/use-cases/get-post-by-id-use-case';
+import { UpdatePostCommand } from '../application/use-cases/update-post-use-case';
+import { DeletePostCommand } from '../application/delete-post-use-case';
 
+@UseGuards(ConnectGuard)
 @Controller('posts')
 export class PostsController {
   constructor(
@@ -31,19 +40,20 @@ export class PostsController {
     private readonly likesService: LikesPostService,
     private readonly authService: AuthService,
     private readonly postsRepository: PostsRepository,
+    private commandBus: CommandBus,
   ) {}
   @UseGuards(BasicAuthGuard)
   @Post()
   @HttpCode(201)
   async createPost(@Body() dto: CreatePostInputModel) {
-    return this.postsService.createNewPost(dto);
+    return this.commandBus.execute(new CreatePostCommand(dto));
   }
 
   @UseGuards(BearerAuthGuard)
   @Post('/:id/comments')
   async createCommentToPost(
     @Body() dto: CreateCommentInputModel,
-    @Param('id') postId: string,
+    @Param('id', ObjectIdPipe) postId: string,
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
@@ -64,30 +74,20 @@ export class PostsController {
 
   @Get()
   async getPosts(@Query() query: PostsDefaultQuery, @Req() req: Re) {
-    const userId =
-      (await this.authService.getUserIdFromRefreshToken(
-        req.cookies.refreshToken,
-      )) ??
-      (await this.authService.getUserIdFromAccessToken(
-        req.headers.authorization!,
-      ));
-    return await this.postsService.getAllPosts(query, userId);
+    return await this.commandBus.execute(
+      new GetAllPostsCommand(query, req.connect.userId),
+    );
   }
 
   @Get('/:id')
   async getPost(
-    @Param('id') postId: string,
+    @Param('id', ObjectIdPipe) postId: string,
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    const userId =
-      (await this.authService.getUserIdFromRefreshToken(
-        req.cookies.refreshToken,
-      )) ??
-      (await this.authService.getUserIdFromAccessToken(
-        req.headers.authorization!,
-      ));
-    const post = await this.postsService.getPostById(postId, userId);
+    const post = await this.commandBus.execute(
+      new GetPostByIdCommand(postId, req.connect.userId),
+    );
     if (!post) {
       res.status(HttpStatus.NOT_FOUND);
     } else res.status(HttpStatus.OK).send(post);
@@ -95,7 +95,7 @@ export class PostsController {
 
   @Get('/:id/comments')
   async getPostComments(
-    @Param('id') postId: string,
+    @Param('id', ObjectIdPipe) postId: string,
     @Res({ passthrough: true }) res: Response,
     @Query() query: PostsDefaultQuery,
   ) {
@@ -108,11 +108,13 @@ export class PostsController {
   @UseGuards(BasicAuthGuard)
   @Put('/:id')
   async updatePost(
-    @Param('id') postId: string,
+    @Param('id', ObjectIdPipe) postId: string,
     @Body() dto: CreatePostInputModel,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const isUpdate = await this.postsService.updatePostById(postId, dto);
+    const isUpdate = await this.commandBus.execute(
+      new UpdatePostCommand(postId, dto),
+    );
     if (!isUpdate) {
       res.status(HttpStatus.NOT_FOUND);
     } else res.status(HttpStatus.NO_CONTENT);
@@ -122,14 +124,11 @@ export class PostsController {
   @Put('/:id/like-status')
   @HttpCode(204)
   async likesOperation(
-    @Param('id') postId: string,
+    @Param('id', ObjectIdPipe) postId: string,
     @Body() likeStatus: LikeStatusInputModel,
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    const userId = await this.authService.getUserIdFromAccessToken(
-      req.headers.authorization!,
-    );
     const checkPost = await this.postsRepository.getPostById(postId);
     if (!checkPost) {
       res.status(404);
@@ -138,7 +137,7 @@ export class PostsController {
     await this.likesService.updateLikeStatus(
       postId,
       likeStatus.likeStatus,
-      userId,
+      req.connect.userId,
     );
     return true;
   }
@@ -146,10 +145,12 @@ export class PostsController {
   @UseGuards(BasicAuthGuard)
   @Delete('/:id')
   async deletePost(
-    @Param('id') postId: string,
+    @Param('id', ObjectIdPipe) postId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const isDelete = await this.postsService.deletePostById(postId);
+    const isDelete = await this.commandBus.execute(
+      new DeletePostCommand(postId),
+    );
     if (!isDelete) {
       res.status(HttpStatus.NOT_FOUND);
     } else res.status(HttpStatus.NO_CONTENT);

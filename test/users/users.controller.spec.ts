@@ -55,7 +55,11 @@ describe('Users testing', () => {
 
     await agent.delete('/testing/all-data');
   });
+  afterAll(async () => {
+    await app.close();
+  });
 
+  // POST: /users
   describe('Create user', () => {
     beforeAll(async () => {
       await agent.delete('/testing/all-data');
@@ -116,6 +120,7 @@ describe('Users testing', () => {
     });
   });
 
+  // GET: /users
   describe('Get users', () => {
     beforeAll(async () => {
       await agent.delete('/testing/all-data');
@@ -175,6 +180,7 @@ describe('Users testing', () => {
     });
   });
 
+  // DELETE: /blogs/:id
   describe('Delete user by id', () => {
     beforeAll(async () => {
       await agent.delete('/testing/all-data');
@@ -219,9 +225,5 @@ describe('Users testing', () => {
         .auth('admin', 'qwerty')
         .expect(404);
     });
-  });
-
-  afterAll(async () => {
-    await app.close();
   });
 });

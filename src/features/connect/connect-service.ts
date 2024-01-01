@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectRepository } from './connect-repository';
 import { ConnectCreator } from './connect-input';
-import { AuthService } from '../auth/application/auth-service';
+import { AuthService } from '../../security/auth-service';
 
 @Injectable()
 export class ConnectService {

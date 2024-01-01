@@ -9,14 +9,19 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppModule } from '../../src/app.module';
 import { HttpExceptionFilter } from '../../src/exeption-filter';
-import { correctBlog1, correctBlog2, incorrectBlog } from './blogs-input-model';
+import {
+  correctBlog1,
+  correctBlog2,
+  correctUpdateBlog1,
+  incorrectBlog,
+} from './blogs-input-model';
 import {
   correctPost1,
   correctPost2,
   incorrectPost1,
 } from '../posts/posts-input-model';
 
-describe('Users testing', () => {
+describe('Blogs testing', () => {
   let app: INestApplication;
   let agent: SuperAgentTest;
 
@@ -55,6 +60,9 @@ describe('Users testing', () => {
     agent = supertest.agent(app.getHttpServer());
 
     await agent.delete('/testing/all-data');
+  });
+  afterAll(async () => {
+    await app.close();
   });
 
   // POST: /blogs
@@ -257,10 +265,6 @@ describe('Users testing', () => {
         .send(incorrectPost1)
         .expect(400);
     });
-
-    afterAll(async () => {
-      await app.close();
-    });
   });
 
   // GET: /blogs/:blogId/posts
@@ -286,12 +290,14 @@ describe('Users testing', () => {
         .send(correctPost2)
         .expect(201);
 
-      await agent.get('/blogs/' + blog1.body.id + '/posts').expect(200);
-      /*expect(responseGet.body).toEqual({
-        pagesCount: 0,
-        page: 0,
-        pageSize: 0,
-        totalCount: 0,
+      const responseGet = await agent
+        .get('/blogs/' + blog1.body.id + '/posts')
+        .expect(200);
+      expect(responseGet.body).toEqual({
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 2,
         items: [
           {
             id: expect.any(String),
@@ -299,7 +305,7 @@ describe('Users testing', () => {
             shortDescription: correctPost2.shortDescription,
             content: correctPost2.content,
             blogId: blog1.body.id,
-            blogName: correctBlog2.name,
+            blogName: correctBlog1.name,
             createdAt: expect.any(String),
             extendedLikesInfo: {
               likesCount: 0,
@@ -324,11 +330,125 @@ describe('Users testing', () => {
             },
           },
         ],
-      });*/
+      });
     });
 
-    afterAll(async () => {
-      await app.close();
+    it('Should not get posts, if blogID is not exists. Return status 404', async () => {
+      await agent.get('/blogs/658edaa4c070ea0c2fab5e70/posts').expect(404);
+    });
+
+    /*it('Should not get posts, if blogID is not objectId. Return 400', async () => {
+      await agent.get('/blogs/invalidId/posts').expect(400);
+    });*/
+  });
+
+  // PUT: /blogs/:id
+  describe('Update blogs', () => {
+    beforeAll(async () => {
+      await agent.delete('/testing/all-data');
+    });
+
+    it('Should update blog, return status 204', async () => {
+      const newBlog1 = await agent
+        .post('/blogs')
+        .auth('admin', 'qwerty')
+        .send(correctBlog1)
+        .expect(201);
+      await agent
+        .put('/blogs/' + newBlog1.body.id)
+        .auth('admin', 'qwerty')
+        .send(correctUpdateBlog1)
+        .expect(204);
+    });
+
+    it('Should not update blog, if input incorrect. Return status 400', async () => {
+      const newBlog1 = await agent
+        .post('/blogs')
+        .auth('admin', 'qwerty')
+        .send(correctBlog1)
+        .expect(201);
+      const updateBlog = await agent
+        .put('/blogs/' + newBlog1.body.id)
+        .auth('admin', 'qwerty')
+        .send(incorrectBlog)
+        .expect(400);
+      expect(updateBlog.body).toEqual({
+        errorsMessages: [
+          {
+            message: 'Incorrect name',
+            field: 'name',
+          },
+          {
+            message: 'Incorrect description',
+            field: 'description',
+          },
+          {
+            message: 'Incorrect websiteUrl',
+            field: 'websiteUrl',
+          },
+        ],
+      });
+    });
+
+    it('Should not update blog, if auth incorrect, return status 401', async () => {
+      const newBlog1 = await agent
+        .post('/blogs')
+        .auth('admin', 'qwerty')
+        .send(correctBlog1)
+        .expect(201);
+      await agent
+        .put('/blogs/' + newBlog1.body.id)
+        .auth('incorrect', 'incorrect')
+        .send(correctUpdateBlog1)
+        .expect(401);
+    });
+
+    it('Should not update blog, if incorrect blogId return status 404', async () => {
+      await agent
+        .put('/blogs/658edaa4c070ea0c2fab5e70')
+        .auth('admin', 'qwerty')
+        .send(correctUpdateBlog1)
+        .expect(404);
+    });
+  });
+
+  // DELETE: /blogs/:id
+  describe('Delete blogs', () => {
+    beforeAll(async () => {
+      await agent.delete('/testing/all-data');
+    });
+
+    it('Should delete blog, return status 204', async () => {
+      const newBlog1 = await agent
+        .post('/blogs')
+        .auth('admin', 'qwerty')
+        .send(correctBlog1)
+        .expect(201);
+      await agent
+        .delete('/blogs/' + newBlog1.body.id)
+        .auth('admin', 'qwerty')
+        .expect(204);
+    });
+
+    it('Should not delete blog, if auth incorrect, return status 401', async () => {
+      const newBlog1 = await agent
+        .post('/blogs')
+        .auth('admin', 'qwerty')
+        .send(correctBlog1)
+        .expect(201);
+      await agent
+        .delete('/blogs/' + newBlog1.body.id)
+        .auth('incorrect', 'incorrect')
+        .send(correctUpdateBlog1)
+        .expect(401);
+    });
+
+    it('Should not delete blog, if incorrect blogId return status 404', async () => {
+      await agent
+        .put('/blogs/658edaa4c070ea0c2fab5e70')
+        .auth('admin', 'qwerty')
+        .send(correctUpdateBlog1)
+        .expect(404);
     });
   });
 });

@@ -18,7 +18,7 @@ import {
   NewPasswordInputModel,
 } from '../auth-model';
 import { Response, Request as Re } from 'express';
-import { AuthService } from '../application/auth-service';
+import { AuthService } from '../../../security/auth-service';
 import { ConnectService } from '../../connect/connect-service';
 import { UsersRepository } from '../../users/infrastructure/users-repository';
 import { ConnectRepository } from '../../connect/connect-repository';

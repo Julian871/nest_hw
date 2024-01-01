@@ -38,7 +38,7 @@ export class CreatePostInputModel {
   @MaxLength(1000)
   content: string;
 
-  @isBlogExist()
+  //@isBlogExist()
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
   blogId: string;

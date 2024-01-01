@@ -9,7 +9,12 @@ export class LikesPostService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  async updateLikeStatus(postId: string, likeStatus: string, userId: string) {
+  async updateLikeStatus(
+    postId: string,
+    likeStatus: string,
+    userId: string | null,
+  ) {
+    if (userId === null) return;
     const user = await this.usersRepository.getUserById(userId);
     const newLike = {
       addedAt: new Date(),

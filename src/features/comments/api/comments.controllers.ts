@@ -15,7 +15,7 @@ import { Request as Re, Response } from 'express';
 import { CommentsService } from '../application/comments-service';
 import { BearerAuthGuard } from '../../../security/auth-guard';
 import { LikeStatusInputModel } from '../../likes/likes-models';
-import { AuthService } from '../../auth/application/auth-service';
+import { AuthService } from '../../../security/auth-service';
 import { CommentsRepository } from '../infrastructure/comments-repository';
 import { LikesCommentsService } from '../../likes/likes-comment-service';
 import { CreateCommentInputModel } from '../comments-model';

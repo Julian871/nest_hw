@@ -15,3 +15,9 @@ export const incorrectBlog = {
   description: '     ',
   websiteUrl: 'samurai.it-',
 };
+
+export const correctUpdateBlog1 = {
+  name: 'Update name',
+  description: 'Update description',
+  websiteUrl: 'https://samurai.it-incubator.io/swagger?id=h16',
+};

@@ -1,12 +1,12 @@
 import { UsersRepository } from '../../infrastructure/users-repository';
-import { CommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class DeleteUserCommand {
   constructor(public userId: string) {}
 }
 
 @CommandHandler(DeleteUserCommand)
-export class DeleteUserUseCase {
+export class DeleteUserUseCase implements ICommandHandler<DeleteUserCommand> {
   constructor(private readonly usersRepository: UsersRepository) {}
 
   async execute(command: DeleteUserCommand) {

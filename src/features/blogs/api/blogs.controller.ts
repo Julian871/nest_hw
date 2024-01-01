@@ -14,35 +14,43 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { BlogsQuery } from '../blogs-query';
-import { BlogsService } from '../application/blogs-service';
 import { Request as Re, Response } from 'express';
 import { BlogsDefaultQuery } from '../default-query';
 import { BasicAuthGuard } from '../../../security/auth-guard';
 import { CreateBlogInputModel, UpdateBlogInputModel } from '../blogs-models';
 import { CreatePostForBlogInputModel } from '../../posts/posts-models';
-import { AuthService } from '../../auth/application/auth-service';
+import { ObjectIdPipe } from '../../../pipes/objectID.pipe';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateBlogCommand } from '../application/use-cases/create-blog-use-case';
+import { CreatePostToBlogCommand } from '../application/use-cases/create-post-to-blog-use-case';
+import { ConnectGuard } from '../../../security/connect-guard';
+import { GetBlogsCommand } from '../application/use-cases/get-blogs-use-case';
+import { GetBlogByIdCommand } from '../application/use-cases/get-blog-by-id-use-case';
+import { GetPostsToBlogCommand } from '../application/use-cases/get-posts-to-blog-use-case';
+import { UpdateBlogCommand } from '../application/use-cases/update-blog-use-case';
+import { DeleteBLogCommand } from '../application/use-cases/delete-blog-use-case';
 
+@UseGuards(ConnectGuard)
 @Controller('blogs')
 export class BlogsController {
-  constructor(
-    private readonly blogsService: BlogsService,
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private commandBus: CommandBus) {}
   @UseGuards(BasicAuthGuard)
   @Post()
   @HttpCode(201)
   async createBlog(@Body() dto: CreateBlogInputModel) {
-    return await this.blogsService.createNewBlog(dto);
+    return await this.commandBus.execute(new CreateBlogCommand(dto));
   }
 
   @UseGuards(BasicAuthGuard)
   @Post(':id/posts')
-  async createPostByBlog(
+  async createPostToBlog(
     @Body() dto: CreatePostForBlogInputModel,
     @Res({ passthrough: true }) res: Response,
-    @Param('id') blogId: string,
+    @Param('id', ObjectIdPipe) blogId: string,
   ) {
-    const post = await this.blogsService.createNewPostByBlogId(blogId, dto);
+    const post = await this.commandBus.execute(
+      new CreatePostToBlogCommand(blogId, dto),
+    );
     if (!post) {
       res.status(HttpStatus.NOT_FOUND);
     } else res.status(HttpStatus.CREATED).send(post);
@@ -50,15 +58,15 @@ export class BlogsController {
 
   @Get()
   async getBlogs(@Query() query: BlogsQuery) {
-    return await this.blogsService.getAllBlogs(query);
+    return await this.commandBus.execute(new GetBlogsCommand(query));
   }
 
   @Get('/:id')
   async getBlog(
-    @Param('id') blogId: string,
+    @Param('id', ObjectIdPipe) blogId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const blog = await this.blogsService.getBlogById(blogId);
+    const blog = await this.commandBus.execute(new GetBlogByIdCommand(blogId));
     if (!blog) {
       res.status(HttpStatus.NOT_FOUND);
     } else res.status(HttpStatus.OK).send(blog);
@@ -66,22 +74,13 @@ export class BlogsController {
 
   @Get('/:id/posts')
   async getPostsToBlog(
-    @Param('id') blogId: string,
+    @Param('id', ObjectIdPipe) blogId: string,
     @Query() query: BlogsDefaultQuery,
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    const userId =
-      (await this.authService.getUserIdFromRefreshToken(
-        req.cookies?.refreshToken ?? '',
-      )) ??
-      (await this.authService.getUserIdFromAccessToken(
-        req.headers?.authorization ?? '',
-      ));
-    const postsList = await this.blogsService.getPostByBlogId(
-      query,
-      blogId,
-      userId,
+    const postsList = await this.commandBus.execute(
+      new GetPostsToBlogCommand(query, blogId, req.connect.userId),
     );
     if (!postsList) {
       res.status(HttpStatus.NOT_FOUND);
@@ -91,11 +90,13 @@ export class BlogsController {
   @UseGuards(BasicAuthGuard)
   @Put('/:id')
   async updateBlog(
-    @Param('id') blogId: string,
+    @Param('id', ObjectIdPipe) blogId: string,
     @Body() dto: UpdateBlogInputModel,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const isUpdate = await this.blogsService.updateBlogById(blogId, dto);
+    const isUpdate = await this.commandBus.execute(
+      new UpdateBlogCommand(blogId, dto),
+    );
     if (!isUpdate) {
       res.status(HttpStatus.NOT_FOUND);
     } else res.status(HttpStatus.NO_CONTENT);
@@ -104,10 +105,12 @@ export class BlogsController {
   @UseGuards(BasicAuthGuard)
   @Delete('/:id')
   async deleteBlog(
-    @Param('id') blogId: string,
+    @Param('id', ObjectIdPipe) blogId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const isDelete = await this.blogsService.deleteBlogById(blogId);
+    const isDelete = await this.commandBus.execute(
+      new DeleteBLogCommand(blogId),
+    );
     if (!isDelete) {
       res.status(HttpStatus.NOT_FOUND);
     } else res.status(HttpStatus.NO_CONTENT);

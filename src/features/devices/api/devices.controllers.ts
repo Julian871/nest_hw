@@ -7,7 +7,7 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { AuthService } from '../../auth/application/auth-service';
+import { AuthService } from '../../../security/auth-service';
 import { Request as Re, Response } from 'express';
 import { ConnectService } from '../../connect/connect-service';
 
@@ -36,10 +36,7 @@ export class DevicesController {
 
   @Delete()
   @HttpCode(204)
-  async deleteAllSessions(
-    @Req() req: Re,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async deleteAllSessions(@Req() req: Re) {
     await this.connectService.deleteUserSession(req.cookies.refreshToken);
     return true;
   }

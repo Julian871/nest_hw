@@ -3,7 +3,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, userDocument } from '../users-schema';
 import { UsersQuery } from '../users-query';
-import { BlackList, blackListDocument } from '../../auth/blackList-schema';
+import {
+  BlackList,
+  blackListDocument,
+} from '../../../security/blackList-schema';
 
 @Injectable()
 export class UsersRepository {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CommentsRepository } from '../infrastructure/comments-repository';
 import { LikesCommentsService } from '../../likes/likes-comment-service';
-import { AuthService } from '../../auth/application/auth-service';
+import { AuthService } from '../../../security/auth-service';
 
 @Injectable()
 export class CommentsService {

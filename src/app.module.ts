@@ -33,7 +33,7 @@ import { ConnectRepository } from './features/connect/connect-repository';
 
 import dotenv from 'dotenv';
 import { AuthController } from './features/auth/api/auth.controller';
-import { AuthService } from './features/auth/application/auth-service';
+import { AuthService } from './security/auth-service';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EmailManager } from './email/email-manager';
 import { LikesPostService } from './features/likes/likes-post-service';
@@ -41,12 +41,24 @@ import { JwtModule } from '@nestjs/jwt';
 import { LikesCommentsService } from './features/likes/likes-comment-service';
 import { DevicesController } from './features/devices/api/devices.controllers';
 import { join } from 'path';
-import { BlackList, BlackListSchema } from './features/auth/blackList-schema';
+import { BlackList, BlackListSchema } from './security/blackList-schema';
 import { IsBlogExistConstraint } from './features/posts/application/blogId.exist';
 import { GetUsersUseCase } from './features/users/application/use-cases/get-users-use-case';
 import { DeleteUserUseCase } from './features/users/application/use-cases/delete-user-use-case';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CreateUserUseCase } from './features/users/application/use-cases/create-user-use-case';
+import { CreateBlogUseCase } from './features/blogs/application/use-cases/create-blog-use-case';
+import { CreatePostToBlogUseCase } from './features/blogs/application/use-cases/create-post-to-blog-use-case';
+import { GetBlogsUseCase } from './features/blogs/application/use-cases/get-blogs-use-case';
+import { GetBlogByIdUseCase } from './features/blogs/application/use-cases/get-blog-by-id-use-case';
+import { GetPostsToBlogUseCase } from './features/blogs/application/use-cases/get-posts-to-blog-use-case';
+import { UpdateBlogUseCase } from './features/blogs/application/use-cases/update-blog-use-case';
+import { DeleteBlogUseCase } from './features/blogs/application/use-cases/delete-blog-use-case';
+import { CreatePostUseCase } from './features/posts/application/use-cases/create-post-use-case';
+import { GetAllPostsUseCase } from './features/posts/application/use-cases/get-all-posts-use-case';
+import { GetPostByIdUseCase } from './features/posts/application/use-cases/get-post-by-id-use-case';
+import { UpdatePostUseCase } from './features/posts/application/use-cases/update-post-use-case';
+import { DeletePostUseCase } from './features/posts/application/delete-post-use-case';
 dotenv.config();
 
 @Module({
@@ -136,6 +148,18 @@ dotenv.config();
     GetUsersUseCase,
     DeleteUserUseCase,
     CreateUserUseCase,
+    CreateBlogUseCase,
+    CreatePostToBlogUseCase,
+    GetBlogsUseCase,
+    GetBlogByIdUseCase,
+    GetPostsToBlogUseCase,
+    UpdateBlogUseCase,
+    DeleteBlogUseCase,
+    CreatePostUseCase,
+    GetAllPostsUseCase,
+    GetPostByIdUseCase,
+    UpdatePostUseCase,
+    DeletePostUseCase,
   ],
 })
 export class AppModule {}

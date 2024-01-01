@@ -5,7 +5,7 @@ import { CreateUserInputModel } from '../../users-models';
 import { UserInformation } from '../users-output';
 import * as bcrypt from 'bcrypt';
 import { UserCreator } from '../users-input';
-import { CommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class CreateUserCommand {
   constructor(
@@ -15,7 +15,7 @@ export class CreateUserCommand {
 }
 
 @CommandHandler(CreateUserCommand)
-export class CreateUserUseCase {
+export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly connectRepository: ConnectRepository,

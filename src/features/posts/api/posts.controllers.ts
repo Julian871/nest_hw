@@ -19,7 +19,6 @@ import { PostsService } from '../application/posts-service';
 import { BasicAuthGuard, BearerAuthGuard } from '../../../security/auth-guard';
 import { LikeStatusInputModel } from '../../likes/likes-models';
 import { LikesPostService } from '../../likes/likes-post-service';
-import { AuthService } from '../../../security/auth-service';
 import { PostsRepository } from '../infrastructure/posts-repository';
 import { CreateCommentInputModel } from '../../comments/comments-model';
 import { CreatePostInputModel } from '../posts-models';
@@ -30,7 +29,9 @@ import { CreatePostCommand } from '../application/use-cases/create-post-use-case
 import { GetAllPostsCommand } from '../application/use-cases/get-all-posts-use-case';
 import { GetPostByIdCommand } from '../application/use-cases/get-post-by-id-use-case';
 import { UpdatePostCommand } from '../application/use-cases/update-post-use-case';
-import { DeletePostCommand } from '../application/delete-post-use-case';
+import { DeletePostCommand } from '../application/use-cases/delete-post-use-case';
+import { CreatePostCommentCommand } from '../application/use-cases/create-post-comment-use-case';
+import { GetAllPostCommentCommand } from '../application/get-all-posts-use-case';
 
 @UseGuards(ConnectGuard)
 @Controller('posts')
@@ -38,7 +39,6 @@ export class PostsController {
   constructor(
     private readonly postsService: PostsService,
     private readonly likesService: LikesPostService,
-    private readonly authService: AuthService,
     private readonly postsRepository: PostsRepository,
     private commandBus: CommandBus,
   ) {}
@@ -57,13 +57,8 @@ export class PostsController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    const userId = await this.authService.getUserIdFromAccessToken(
-      req.headers.authorization!,
-    );
-    const comment = await this.postsService.createNewPostComment(
-      postId,
-      dto.content,
-      userId,
+    const comment = await this.commandBus.execute(
+      new CreatePostCommentCommand(postId, dto.content, req.connect.userId),
     );
     if (!comment) {
       res.sendStatus(404);
@@ -99,7 +94,9 @@ export class PostsController {
     @Res({ passthrough: true }) res: Response,
     @Query() query: PostsDefaultQuery,
   ) {
-    const comments = await this.postsService.getAllPostsComments(query, postId);
+    const comments = await this.commandBus.execute(
+      new GetAllPostCommentCommand(query, postId),
+    );
     if (!comments) {
       res.status(HttpStatus.NOT_FOUND);
     } else res.status(HttpStatus.OK).send(comments);

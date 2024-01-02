@@ -1,8 +1,8 @@
-import { PostsRepository } from '../infrastructure/posts-repository';
-import { LikesCommentsService } from '../../likes/likes-comment-service';
-import { PostsDefaultQuery } from '../default-query';
-import { CommentInformation } from '../../comments/application/comments-output';
-import { PageInformation } from '../../page-information';
+import { PostsRepository } from '../../infrastructure/posts-repository';
+import { LikesCommentsService } from '../../../likes/likes-comment-service';
+import { PostsDefaultQuery } from '../../default-query';
+import { CommentInformation } from '../../../comments/application/comments-output';
+import { PageInformation } from '../../../page-information';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class GetAllPostCommentCommand {

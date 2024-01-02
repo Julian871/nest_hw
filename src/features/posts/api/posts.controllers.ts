@@ -31,7 +31,7 @@ import { GetPostByIdCommand } from '../application/use-cases/get-post-by-id-use-
 import { UpdatePostCommand } from '../application/use-cases/update-post-use-case';
 import { DeletePostCommand } from '../application/use-cases/delete-post-use-case';
 import { CreatePostCommentCommand } from '../application/use-cases/create-post-comment-use-case';
-import { GetAllPostCommentCommand } from '../application/get-all-posts-use-case';
+import { GetAllPostCommentCommand } from '../application/use-cases/get-all-post-comments-use-case';
 
 @UseGuards(ConnectGuard)
 @Controller('posts')

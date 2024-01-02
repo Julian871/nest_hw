@@ -60,7 +60,7 @@ import { GetPostByIdUseCase } from './features/posts/application/use-cases/get-p
 import { UpdatePostUseCase } from './features/posts/application/use-cases/update-post-use-case';
 import { DeletePostUseCase } from './features/posts/application/use-cases/delete-post-use-case';
 import { CreatePostCommentUseCase } from './features/posts/application/use-cases/create-post-comment-use-case';
-import { GetAllPostCommentUseCase } from './features/posts/application/get-all-posts-use-case';
+import { GetAllPostCommentUseCase } from './features/posts/application/use-cases/get-all-post-comments-use-case';
 dotenv.config();
 
 @Module({

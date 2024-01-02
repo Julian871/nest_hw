@@ -15,11 +15,13 @@ import { Request as Re, Response } from 'express';
 import { CommentsService } from '../application/comments-service';
 import { BearerAuthGuard } from '../../../security/auth-guard';
 import { LikeStatusInputModel } from '../../likes/likes-models';
-import { AuthService } from '../../../security/auth-service';
 import { CommentsRepository } from '../infrastructure/comments-repository';
-import { LikesCommentsService } from '../../likes/likes-comment-service';
 import { CreateCommentInputModel } from '../comments-model';
 import { ConnectGuard } from '../../../security/connect-guard';
+import { CommandBus } from '@nestjs/cqrs';
+import { GetCommentCommand } from '../application/use-cases/get-comment-use-case';
+import { UpdateCommentCommand } from '../application/use-cases/update-comment-use-case';
+import { UpdateCommentLikeStatusCommand } from '../../likes/use-cases/update-comment-like-status-use-case';
 
 @UseGuards(ConnectGuard)
 @Controller('comments')
@@ -27,8 +29,7 @@ export class CommentsController {
   constructor(
     private readonly commentsService: CommentsService,
     private readonly commentsRepository: CommentsRepository,
-    private readonly authService: AuthService,
-    private readonly likesCommentService: LikesCommentsService,
+    private commandBus: CommandBus,
   ) {}
   @Get(':id')
   async getComment(
@@ -36,9 +37,8 @@ export class CommentsController {
     @Param('id') commentId: string,
     @Req() req: Re,
   ) {
-    const comment = await this.commentsService.getCommentById(
-      commentId,
-      req.connect.userId,
+    const comment = await this.commandBus.execute(
+      new GetCommentCommand(commentId, req.connect.userId),
     );
     if (!comment) {
       res.status(HttpStatus.NOT_FOUND);
@@ -60,10 +60,12 @@ export class CommentsController {
       res.status(404);
       return;
     }
-    await this.likesCommentService.updateLikeStatus(
-      commentId,
-      dto.likeStatus,
-      req.connect.userId,
+    await this.commandBus.execute(
+      new UpdateCommentLikeStatusCommand(
+        commentId,
+        dto.likeStatus,
+        req.connect.userId,
+      ),
     );
     return true;
   }
@@ -88,7 +90,9 @@ export class CommentsController {
       res.sendStatus(403);
       return;
     }
-    await this.commentsService.updateCommentById(commentId, dto.content);
+    await this.commandBus.execute(
+      new UpdateCommentCommand(commentId, dto.content),
+    );
     return true;
   }
 

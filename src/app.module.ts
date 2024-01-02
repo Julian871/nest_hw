@@ -61,6 +61,10 @@ import { UpdatePostUseCase } from './features/posts/application/use-cases/update
 import { DeletePostUseCase } from './features/posts/application/use-cases/delete-post-use-case';
 import { CreatePostCommentUseCase } from './features/posts/application/use-cases/create-post-comment-use-case';
 import { GetAllPostCommentUseCase } from './features/posts/application/use-cases/get-all-post-comments-use-case';
+import { GetCommentUseCase } from './features/comments/application/use-cases/get-comment-use-case';
+import { UpdateCommentUseCase } from './features/comments/application/use-cases/update-comment-use-case';
+import { UpdatePostLikeStatusUseCase } from './features/likes/use-cases/update-post-like-status-use-case';
+import { UpdateCommentLikeStatusUseCase } from './features/likes/use-cases/update-comment-like-status-use-case';
 dotenv.config();
 
 @Module({
@@ -164,6 +168,10 @@ dotenv.config();
     DeletePostUseCase,
     CreatePostCommentUseCase,
     GetAllPostCommentUseCase,
+    GetCommentUseCase,
+    UpdateCommentUseCase,
+    UpdatePostLikeStatusUseCase,
+    UpdateCommentLikeStatusUseCase,
   ],
 })
 export class AppModule {}

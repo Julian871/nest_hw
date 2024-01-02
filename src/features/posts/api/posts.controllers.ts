@@ -32,6 +32,7 @@ import { UpdatePostCommand } from '../application/use-cases/update-post-use-case
 import { DeletePostCommand } from '../application/use-cases/delete-post-use-case';
 import { CreatePostCommentCommand } from '../application/use-cases/create-post-comment-use-case';
 import { GetAllPostCommentCommand } from '../application/use-cases/get-all-post-comments-use-case';
+import { UpdatePostLikeStatusCommand } from '../../likes/use-cases/update-post-like-status-use-case';
 
 @UseGuards(ConnectGuard)
 @Controller('posts')
@@ -122,7 +123,7 @@ export class PostsController {
   @HttpCode(204)
   async likesOperation(
     @Param('id', ObjectIdPipe) postId: string,
-    @Body() likeStatus: LikeStatusInputModel,
+    @Body() dto: LikeStatusInputModel,
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
@@ -131,10 +132,12 @@ export class PostsController {
       res.status(404);
       return;
     }
-    await this.likesService.updateLikeStatus(
-      postId,
-      likeStatus.likeStatus,
-      req.connect.userId,
+    await this.commandBus.execute(
+      new UpdatePostLikeStatusCommand(
+        postId,
+        dto.likeStatus,
+        req.connect.userId,
+      ),
     );
     return true;
   }

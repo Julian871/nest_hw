@@ -10,6 +10,16 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppModule } from '../../src/app.module';
 import { HttpExceptionFilter } from '../../src/exeption-filter';
 import { correctBlog1, correctBlog2 } from '../blogs/blogs-input-model';
+import { useContainer } from 'class-validator';
+import {
+  correctLoginUser1,
+  correctLoginUser2,
+  correctLoginUser3,
+  correctUser1,
+  correctUser2,
+  correctUser3,
+  expireToken,
+} from '../users/users-input-model';
 
 describe('Posts testing', () => {
   let app: INestApplication;
@@ -44,6 +54,7 @@ describe('Posts testing', () => {
       }),
     );
     app.useGlobalFilters(new HttpExceptionFilter());
+    useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
     await app.init();
 
@@ -57,10 +68,6 @@ describe('Posts testing', () => {
 
   // POST: /posts
   describe('Create post', () => {
-    beforeAll(async () => {
-      await agent.delete('/testing/all-data');
-    });
-
     it('Should create post, return status 201 and post information', async () => {
       const newBlog1 = await agent
         .post('/blogs')
@@ -138,11 +145,8 @@ describe('Posts testing', () => {
 
   // GET: /posts, /posts/:id
   describe('Get posts', () => {
-    beforeAll(async () => {
-      await agent.delete('/testing/all-data');
-    });
-
     it('Should get all posts, return status 200', async () => {
+      await agent.delete('/testing/all-data');
       const newBlog1 = await agent
         .post('/blogs')
         .auth('admin', 'qwerty')
@@ -248,26 +252,10 @@ describe('Posts testing', () => {
     it('Should not get post, if post not found, return status 404', async () => {
       await agent.get('/posts/658d153438c7b301a4707f40').expect(404);
     });
-
-    /*it('Should not get post, if id not valid, return 400', async () => {
-      const getPosts = await agent.get('/posts/invalid').expect(400);
-      expect(getPosts.body).toEqual({
-        errorsMessages: [
-          {
-            message: expect.any(String),
-            field: 'blogId',
-          },
-        ],
-      });
-    });*/
   });
 
   // UPDATE: /posts/:id
   describe('Update posts', () => {
-    beforeAll(async () => {
-      await agent.delete('/testing/all-data');
-    });
-
     it('Should update post, return status 204', async () => {
       const newBlog1 = await agent
         .post('/blogs')
@@ -363,6 +351,11 @@ describe('Posts testing', () => {
     });
 
     it('Should not update post, if post not found return status 404', async () => {
+      const newBlog1 = await agent
+        .post('/blogs')
+        .auth('admin', 'qwerty')
+        .send(correctBlog1)
+        .expect(201);
       await agent
         .put('/posts/658d153438c7b301a4707f40')
         .auth('admin', 'qwerty')
@@ -370,7 +363,7 @@ describe('Posts testing', () => {
           title: 'update title',
           shortDescription: 'update description 2',
           content: 'update content 2',
-          blogId: '658d153438c7b301a4707f40',
+          blogId: newBlog1.body.id,
         })
         .expect(404);
     });
@@ -378,10 +371,6 @@ describe('Posts testing', () => {
 
   // DELETE: /posts/:id
   describe('Delete posts', () => {
-    beforeAll(async () => {
-      await agent.delete('/testing/all-data');
-    });
-
     it('Should delete post, return status 204', async () => {
       const newBlog1 = await agent
         .post('/blogs')
@@ -420,23 +409,17 @@ describe('Posts testing', () => {
   });
 
   // POST: /posts/:posId/comments
-  /*describe('Delete posts', () => {
-    beforeAll(async () => {
-      await agent.delete('/testing/all-data');
-    });
+  describe('Create comments', () => {
+    let newPost1: any;
+    let newBlog1: any;
 
-    it('Should create post, return status 201', async () => {
-      const newUser = await agent
-        .post('/users')
-        .auth('admin', 'qwerty')
-        .send(correctUser1)
-        .expect(201);
-      const newBlog1 = await agent
+    it('Create blog and post', async () => {
+      newBlog1 = await agent
         .post('/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
-      const newPost1 = await agent
+      newPost1 = await agent
         .post('/posts')
         .auth('admin', 'qwerty')
         .send({
@@ -446,10 +429,21 @@ describe('Posts testing', () => {
           blogId: newBlog1.body.id,
         })
         .expect(201);
-      console.log('token:', newUser.request);
+    });
+
+    it('Should create comment, return status 201', async () => {
+      const newUser1 = await agent
+        .post('/users')
+        .auth('admin', 'qwerty')
+        .send(correctUser1)
+        .expect(201);
+      const loginUser = await agent
+        .post('/auth/login')
+        .send(correctLoginUser1)
+        .expect(200);
       const newComment = await agent
         .post('/posts/' + newPost1.body.id + '/comments')
-        .auth(newUser.body.accessToken, {
+        .auth(loginUser.body.accessToken, {
           type: 'bearer',
         })
         .send({ content: 'new content to testing' })
@@ -458,8 +452,8 @@ describe('Posts testing', () => {
         id: expect.any(String),
         content: 'new content to testing',
         commentatorInfo: {
-          userId: newUser.body.id,
-          userLogin: newUser.body.login,
+          userId: newUser1.body.id,
+          userLogin: newUser1.body.login,
         },
         createdAt: expect.any(String),
         likesInfo: {
@@ -469,5 +463,269 @@ describe('Posts testing', () => {
         },
       });
     });
-  });*/
+
+    it('Should not create comment, if input values incorrect, return status 400', async () => {
+      await agent
+        .post('/users')
+        .auth('admin', 'qwerty')
+        .send(correctUser2)
+        .expect(201);
+      const loginUser = await agent
+        .post('/auth/login')
+        .send(correctLoginUser2)
+        .expect(200);
+      const newComment = await agent
+        .post('/posts/' + newPost1.body.id + '/comments')
+        .auth(loginUser.body.accessToken, {
+          type: 'bearer',
+        })
+        .send({ content: 'length < 20' })
+        .expect(400);
+      expect(newComment.body).toEqual({
+        errorsMessages: [
+          {
+            message: expect.any(String),
+            field: 'content',
+          },
+        ],
+      });
+    });
+
+    it('Should not create comment, if auth incorrect return status 401', async () => {
+      const newComment = await agent
+        .post('/posts/' + newPost1.body.id + '/comments')
+        .auth(expireToken, {
+          type: 'bearer',
+        })
+        .send({ content: 'new content to testing' })
+        .expect(401);
+    });
+
+    it('Should not create comment, if posts not exist return status 404', async () => {
+      await agent
+        .post('/users')
+        .auth('admin', 'qwerty')
+        .send(correctUser3)
+        .expect(201);
+      const loginUser = await agent
+        .post('/auth/login')
+        .send(correctLoginUser3)
+        .expect(200);
+      await agent
+        .post('/posts/658fcb001c34ccb6b9e9e4a8/comments')
+        .auth(loginUser.body.accessToken, {
+          type: 'bearer',
+        })
+        .send({ content: 'new content to testing' })
+        .expect(404);
+    });
+  });
+
+  // GET: /posts/:posId/comments
+  describe('Get comments', () => {
+    beforeAll(async () => {
+      await agent.delete('/testing/all-data');
+    });
+
+    let newPost1: any;
+    let newBlog1: any;
+    let newComment: any;
+    let newUser1: any;
+
+    it('Create blog and post', async () => {
+      newBlog1 = await agent
+        .post('/blogs')
+        .auth('admin', 'qwerty')
+        .send(correctBlog1)
+        .expect(201);
+      newPost1 = await agent
+        .post('/posts')
+        .auth('admin', 'qwerty')
+        .send({
+          title: 'new title',
+          shortDescription: 'new description',
+          content: 'new content',
+          blogId: newBlog1.body.id,
+        })
+        .expect(201);
+    });
+
+    it('Should create comment, return status 201', async () => {
+      newUser1 = await agent
+        .post('/users')
+        .auth('admin', 'qwerty')
+        .send(correctUser1)
+        .expect(201);
+      const loginUser = await agent
+        .post('/auth/login')
+        .send(correctLoginUser1)
+        .expect(200);
+      newComment = await agent
+        .post('/posts/' + newPost1.body.id + '/comments')
+        .auth(loginUser.body.accessToken, {
+          type: 'bearer',
+        })
+        .send({ content: 'new content to testing' })
+        .expect(201);
+      expect(newComment.body).toEqual({
+        id: expect.any(String),
+        content: 'new content to testing',
+        commentatorInfo: {
+          userId: newUser1.body.id,
+          userLogin: newUser1.body.login,
+        },
+        createdAt: expect.any(String),
+        likesInfo: {
+          likesCount: 0,
+          dislikesCount: 0,
+          myStatus: 'None',
+        },
+      });
+    });
+
+    it('Should get comment to post, return status 200', async () => {
+      const getPostComments = await agent
+        .get('/posts/' + newPost1.body.id + '/comments')
+        .expect(200);
+      expect(getPostComments.body).toEqual({
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 1,
+        items: [
+          {
+            id: newComment.body.id,
+            content: newComment.body.content,
+            commentatorInfo: {
+              userId: newUser1.body.id,
+              userLogin: newUser1.body.login,
+            },
+            createdAt: newComment.body.createdAt,
+            likesInfo: {
+              likesCount: 0,
+              dislikesCount: 0,
+              myStatus: 'None',
+            },
+          },
+        ],
+      });
+    });
+
+    it('Should not get comment to post, if postId incorrect return status 404', async () => {
+      const getPostComments = await agent
+        .get('/posts/658fcb001c34ccb6b9e9e4a8/comments')
+        .auth('admin', 'qwerty')
+        .expect(404);
+    });
+  });
+
+  // PUT: /posts/:posId/like-status
+  describe('Like time', () => {
+    beforeAll(async () => {
+      await agent.delete('/testing/all-data');
+    });
+
+    let newPost1: any;
+    let newBlog1: any;
+    let newUser1: any;
+
+    it('Create blog and post', async () => {
+      newBlog1 = await agent
+        .post('/blogs')
+        .auth('admin', 'qwerty')
+        .send(correctBlog1)
+        .expect(201);
+      newPost1 = await agent
+        .post('/posts')
+        .auth('admin', 'qwerty')
+        .send({
+          title: 'new title',
+          shortDescription: 'new description',
+          content: 'new content',
+          blogId: newBlog1.body.id,
+        })
+        .expect(201);
+    });
+
+    it('Should take Like, return status 201', async () => {
+      newUser1 = await agent
+        .post('/users')
+        .auth('admin', 'qwerty')
+        .send(correctUser1)
+        .expect(201);
+      const loginUser = await agent
+        .post('/auth/login')
+        .send(correctLoginUser1)
+        .expect(200);
+      await agent
+        .put('/posts/' + newPost1.body.id + '/like-status')
+        .auth(loginUser.body.accessToken, {
+          type: 'bearer',
+        })
+        .send({ likeStatus: 'Like' })
+        .expect(204);
+    });
+
+    it('Should take Dislike to post insteadof like', async () => {
+      const loginUser = await agent
+        .post('/auth/login')
+        .send(correctLoginUser1)
+        .expect(200);
+      await agent
+        .put('/posts/' + newPost1.body.id + '/like-status')
+        .auth(loginUser.body.accessToken, {
+          type: 'bearer',
+        })
+        .send({ likeStatus: 'Dislike' })
+        .expect(204);
+      const getPost = await agent
+        .get('/posts/' + newPost1.body.id)
+        .auth(loginUser.body.accessToken, {
+          type: 'bearer',
+        });
+      expect(getPost.body.extendedLikesInfo.myStatus).toBe('Dislike');
+    });
+
+    it('Should not take like, if incorrect input values, return status 400', async () => {
+      const loginUser = await agent
+        .post('/auth/login')
+        .send(correctLoginUser1)
+        .expect(200);
+      await agent
+        .put('/posts/' + newPost1.body.id + '/like-status')
+        .auth(loginUser.body.accessToken, {
+          type: 'bearer',
+        })
+        .send({ likeStatus: 'dike' })
+        .expect(400);
+    });
+
+    it('Should not take like, if auth incorrect', async () => {
+      const loginUser = await agent
+        .post('/auth/login')
+        .send(correctLoginUser1)
+        .expect(200);
+      await agent
+        .put('/posts/' + newPost1.body.id + '/like-status')
+        .auth(expireToken, {
+          type: 'bearer',
+        })
+        .send({ likeStatus: 'Like' })
+        .expect(401);
+    });
+
+    it('Should not take like, if incorrect postId, return status 404', async () => {
+      const loginUser = await agent
+        .post('/auth/login')
+        .send(correctLoginUser1)
+        .expect(200);
+      await agent
+        .put('/posts/658fcb001c34ccb6b9e9e4a8/like-status')
+        .auth(loginUser.body.accessToken, {
+          type: 'bearer',
+        })
+        .send({ likeStatus: 'dike' })
+        .expect(400);
+    });
+  });
 });

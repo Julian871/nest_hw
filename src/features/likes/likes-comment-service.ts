@@ -14,8 +14,9 @@ export class LikesCommentsService {
   async updateLikeStatus(
     commentId: string,
     likeStatus: string,
-    userId: string,
+    userId: string | null,
   ) {
+    if (userId === null) return;
     const checkOnLike = await this.commentsRepository.getLikeStatus(
       commentId,
       userId,
@@ -62,7 +63,9 @@ export class LikesCommentsService {
     if (likeStatus === 'None') return;
   }
 
-  async getMyStatus(commentId: string, userId: string) {
+  async getMyStatus(commentId: string, userId: string | null) {
+    if (userId === null) return 'None';
+
     const checkLikeStatus = await this.commentsRepository.getLikeStatus(
       commentId,
       userId,

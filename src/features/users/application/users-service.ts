@@ -108,6 +108,7 @@ export class UsersService {
   }
 
   async getUserToMe(userId: string) {
+    console.log('userId: ', userId);
     const user = await this.usersRepository.getUserById(userId);
     return new UserInfoToMe(
       userId,

@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   HttpCode,
-  Ip,
   Post,
   Req,
   Request,
@@ -26,7 +25,9 @@ import { CreateUserInputModel } from '../../users/users-models';
 import { BearerAuthGuard } from '../../../security/auth-guard';
 import { CreateUserCommand } from '../../users/application/use-cases/create-user-use-case';
 import { CommandBus } from '@nestjs/cqrs';
+import { ConnectGuard } from '../../../security/connect-guard';
 
+@UseGuards(ConnectGuard)
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -43,19 +44,9 @@ export class AuthController {
   async passwordRecovery(
     @Body() dto: EmailInputModel,
     @Req() req: Re,
-    @Ip() ip,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = await this.authService.getUserIdFromRefreshToken(
-      req.cookies.refreshToken,
-    );
-    const connection = await this.connectService.createConnectData(
-      ip,
-      req.originalUrl,
-      req.headers['user-agent'] || 'hacker',
-      userId,
-    );
-    if (!connection) {
+    if (req.connect.count > 5) {
       res.sendStatus(429);
       return;
     }
@@ -66,21 +57,11 @@ export class AuthController {
   @Post('/new-password')
   @HttpCode(204)
   async createNewPassword(
-    @Ip() ip,
     @Body() body: NewPasswordInputModel,
     @Request() req,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = await this.authService.getUserIdFromRefreshToken(
-      req.cookies.refreshToken,
-    );
-    const connection = await this.connectService.createConnectData(
-      ip,
-      req.originalUrl,
-      req.headers['user-agent'] || 'hacker',
-      userId,
-    );
-    if (!connection) {
+    if (req.connect.count > 5) {
       res.sendStatus(429);
       return;
     }
@@ -95,30 +76,24 @@ export class AuthController {
   @Post('/login')
   @HttpCode(204)
   async login(
-    @Ip() ip,
     @Body() dto: LogInInputModel,
     @Req() req,
     @Request() request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const user = await this.usersService.checkCredentials(dto);
-    const connection = await this.connectService.createConnectData(
-      ip,
-      request.originalUrl,
-      request.headers['user-agent'] || 'hacker',
-      user?._id.toString() || null,
-    );
-    if (!connection) {
+    if (req.connect.count > 5) {
       res.sendStatus(429);
       return;
     }
+
+    const user = await this.usersService.checkCredentials(dto);
     if (user) {
       const accessToken = await this.authService.createAccessToken(
         user._id.toString(),
       );
       const refreshToken = await this.authService.createRefreshToken(
         user._id.toString(),
-        connection.deviceId,
+        req.connect.deviceId,
       );
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
@@ -133,69 +108,43 @@ export class AuthController {
 
   @Post('/refresh-token')
   async createNewTokens(
-    @Ip() ip,
     @Request() req,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = await this.authService.getUserIdFromRefreshToken(
-      req.cookies.refreshToken,
-    );
-    const connection = await this.connectService.createConnectData(
-      ip,
-      req.originalUrl,
-      req.headers['user-agent'] || 'hacker',
-      userId,
-    );
-    if (!userId) {
+    if (!req.connect.userId) {
       res.sendStatus(401);
       return;
     }
-    if (!connection) {
+    if (req.connect.count > 5) {
       res.sendStatus(429);
       return;
     }
 
-    const token = await this.authService.createAccessToken(userId);
-    const deviceId = await this.authService.getDeviceIdRefreshToken(
-      req.cookies.refreshToken,
-    );
+    const token = await this.authService.createAccessToken(req.connect.userId);
     const refreshToken = await this.authService.createRefreshToken(
-      userId,
-      deviceId,
+      req.connect.userId,
+      req.connect.deviceId,
     );
-    await this.usersService.updateToken(token, userId);
+    await this.usersService.updateToken(token, req.connect.userId);
     await this.usersRepository.updateBlackList(req.cookies.refreshToken);
-    await this.connectRepository.updateConnectDate(deviceId);
+    await this.connectRepository.updateConnectDate(req.connect.deviceId);
     res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
     res.status(200).send({ accessToken: token });
   }
 
   @Post('/registration-confirmation')
   async registrationConfirmation(
-    @Ip() ip,
     @Body() dto: CodeInputModel,
     @Request() req,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = await this.authService.getUserIdFromRefreshToken(
-      req.cookies.refreshToken,
-    );
-    const connection = await this.connectService.createConnectData(
-      ip,
-      req.originalUrl,
-      req.headers['user-agent'] || 'hacker',
-      userId,
-    );
-    if (!connection) {
+    if (req.connect.count > 5) {
       res.sendStatus(429);
       return;
     }
-    const deviceId = await this.authService.getDeviceIdRefreshToken(
-      req.cookies.refreshToken,
-    );
     const confirmation = await this.usersService.checkConfirmationCode(
       dto.code,
-      deviceId,
+      req.connect.deviceId,
     );
     if (confirmation === true) {
       res.sendStatus(204);
@@ -209,26 +158,16 @@ export class AuthController {
   @Post('/registration')
   @HttpCode(204)
   async registration(
-    @Ip() ip,
     @Body() dto: CreateUserInputModel,
     @Request() req,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = await this.authService.getUserIdFromRefreshToken(
-      req.cookies.refreshToken,
-    );
-    const connection = await this.connectService.createConnectData(
-      ip,
-      req.originalUrl,
-      req.headers['user-agent'] || 'hacker',
-      userId,
-    );
-    if (!connection) {
+    if (req.connect.count > 5) {
       res.sendStatus(429);
       return;
     }
     const createUser = await this.commandBus.execute(
-      new CreateUserCommand(dto, 'deviceID'),
+      new CreateUserCommand(dto, req.connect.deviceId),
     );
     if (!createUser) {
       res.status(400).send({
@@ -242,28 +181,18 @@ export class AuthController {
   @Post('/registration-email-resending')
   @HttpCode(204)
   async emailResending(
-    @Ip() ip,
     @Body() dto: EmailInputModel,
     @Request() req,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = await this.authService.getUserIdFromRefreshToken(
-      req.cookies.refreshToken,
-    );
-    const connection = await this.connectService.createConnectData(
-      ip,
-      req.originalUrl,
-      req.headers['user-agent'] || 'hacker',
-      userId,
-    );
-    if (!connection) {
+    if (req.connect.count > 5) {
       res.sendStatus(429);
       return;
     }
 
     const user = await this.usersService.checkEmail(
       dto.email,
-      connection.deviceId,
+      req.connect.deviceId,
     );
     if (user !== true) {
       res.status(400).send(user);
@@ -275,22 +204,16 @@ export class AuthController {
   @Post('/logout')
   @HttpCode(204)
   async logout(@Request() req, @Res({ passthrough: true }) res: Response) {
-    const userId = await this.authService.getUserIdFromRefreshToken(
-      req.cookies.refreshToken,
-    );
-    const deviceId = await this.authService.getDeviceIdRefreshToken(
-      req.cookies.refreshToken,
-    );
-    if (!userId) {
+    if (!req.connect.userId) {
       res.sendStatus(401);
       return;
     }
-    const user = await this.usersRepository.getUserById(userId);
+    const user = await this.usersRepository.getUserById(req.connect.userId);
     if (user === null) {
       res.sendStatus(401);
       return;
     }
-    await this.connectRepository.deleteByDeviceId(deviceId);
+    await this.connectRepository.deleteByDeviceId(req.connect.deviceId);
     await this.usersRepository.updateBlackList(req.cookies.refreshToken);
     return true;
   }
@@ -299,10 +222,7 @@ export class AuthController {
   @Get('/me')
   @HttpCode(204)
   async getMyInfo(@Request() req, @Res({ passthrough: true }) res: Response) {
-    const userId = await this.authService.getUserIdFromRefreshToken(
-      req.cookies.refreshToken,
-    );
-    const user = await this.usersService.getUserToMe(userId);
+    const user = await this.usersService.getUserToMe(req.connect.userId);
     if (user === null) {
       res.sendStatus(401);
       return;

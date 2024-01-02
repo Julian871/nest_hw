@@ -40,7 +40,15 @@ export class ConnectGuard implements CanActivate {
       deviceId,
     );
     await this.connectRepository.createConnectionInfo(newConnection);
-    req.connect = { userId, deviceId: newConnection.deviceId };
+    const countConnection = await this.connectRepository.countConnection(
+      IP,
+      URL,
+    );
+    req.connect = {
+      userId,
+      deviceId: newConnection.deviceId,
+      count: countConnection,
+    };
     return true;
   }
 }

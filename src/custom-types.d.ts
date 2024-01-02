@@ -3,6 +3,7 @@ declare namespace Express {
     connect: {
       userId: string | null;
       deviceId: string;
+      count: number;
     };
   }
 }

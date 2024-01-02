@@ -1,17 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { CommentsRepository } from '../infrastructure/comments-repository';
 import { LikesCommentsService } from '../../likes/likes-comment-service';
-import { AuthService } from '../../../security/auth-service';
 
 @Injectable()
 export class CommentsService {
   constructor(
     private readonly commentsRepository: CommentsRepository,
     private readonly likesCommentService: LikesCommentsService,
-    private readonly authService: AuthService,
   ) {}
 
-  async getCommentById(commentId: string, userId: string) {
+  async getCommentById(commentId: string, userId: string | null) {
     const commentInfo = await this.commentsRepository.getCommentById(commentId);
     if (!commentInfo) return false;
 
@@ -34,8 +32,7 @@ export class CommentsService {
     };
   }
 
-  async checkOwner(bearerToken: string, commentId: string) {
-    const userId = await this.authService.getUserIdFromAccessToken(bearerToken);
+  async checkOwner(userId: string | null, commentId: string) {
     const comment = await this.commentsRepository.getCommentById(commentId);
     if (!comment) return null;
     return userId === comment!.commentatorInfo.userId;

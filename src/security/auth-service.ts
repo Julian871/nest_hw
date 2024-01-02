@@ -31,7 +31,6 @@ export class AuthService {
       });
       return result.userId.toString();
     } catch (error) {
-      console.log(error);
       return null;
     }
   }
@@ -43,7 +42,6 @@ export class AuthService {
       });
       return result.userId.toString();
     } catch (error) {
-      console.log(error);
       return null;
     }
   }
@@ -55,7 +53,6 @@ export class AuthService {
       });
       return result.deviceId;
     } catch (error) {
-      console.log(error);
       return null;
     }
   }

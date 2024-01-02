@@ -19,7 +19,9 @@ import { AuthService } from '../../../security/auth-service';
 import { CommentsRepository } from '../infrastructure/comments-repository';
 import { LikesCommentsService } from '../../likes/likes-comment-service';
 import { CreateCommentInputModel } from '../comments-model';
+import { ConnectGuard } from '../../../security/connect-guard';
 
+@UseGuards(ConnectGuard)
 @Controller('comments')
 export class CommentsController {
   constructor(
@@ -34,16 +36,9 @@ export class CommentsController {
     @Param('id') commentId: string,
     @Req() req: Re,
   ) {
-    const userId =
-      (await this.authService.getUserIdFromAccessToken(
-        req.headers.authorization!,
-      )) ??
-      (await this.authService.getUserIdFromRefreshToken(
-        req.cookies.refreshToken,
-      ));
     const comment = await this.commentsService.getCommentById(
       commentId,
-      userId,
+      req.connect.userId,
     );
     if (!comment) {
       res.status(HttpStatus.NOT_FOUND);
@@ -59,9 +54,6 @@ export class CommentsController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    const userId = await this.authService.getUserIdFromAccessToken(
-      req.headers.authorization!,
-    );
     const checkComment =
       await this.commentsRepository.getCommentById(commentId);
     if (!checkComment) {
@@ -71,7 +63,7 @@ export class CommentsController {
     await this.likesCommentService.updateLikeStatus(
       commentId,
       dto.likeStatus,
-      userId,
+      req.connect.userId,
     );
     return true;
   }
@@ -86,7 +78,7 @@ export class CommentsController {
     @Req() req: Re,
   ) {
     const checkOwner = await this.commentsService.checkOwner(
-      req.headers.authorization!,
+      req.connect.userId,
       commentId,
     );
     if (checkOwner === null) {
@@ -109,7 +101,7 @@ export class CommentsController {
     @Req() req: Re,
   ) {
     const checkOwner = await this.commentsService.checkOwner(
-      req.headers.authorization!,
+      req.connect.userId,
       commentId,
     );
     if (checkOwner === null) {

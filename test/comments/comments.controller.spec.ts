@@ -18,6 +18,7 @@ import {
   correctUser2,
   expireToken,
 } from '../users/users-input-model';
+import cookieParser from 'cookie-parser';
 
 describe('Comments testing', () => {
   let app: INestApplication;
@@ -51,6 +52,7 @@ describe('Comments testing', () => {
         },
       }),
     );
+    app.use(cookieParser());
     app.useGlobalFilters(new HttpExceptionFilter());
     useContainer(app.select(AppModule), { fallbackOnErrors: true });
 

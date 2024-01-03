@@ -20,6 +20,7 @@ import {
   correctUser3,
   expireToken,
 } from '../users/users-input-model';
+import cookieParser from 'cookie-parser';
 
 describe('Posts testing', () => {
   let app: INestApplication;
@@ -55,7 +56,7 @@ describe('Posts testing', () => {
     );
     app.useGlobalFilters(new HttpExceptionFilter());
     useContainer(app.select(AppModule), { fallbackOnErrors: true });
-
+    app.use(cookieParser());
     await app.init();
 
     agent = supertest.agent(app.getHttpServer());

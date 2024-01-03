@@ -20,6 +20,7 @@ import {
   correctPost2,
   incorrectPost1,
 } from '../posts/posts-input-model';
+import cookieParser from 'cookie-parser';
 
 describe('Blogs testing', () => {
   let app: INestApplication;
@@ -54,6 +55,7 @@ describe('Blogs testing', () => {
       }),
     );
     app.useGlobalFilters(new HttpExceptionFilter());
+    app.use(cookieParser());
 
     await app.init();
 

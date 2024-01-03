@@ -16,6 +16,7 @@ import {
   expireToken,
   incorrectUser1,
 } from '../users/users-input-model';
+import cookieParser from 'cookie-parser';
 
 describe('Auth testing', () => {
   let app: INestApplication;
@@ -50,6 +51,7 @@ describe('Auth testing', () => {
       }),
     );
     app.useGlobalFilters(new HttpExceptionFilter());
+    app.use(cookieParser());
     useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
     await app.init();

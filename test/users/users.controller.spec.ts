@@ -14,6 +14,7 @@ import {
   correctUser2,
   incorrectUser1,
 } from './users-input-model';
+import cookieParser from 'cookie-parser';
 
 describe('Users testing', () => {
   let app: INestApplication;
@@ -48,7 +49,7 @@ describe('Users testing', () => {
       }),
     );
     app.useGlobalFilters(new HttpExceptionFilter());
-
+    app.use(cookieParser());
     await app.init();
 
     agent = supertest.agent(app.getHttpServer());

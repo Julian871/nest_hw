@@ -18,12 +18,12 @@ import { CreateUserInputModel } from '../users-models';
 import { BasicAuthGuard } from '../../../security/auth-guard';
 import { ObjectIdPipe } from '../../../pipes/objectID.pipe';
 import { CreateUserCommand } from '../application/use-cases/create-user-use-case';
-import { ConnectGuard } from '../../../security/connect-guard';
 import { GetUserCommand } from '../application/use-cases/get-users-use-case';
 import { DeleteUserCommand } from '../application/use-cases/delete-user-use-case';
 import { CommandBus } from '@nestjs/cqrs';
+import { InfoConnectGuard } from '../../../security/infoConnect-guard';
 
-@UseGuards(BasicAuthGuard, ConnectGuard)
+@UseGuards(BasicAuthGuard, InfoConnectGuard)
 @Controller('users')
 export class UsersController {
   constructor(private commandBus: CommandBus) {}
@@ -36,7 +36,7 @@ export class UsersController {
     @Req() req: Re,
   ) {
     const createUser = await this.commandBus.execute(
-      new CreateUserCommand(dto, req.connect.deviceId),
+      new CreateUserCommand(dto, req.infoConnect.deviceId),
     );
     if (!createUser) {
       res.status(400).send({

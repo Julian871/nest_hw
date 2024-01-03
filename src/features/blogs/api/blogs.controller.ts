@@ -29,8 +29,9 @@ import { GetBlogByIdCommand } from '../application/use-cases/get-blog-by-id-use-
 import { GetPostsToBlogCommand } from '../application/use-cases/get-posts-to-blog-use-case';
 import { UpdateBlogCommand } from '../application/use-cases/update-blog-use-case';
 import { DeleteBLogCommand } from '../application/use-cases/delete-blog-use-case';
+import { InfoConnectGuard } from '../../../security/infoConnect-guard';
 
-@UseGuards(ConnectGuard)
+@UseGuards(InfoConnectGuard)
 @Controller('blogs')
 export class BlogsController {
   constructor(private commandBus: CommandBus) {}
@@ -80,7 +81,7 @@ export class BlogsController {
     @Req() req: Re,
   ) {
     const postsList = await this.commandBus.execute(
-      new GetPostsToBlogCommand(query, blogId, req.connect.userId),
+      new GetPostsToBlogCommand(query, blogId, req.infoConnect.userId),
     );
     if (!postsList) {
       res.status(HttpStatus.NOT_FOUND);

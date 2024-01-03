@@ -15,14 +15,11 @@ import {
 } from '@nestjs/common';
 import { Request as Re, Response } from 'express';
 import { PostsDefaultQuery } from '../default-query';
-import { PostsService } from '../application/posts-service';
 import { BasicAuthGuard, BearerAuthGuard } from '../../../security/auth-guard';
 import { LikeStatusInputModel } from '../../likes/likes-models';
-import { LikesPostService } from '../../likes/likes-post-service';
 import { PostsRepository } from '../infrastructure/posts-repository';
 import { CreateCommentInputModel } from '../../comments/comments-model';
 import { CreatePostInputModel } from '../posts-models';
-import { ConnectGuard } from '../../../security/connect-guard';
 import { ObjectIdPipe } from '../../../pipes/objectID.pipe';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreatePostCommand } from '../application/use-cases/create-post-use-case';
@@ -33,13 +30,12 @@ import { DeletePostCommand } from '../application/use-cases/delete-post-use-case
 import { CreatePostCommentCommand } from '../application/use-cases/create-post-comment-use-case';
 import { GetAllPostCommentCommand } from '../application/use-cases/get-all-post-comments-use-case';
 import { UpdatePostLikeStatusCommand } from '../../likes/use-cases/update-post-like-status-use-case';
+import { InfoConnectGuard } from '../../../security/infoConnect-guard';
 
-@UseGuards(ConnectGuard)
+@UseGuards(InfoConnectGuard)
 @Controller('posts')
 export class PostsController {
   constructor(
-    private readonly postsService: PostsService,
-    private readonly likesService: LikesPostService,
     private readonly postsRepository: PostsRepository,
     private commandBus: CommandBus,
   ) {}
@@ -59,7 +55,7 @@ export class PostsController {
     @Req() req: Re,
   ) {
     const comment = await this.commandBus.execute(
-      new CreatePostCommentCommand(postId, dto.content, req.connect.userId),
+      new CreatePostCommentCommand(postId, dto.content, req.infoConnect.userId),
     );
     if (!comment) {
       res.sendStatus(404);
@@ -71,7 +67,7 @@ export class PostsController {
   @Get()
   async getPosts(@Query() query: PostsDefaultQuery, @Req() req: Re) {
     return await this.commandBus.execute(
-      new GetAllPostsCommand(query, req.connect.userId),
+      new GetAllPostsCommand(query, req.infoConnect.userId),
     );
   }
 
@@ -82,7 +78,7 @@ export class PostsController {
     @Req() req: Re,
   ) {
     const post = await this.commandBus.execute(
-      new GetPostByIdCommand(postId, req.connect.userId),
+      new GetPostByIdCommand(postId, req.infoConnect.userId),
     );
     if (!post) {
       res.status(HttpStatus.NOT_FOUND);
@@ -136,7 +132,7 @@ export class PostsController {
       new UpdatePostLikeStatusCommand(
         postId,
         dto.likeStatus,
-        req.connect.userId,
+        req.infoConnect.userId,
       ),
     );
     return true;

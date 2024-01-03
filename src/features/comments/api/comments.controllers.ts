@@ -17,13 +17,13 @@ import { BearerAuthGuard } from '../../../security/auth-guard';
 import { LikeStatusInputModel } from '../../likes/likes-models';
 import { CommentsRepository } from '../infrastructure/comments-repository';
 import { CreateCommentInputModel } from '../comments-model';
-import { ConnectGuard } from '../../../security/connect-guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { GetCommentCommand } from '../application/use-cases/get-comment-use-case';
 import { UpdateCommentCommand } from '../application/use-cases/update-comment-use-case';
 import { UpdateCommentLikeStatusCommand } from '../../likes/use-cases/update-comment-like-status-use-case';
+import { InfoConnectGuard } from '../../../security/infoConnect-guard';
 
-@UseGuards(ConnectGuard)
+@UseGuards(InfoConnectGuard)
 @Controller('comments')
 export class CommentsController {
   constructor(
@@ -38,7 +38,7 @@ export class CommentsController {
     @Req() req: Re,
   ) {
     const comment = await this.commandBus.execute(
-      new GetCommentCommand(commentId, req.connect.userId),
+      new GetCommentCommand(commentId, req.infoConnect.userId),
     );
     if (!comment) {
       res.status(HttpStatus.NOT_FOUND);
@@ -64,7 +64,7 @@ export class CommentsController {
       new UpdateCommentLikeStatusCommand(
         commentId,
         dto.likeStatus,
-        req.connect.userId,
+        req.infoConnect.userId,
       ),
     );
     return true;
@@ -80,7 +80,7 @@ export class CommentsController {
     @Req() req: Re,
   ) {
     const checkOwner = await this.commentsService.checkOwner(
-      req.connect.userId,
+      req.infoConnect.userId,
       commentId,
     );
     if (checkOwner === null) {
@@ -105,7 +105,7 @@ export class CommentsController {
     @Req() req: Re,
   ) {
     const checkOwner = await this.commentsService.checkOwner(
-      req.connect.userId,
+      req.infoConnect.userId,
       commentId,
     );
     if (checkOwner === null) {

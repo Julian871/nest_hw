@@ -5,5 +5,9 @@ declare namespace Express {
       deviceId: string;
       count: number;
     };
+    infoConnect: {
+      userId: string | null;
+      deviceId: string;
+    };
   }
 }

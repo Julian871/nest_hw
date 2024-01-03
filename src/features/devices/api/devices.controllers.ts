@@ -46,7 +46,7 @@ export class DevicesController {
     @Res({ passthrough: true }) res: Response,
   ) {
     if (!req.infoConnect.userId) {
-      res.sendStatus(401);
+      res.status(401).send('no userId');
       return;
     }
     await this.connectService.deleteUserSession(req.cookies.refreshToken);

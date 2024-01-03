@@ -219,7 +219,7 @@ export class AuthController {
       return;
     }
     await this.connectRepository.deleteByDeviceId(req.infoConnect.deviceId);
-    //await this.usersRepository.updateBlackList(req.cookies.refreshToken);
+    await this.usersRepository.updateBlackList(req.cookies.refreshToken);
     return true;
   }
 

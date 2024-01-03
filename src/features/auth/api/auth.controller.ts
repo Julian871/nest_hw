@@ -25,8 +25,9 @@ import { CreateUserCommand } from '../../users/application/use-cases/create-user
 import { CommandBus } from '@nestjs/cqrs';
 import { ConnectGuard } from '../../../security/connect-guard';
 import { BlackListGuard } from '../../../security/black-list.guard';
+import { InfoConnectGuard } from '../../../security/infoConnect-guard';
 
-@UseGuards(ConnectGuard, BlackListGuard)
+@UseGuards(InfoConnectGuard, BlackListGuard)
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -37,6 +38,7 @@ export class AuthController {
     private commandBus: CommandBus,
   ) {}
 
+  @UseGuards(ConnectGuard)
   @Post('/password-recovery')
   @HttpCode(204)
   async passwordRecovery(
@@ -52,6 +54,7 @@ export class AuthController {
     return true;
   }
 
+  @UseGuards(ConnectGuard)
   @Post('/new-password')
   @HttpCode(204)
   async createNewPassword(
@@ -71,6 +74,7 @@ export class AuthController {
     return true;
   }
 
+  @UseGuards(ConnectGuard)
   @Post('/login')
   @HttpCode(204)
   async login(
@@ -109,27 +113,26 @@ export class AuthController {
     @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
-    if (!req.connect.userId) {
+    if (!req.infoConnect.userId) {
       res.sendStatus(401);
       return;
     }
-    if (req.connect.count > 5) {
-      res.sendStatus(429);
-      return;
-    }
 
-    const token = await this.authService.createAccessToken(req.connect.userId);
-    const refreshToken = await this.authService.createRefreshToken(
-      req.connect.userId,
-      req.connect.deviceId,
+    const token = await this.authService.createAccessToken(
+      req.infoConnect.userId,
     );
-    await this.usersService.updateToken(token, req.connect.userId);
+    const refreshToken = await this.authService.createRefreshToken(
+      req.infoConnect.userId,
+      req.infoConnect.deviceId,
+    );
+    await this.usersService.updateToken(token, req.infoConnect.userId);
     await this.usersRepository.updateBlackList(req.cookies.refreshToken);
-    await this.connectRepository.updateConnectDate(req.connect.deviceId);
+    await this.connectRepository.updateConnectDate(req.infoConnect.deviceId);
     res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
     res.status(200).send({ accessToken: token });
   }
 
+  @UseGuards(ConnectGuard)
   @Post('/registration-confirmation')
   async registrationConfirmation(
     @Body() dto: CodeInputModel,
@@ -153,6 +156,7 @@ export class AuthController {
     }
   }
 
+  @UseGuards(ConnectGuard)
   @Post('/registration')
   @HttpCode(204)
   async registration(
@@ -176,6 +180,7 @@ export class AuthController {
     res.status(204);
   }
 
+  @UseGuards(ConnectGuard)
   @Post('/registration-email-resending')
   @HttpCode(204)
   async emailResending(
@@ -202,16 +207,16 @@ export class AuthController {
   @Post('/logout')
   @HttpCode(204)
   async logout(@Req() req: Re, @Res({ passthrough: true }) res: Response) {
-    if (!req.connect.userId) {
+    if (!req.infoConnect.userId) {
       res.sendStatus(401);
       return;
     }
-    const user = await this.usersRepository.getUserById(req.connect.userId);
+    const user = await this.usersRepository.getUserById(req.infoConnect.userId);
     if (user === null) {
       res.sendStatus(401);
       return;
     }
-    await this.connectRepository.deleteByDeviceId(req.connect.deviceId);
+    await this.connectRepository.deleteByDeviceId(req.infoConnect.deviceId);
     await this.usersRepository.updateBlackList(req.cookies.refreshToken);
     return true;
   }
@@ -220,7 +225,7 @@ export class AuthController {
   @Get('/me')
   @HttpCode(204)
   async getMyInfo(@Req() req: Re, @Res({ passthrough: true }) res: Response) {
-    const user = await this.usersService.getUserToMe(req.connect.userId);
+    const user = await this.usersService.getUserToMe(req.infoConnect.userId);
     if (user === null) {
       res.sendStatus(401);
       return;

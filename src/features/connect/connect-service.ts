@@ -46,7 +46,7 @@ export class ConnectService {
     const connectInfo = await this.connectRepository.getDeviceList(userId);
     return connectInfo.map((p) => ({
       ip: p.IP,
-      title: p.deviceName,
+      title: p.deviceName + '/' + p.URL,
       lastActiveDate: new Date(p.lastActiveDate),
       deviceId: p.deviceId,
     }));

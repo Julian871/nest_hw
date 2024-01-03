@@ -5,7 +5,6 @@ import {
   HttpCode,
   Post,
   Req,
-  Request,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -18,7 +17,6 @@ import {
 } from '../auth-model';
 import { Response, Request as Re } from 'express';
 import { AuthService } from '../../../security/auth-service';
-import { ConnectService } from '../../connect/connect-service';
 import { UsersRepository } from '../../users/infrastructure/users-repository';
 import { ConnectRepository } from '../../connect/connect-repository';
 import { CreateUserInputModel } from '../../users/users-models';
@@ -34,7 +32,6 @@ export class AuthController {
   constructor(
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
-    private readonly connectService: ConnectService,
     private readonly connectRepository: ConnectRepository,
     private readonly usersRepository: UsersRepository,
     private commandBus: CommandBus,
@@ -211,7 +208,6 @@ export class AuthController {
     }
     const user = await this.usersRepository.getUserById(req.connect.userId);
     if (user === null) {
-      console.log('point 2');
       res.sendStatus(401);
       return;
     }

@@ -100,9 +100,9 @@ export class AuthController {
         secure: true,
       });
       res.status(200).send({ accessToken: accessToken });
+      await this.connectRepository.updateUserId(user.id, req.connect.deviceId);
       return;
     } else {
-      console.log('point 11');
       res.sendStatus(401);
     }
   }

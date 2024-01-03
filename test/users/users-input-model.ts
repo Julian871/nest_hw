@@ -31,6 +31,17 @@ export const correctLoginUser3 = {
   password: 'newPassword',
 };
 
+export const correctUser4 = {
+  login: 'newLogin',
+  password: 'newPassword',
+  email: 'new@mail.ru',
+};
+
+export const correctLoginUser4 = {
+  loginOrEmail: 'newLogin',
+  password: 'newPassword',
+};
+
 export const incorrectUser1 = {
   login: '  ',
   password: 'new34',
@@ -39,3 +50,6 @@ export const incorrectUser1 = {
 
 export const expireToken =
   'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NTkzYjFiZTczMDVjNmFkNjc2YmRlZTYiLCJpYXQiOjE3MDQxNzgzNDAsImV4cCI6MTcwNDE3ODM1MH0.rViTZOSrdpL9gxVFUd8MdrcGc4SQId6yI_0RruABeQE';
+
+export const expireRefreshToken =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NTkzYjFiZTczMDVjNmFkNjc2YmRlZTYiLCJpYXQiOjE3MDQxNzgzNDAsImV4cCI6MTcwNDE3ODM1MH0.rViTZOSrdpL9gxVFUd8MdrcGc4SQId6yI_0RruABeQE';

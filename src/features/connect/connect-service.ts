@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { ConnectRepository } from './connect-repository';
 import { ConnectCreator } from './connect-input';
 import { AuthService } from '../../security/auth-service';
+import { UsersRepository } from '../users/infrastructure/users-repository';
 
 @Injectable()
 export class ConnectService {
   constructor(
     private readonly connectRepository: ConnectRepository,
     private readonly authService: AuthService,
+    private readonly usersRepository: UsersRepository,
   ) {}
   async createConnectData(
     IP: string,
@@ -58,6 +60,7 @@ export class ConnectService {
       return null;
     }
     const tokenUserId = await this.authService.getUserIdFromRefreshToken(token);
+    await this.usersRepository.updateBlackList(token);
 
     if (connection.userId === tokenUserId) {
       await this.connectRepository.deleteByDeviceId(deviceId);
@@ -70,6 +73,7 @@ export class ConnectService {
   async deleteUserSession(token: string) {
     const userId = await this.authService.getUserIdFromRefreshToken(token);
     const deviceId = await this.authService.getDeviceIdRefreshToken(token);
+    await this.usersRepository.updateBlackList(token);
     await this.connectRepository.deleteUserSession(userId, deviceId);
   }
 }

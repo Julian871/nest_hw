@@ -6,11 +6,14 @@ import {
   Param,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from '../../../security/auth-service';
 import { Request as Re, Response } from 'express';
 import { ConnectService } from '../../connect/connect-service';
+import { BlackListGuard } from '../../../security/black-list.guard';
 
+@UseGuards(BlackListGuard)
 @Controller('security/devices')
 export class DevicesController {
   constructor(

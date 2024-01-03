@@ -27,7 +27,7 @@ import { ConnectGuard } from '../../../security/connect-guard';
 import { BlackListGuard } from '../../../security/black-list.guard';
 import { InfoConnectGuard } from '../../../security/infoConnect-guard';
 
-@UseGuards(InfoConnectGuard, BlackListGuard)
+@UseGuards(InfoConnectGuard)
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -38,7 +38,7 @@ export class AuthController {
     private commandBus: CommandBus,
   ) {}
 
-  @UseGuards(ConnectGuard)
+  @UseGuards(ConnectGuard, BlackListGuard)
   @Post('/password-recovery')
   @HttpCode(204)
   async passwordRecovery(
@@ -54,7 +54,7 @@ export class AuthController {
     return true;
   }
 
-  @UseGuards(ConnectGuard)
+  @UseGuards(ConnectGuard, BlackListGuard)
   @Post('/new-password')
   @HttpCode(204)
   async createNewPassword(
@@ -108,6 +108,7 @@ export class AuthController {
     }
   }
 
+  @UseGuards(BlackListGuard)
   @Post('/refresh-token')
   async createNewTokens(
     @Req() req: Re,
@@ -132,7 +133,7 @@ export class AuthController {
     res.status(200).send({ accessToken: token });
   }
 
-  @UseGuards(ConnectGuard)
+  @UseGuards(ConnectGuard, BlackListGuard)
   @Post('/registration-confirmation')
   async registrationConfirmation(
     @Body() dto: CodeInputModel,
@@ -204,6 +205,7 @@ export class AuthController {
     return true;
   }
 
+  @UseGuards(BlackListGuard)
   @Post('/logout')
   @HttpCode(204)
   async logout(@Req() req: Re, @Res({ passthrough: true }) res: Response) {
@@ -221,7 +223,7 @@ export class AuthController {
     return true;
   }
 
-  @UseGuards(BearerAuthGuard)
+  @UseGuards(BearerAuthGuard, BlackListGuard)
   @Get('/me')
   @HttpCode(204)
   async getMyInfo(@Req() req: Re, @Res({ passthrough: true }) res: Response) {

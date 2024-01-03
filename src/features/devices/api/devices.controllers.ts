@@ -12,7 +12,9 @@ import { AuthService } from '../../../security/auth-service';
 import { Request as Re, Response } from 'express';
 import { ConnectService } from '../../connect/connect-service';
 import { BlackListGuard } from '../../../security/black-list.guard';
+import { InfoConnectGuard } from '../../../security/infoConnect-guard';
 
+@UseGuards(InfoConnectGuard)
 @Controller('security/devices')
 export class DevicesController {
   constructor(
@@ -39,7 +41,14 @@ export class DevicesController {
   @UseGuards(BlackListGuard)
   @Delete()
   @HttpCode(204)
-  async deleteAllSessions(@Req() req: Re) {
+  async deleteAllSessions(
+    @Req() req: Re,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    if (!req.infoConnect.userId) {
+      res.sendStatus(401);
+      return;
+    }
     await this.connectService.deleteUserSession(req.cookies.refreshToken);
     return true;
   }

@@ -61,6 +61,10 @@ export class DevicesController {
     @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
+    if (!req.infoConnect.userId) {
+      res.sendStatus(401);
+      return;
+    }
     const checkResult = await this.connectService.checkDeviceId(
       sessionId,
       req.cookies.refreshToken,

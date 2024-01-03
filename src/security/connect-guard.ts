@@ -15,7 +15,7 @@ export class ConnectGuard implements CanActivate {
     const req: Request = context.switchToHttp().getRequest();
     let userId: string | null = null;
     let deviceId: string | null = null;
-    if (req.cookies && req.cookies.refreshToken) {
+    if (req.cookies.refreshToken) {
       userId = await this.authService.getUserIdFromRefreshToken(
         req.cookies.refreshToken,
       );
@@ -24,11 +24,11 @@ export class ConnectGuard implements CanActivate {
       );
     }
     if (req.headers.authorization) {
-      userId = await this.authService.getUserIdFromAccessToken(
+      const userIdFromAccess = await this.authService.getUserIdFromAccessToken(
         req.headers.authorization,
       );
+      if (userIdFromAccess !== null) userId = userIdFromAccess;
     }
-
     const IP = req.ip ?? '';
     const URL = req.method + req.originalUrl;
     const deviceName = req.headers['user-agent'] || 'hacker';

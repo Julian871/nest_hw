@@ -107,11 +107,10 @@ export class UsersService {
     }
   }
 
-  async getUserToMe(userId: string) {
-    console.log('userId: ', userId);
+  async getUserToMe(userId: string | null) {
     const user = await this.usersRepository.getUserById(userId);
     return new UserInfoToMe(
-      userId,
+      userId!,
       user!.accountData.login,
       user!.accountData.email,
     );

@@ -26,8 +26,9 @@ import { BearerAuthGuard } from '../../../security/auth-guard';
 import { CreateUserCommand } from '../../users/application/use-cases/create-user-use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { ConnectGuard } from '../../../security/connect-guard';
+import { BlackListGuard } from '../../../security/black-list.guard';
 
-@UseGuards(ConnectGuard)
+@UseGuards(ConnectGuard, BlackListGuard)
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -58,7 +59,7 @@ export class AuthController {
   @HttpCode(204)
   async createNewPassword(
     @Body() body: NewPasswordInputModel,
-    @Request() req,
+    @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
     if (req.connect.count > 5) {
@@ -77,8 +78,7 @@ export class AuthController {
   @HttpCode(204)
   async login(
     @Body() dto: LogInInputModel,
-    @Req() req,
-    @Request() request,
+    @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
     if (req.connect.count > 5) {
@@ -102,13 +102,14 @@ export class AuthController {
       res.status(200).send({ accessToken: accessToken });
       return;
     } else {
+      console.log('point 11');
       res.sendStatus(401);
     }
   }
 
   @Post('/refresh-token')
   async createNewTokens(
-    @Request() req,
+    @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
     if (!req.connect.userId) {
@@ -135,7 +136,7 @@ export class AuthController {
   @Post('/registration-confirmation')
   async registrationConfirmation(
     @Body() dto: CodeInputModel,
-    @Request() req,
+    @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
     if (req.connect.count > 5) {
@@ -159,7 +160,7 @@ export class AuthController {
   @HttpCode(204)
   async registration(
     @Body() dto: CreateUserInputModel,
-    @Request() req,
+    @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
     if (req.connect.count > 5) {
@@ -182,7 +183,7 @@ export class AuthController {
   @HttpCode(204)
   async emailResending(
     @Body() dto: EmailInputModel,
-    @Request() req,
+    @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
     if (req.connect.count > 5) {
@@ -203,13 +204,14 @@ export class AuthController {
 
   @Post('/logout')
   @HttpCode(204)
-  async logout(@Request() req, @Res({ passthrough: true }) res: Response) {
+  async logout(@Req() req: Re, @Res({ passthrough: true }) res: Response) {
     if (!req.connect.userId) {
       res.sendStatus(401);
       return;
     }
     const user = await this.usersRepository.getUserById(req.connect.userId);
     if (user === null) {
+      console.log('point 2');
       res.sendStatus(401);
       return;
     }
@@ -221,7 +223,7 @@ export class AuthController {
   @UseGuards(BearerAuthGuard)
   @Get('/me')
   @HttpCode(204)
-  async getMyInfo(@Request() req, @Res({ passthrough: true }) res: Response) {
+  async getMyInfo(@Req() req: Re, @Res({ passthrough: true }) res: Response) {
     const user = await this.usersService.getUserToMe(req.connect.userId);
     if (user === null) {
       res.sendStatus(401);

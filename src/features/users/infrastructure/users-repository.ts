@@ -133,20 +133,16 @@ export class UsersRepository {
     });
   }
 
-  async getUserByEmail(email: string) {
-    return this.UsersModel.findOne({ 'accountData.email': email });
-  }
-
-  async getUserByLogin(login: string) {
-    return this.UsersModel.findOne({ 'accountData.login': login });
-  }
-
-  async getUserById(userId: string) {
+  async getUserById(userId: string | null) {
     return this.UsersModel.findOne({ _id: userId });
   }
 
   async updateBlackList(refreshToken: string) {
     await this.BlackListModel.create({ token: refreshToken });
+  }
+
+  async checkToken(token: string) {
+    return this.BlackListModel.findOne({ token });
   }
 
   async getUserByConfirmationCode(code: string) {

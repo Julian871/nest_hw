@@ -35,7 +35,7 @@ export class BearerAuthGuard implements CanActivate {
     const token = request.headers.authorization;
     const userId = await this.authService.getUserIdFromAccessToken(token);
     if (userId) {
-      return true; //req.user = {userId}
+      return true;
     }
     throw new UnauthorizedException();
   }

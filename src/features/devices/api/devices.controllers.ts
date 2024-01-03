@@ -13,7 +13,6 @@ import { Request as Re, Response } from 'express';
 import { ConnectService } from '../../connect/connect-service';
 import { BlackListGuard } from '../../../security/black-list.guard';
 
-@UseGuards(BlackListGuard)
 @Controller('security/devices')
 export class DevicesController {
   constructor(
@@ -37,6 +36,7 @@ export class DevicesController {
     }
   }
 
+  @UseGuards(BlackListGuard)
   @Delete()
   @HttpCode(204)
   async deleteAllSessions(@Req() req: Re) {
@@ -44,6 +44,7 @@ export class DevicesController {
     return true;
   }
 
+  @UseGuards(BlackListGuard)
   @Delete('/:id')
   @HttpCode(204)
   async deleteSessionById(

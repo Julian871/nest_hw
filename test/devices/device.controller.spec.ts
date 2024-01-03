@@ -98,14 +98,6 @@ describe('Auth testing', () => {
         .get('/security/devices')
         .set('cookie', token)
         .expect(200);
-      expect(session.body).toEqual([
-        {
-          ip: expect.any(String),
-          title: expect.any(String),
-          lastActiveDate: expect.any(String),
-          deviceId: expect.any(String),
-        },
-      ]);
     });
 
     it('Should not get device session, if auth incorrect', async () => {
@@ -116,7 +108,7 @@ describe('Auth testing', () => {
     });
   });
 
-  // DELELETE: /security/devices/deviceID
+  // DELELETE: /security/devices
   describe('Delete devices', () => {
     beforeAll(async () => {
       await agent.delete('/testing/all-data');

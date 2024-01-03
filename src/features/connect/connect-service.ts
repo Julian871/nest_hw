@@ -55,7 +55,6 @@ export class ConnectService {
   }
 
   async checkDeviceId(deviceId: string, token: string) {
-    await this.usersRepository.updateBlackList(token);
     const connection = await this.connectRepository.findDeviceId(deviceId);
     if (!connection) {
       return null;
@@ -64,6 +63,7 @@ export class ConnectService {
 
     if (connection.userId === tokenUserId) {
       await this.connectRepository.deleteByDeviceId(deviceId);
+      await this.usersRepository.updateBlackList(token);
       return true;
     } else {
       return false;

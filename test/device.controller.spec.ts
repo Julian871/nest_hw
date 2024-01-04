@@ -131,21 +131,21 @@ describe('Device testing', () => {
 
     it('Should not delete device if auth incorrect', async () => {
       await agent
-        .get('/security/devices')
+        .delete('/security/devices')
         .set('cookie', expireRefreshToken)
         .expect(401);
     });
 
     it('Should delete device', async () => {
       await agent
-        .delete('/security/devices/')
+        .delete('/security/devices')
         .set('cookie', tokenUser2)
         .expect(204);
     });
 
     it('Should return 401, after delete device', async () => {
       await agent
-        .delete('/security/devices/')
+        .delete('/security/devices')
         .set('cookie', tokenUser2)
         .expect(401);
     });

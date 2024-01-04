@@ -57,7 +57,7 @@ export class DevicesController {
   @Delete('/:id')
   @HttpCode(204)
   async deleteSessionById(
-    @Param('id') sessionId: string,
+    @Param('id') deviceId: string,
     @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
@@ -66,7 +66,7 @@ export class DevicesController {
       return;
     }
     const checkResult = await this.connectService.checkDeviceId(
-      sessionId,
+      deviceId,
       req.cookies.refreshToken,
     );
 

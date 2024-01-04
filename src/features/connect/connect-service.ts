@@ -45,7 +45,9 @@ export class ConnectService {
   }
 
   async getDeviceList(userId: string) {
+    console.log('userId from connect service:', userId);
     const connectInfo = await this.connectRepository.getDeviceList(userId);
+    console.log('connectInfo: ', connectInfo);
     return connectInfo.map((p) => ({
       ip: p.IP,
       title: p.deviceName + '/' + p.URL,

@@ -7,9 +7,9 @@ import supertest, { SuperAgentTest } from 'supertest';
 import { Test } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AppModule } from '../../src/app.module';
-import { HttpExceptionFilter } from '../../src/exeption-filter';
-import { correctBlog1, correctBlog2 } from '../blogs/blogs-input-model';
+import { AppModule } from '../src/app.module';
+import { HttpExceptionFilter } from '../src/exeption-filter';
+import { correctBlog1, correctBlog2 } from './input-models/blogs-input-model';
 import { useContainer } from 'class-validator';
 import {
   correctLoginUser1,
@@ -19,7 +19,7 @@ import {
   correctUser2,
   correctUser3,
   expireToken,
-} from '../users/users-input-model';
+} from './input-models/users-input-model';
 import cookieParser from 'cookie-parser';
 
 describe('Posts testing', () => {

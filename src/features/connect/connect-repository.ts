@@ -35,7 +35,8 @@ export class ConnectRepository {
   }
 
   async getDeviceList(userId: string) {
-    return this.ConnectModel.find({ userId: userId }).lean();
+    const session = await this.ConnectModel.find({ userId }).lean();
+    return session;
   }
 
   async findDeviceId(deviceId: string) {

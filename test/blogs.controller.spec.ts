@@ -7,19 +7,19 @@ import supertest, { SuperAgentTest } from 'supertest';
 import { Test } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AppModule } from '../../src/app.module';
-import { HttpExceptionFilter } from '../../src/exeption-filter';
+import { AppModule } from '../src/app.module';
+import { HttpExceptionFilter } from '../src/exeption-filter';
 import {
   correctBlog1,
   correctBlog2,
   correctUpdateBlog1,
   incorrectBlog,
-} from './blogs-input-model';
+} from './input-models/blogs-input-model';
 import {
   correctPost1,
   correctPost2,
   incorrectPost1,
-} from '../posts/posts-input-model';
+} from './input-models/posts-input-model';
 import cookieParser from 'cookie-parser';
 
 describe('Blogs testing', () => {

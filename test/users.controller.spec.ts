@@ -7,13 +7,13 @@ import supertest, { SuperAgentTest } from 'supertest';
 import { Test } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AppModule } from '../../src/app.module';
-import { HttpExceptionFilter } from '../../src/exeption-filter';
+import { AppModule } from '../src/app.module';
+import { HttpExceptionFilter } from '../src/exeption-filter';
 import {
   correctUser1,
   correctUser2,
   incorrectUser1,
-} from './users-input-model';
+} from './input-models/users-input-model';
 import cookieParser from 'cookie-parser';
 
 describe('Users testing', () => {

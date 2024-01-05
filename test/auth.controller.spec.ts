@@ -328,4 +328,34 @@ describe('Auth testing', () => {
       await agent.post('/auth/logout').set('cookie', refreshToken).expect(204);
     });
   });
+
+  // POST: /auth/password-recovery 429
+  describe('429', () => {
+    jest.setTimeout(10000);
+    beforeAll(async () => {
+      await agent.delete('/testing/all-data');
+    });
+
+    it('Should login user, return status 200', async () => {
+      await agent
+        .post('/auth/password-recovery')
+        .send({ email: 'test@mail.ru' });
+      await agent
+        .post('/auth/password-recovery')
+        .send({ email: 'test@mail.ru' });
+      await agent
+        .post('/auth/password-recovery')
+        .send({ email: 'test@mail.ru' });
+      await agent
+        .post('/auth/password-recovery')
+        .send({ email: 'test@mail.ru' });
+      await agent
+        .post('/auth/password-recovery')
+        .send({ email: 'test@mail.ru' });
+      await agent
+        .post('/auth/password-recovery')
+        .send({ email: 'test@mail.ru' })
+        .expect(429);
+    });
+  });
 });

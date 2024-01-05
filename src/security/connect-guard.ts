@@ -4,6 +4,8 @@ import {
   ExecutionContext,
   UnauthorizedException,
   RequestTimeoutException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Request } from 'express';
@@ -30,7 +32,10 @@ export class ConnectGuard implements CanActivate {
       URL,
     );
     if (countConnection > 5) {
-      return false;
+      throw new HttpException(
+        'Too Many Requests',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
     return true;
   }

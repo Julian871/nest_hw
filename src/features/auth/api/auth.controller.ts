@@ -124,8 +124,14 @@ export class AuthController {
       userId,
       deviceId,
     );
+    const tokenLastActiveDate =
+      await this.authService.getLastActiveDateRefreshToken(refreshToken);
     await this.usersService.updateToken(token, userId);
-    await this.connectRepository.updateConnectDate(deviceId);
+    await this.connectRepository.updateConnectDate(
+      deviceId,
+      tokenLastActiveDate,
+    );
+
     res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
     res.status(200).send({ accessToken: token });
   }
@@ -191,6 +197,7 @@ export class AuthController {
     return true;
   }
 
+  @UseGuards(CheckSessionGuard)
   @Post('/logout')
   @HttpCode(204)
   async logout(@Req() req: Re, @Res({ passthrough: true }) res: Response) {
@@ -224,8 +231,8 @@ export class AuthController {
   @Get('/me')
   @HttpCode(204)
   async getMyInfo(@Req() req: Re, @Res({ passthrough: true }) res: Response) {
-    const userId = await this.authService.getUserIdFromRefreshToken(
-      req.cookies.refreshToken,
+    const userId = await this.authService.getUserIdFromAccessToken(
+      req.headers.authorization!,
     );
     const user = await this.usersService.getUserToMe(userId);
     if (user === null) {

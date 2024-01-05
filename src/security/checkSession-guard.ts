@@ -13,6 +13,9 @@ export class CheckSessionGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const req: Request = context.switchToHttp().getRequest();
+    if (!req.cookies.refreshToken) {
+      throw new UnauthorizedException();
+    }
     const checkLastActiveDate = await this.sessionService.activeDate(
       req.cookies.refreshToken,
     );

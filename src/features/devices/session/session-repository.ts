@@ -65,10 +65,10 @@ export class SessionRepository {
     });
   }
 
-  async updateConnectDate(deviceId: string) {
+  async updateConnectDate(deviceId: string, lastActiveDate: Date) {
     await this.SessionModel.updateOne(
       { deviceId: deviceId },
-      { $set: { lastActiveDate: +new Date() } },
+      { $set: { lastActiveDate } },
     );
   }
 }

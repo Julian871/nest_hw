@@ -4,14 +4,14 @@ import { UserInfoToMe } from './users-output';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { LogInInputModel, NewPasswordInputModel } from '../../auth/auth-model';
-import { ConnectRepository } from '../../connect/connect-repository';
+import { SessionRepository } from '../../devices/session/session-repository';
 import { EmailManager } from '../../../email/email-manager';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
-    private readonly connectRepository: ConnectRepository,
+    private readonly connectRepository: SessionRepository,
     private readonly emailManager: EmailManager,
   ) {}
 
@@ -67,12 +67,20 @@ export class UsersService {
     await this.usersRepository.updateToken(token, userId);
   }
 
-  async checkConfirmationCode(code: string, deviceId: string) {
+  async checkConfirmationCode(
+    code: string,
+    deviceId: string,
+    tokenLastActiveDate: Date,
+  ) {
     const user = await this.usersRepository.getUserByConfirmationCode(code);
     if (!user) {
       return { errorsMessages: [{ message: 'Incorrect code', field: 'code' }] };
     } else if (!user.emailConfirmation.isConfirmation) {
-      await this.connectRepository.updateUserId(user._id.toString(), deviceId);
+      await this.connectRepository.updateUserId(
+        user._id.toString(),
+        deviceId,
+        tokenLastActiveDate,
+      );
       await this.emailManager.sendConfirmationLink(
         user.accountData.email,
         user.emailConfirmation.confirmationCode,
@@ -84,7 +92,7 @@ export class UsersService {
     }
   }
 
-  async checkEmail(email: string, deviceId: string) {
+  async checkEmail(email: string, deviceId: string, tokenLastActiveDate: Date) {
     const user = await this.usersRepository.checkUserByEmail(email);
     const newConfirmationCode = uuidv4();
     if (!user) {
@@ -92,7 +100,11 @@ export class UsersService {
         errorsMessages: [{ message: 'Incorrect email', field: 'email' }],
       };
     } else if (!user.emailConfirmation.isConfirmation) {
-      await this.connectRepository.updateUserId(user._id.toString(), deviceId);
+      await this.connectRepository.updateUserId(
+        user._id.toString(),
+        deviceId,
+        tokenLastActiveDate,
+      );
       await this.emailManager.sendConfirmationLink(
         user.accountData.email,
         newConfirmationCode,

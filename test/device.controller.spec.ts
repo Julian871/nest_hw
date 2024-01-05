@@ -72,32 +72,36 @@ describe('Device testing', () => {
     });
 
     let token: any;
+    let login: any;
+    let login2: any;
+    let refreshToken2: any;
 
-    it('Should register and login 2 new user', async () => {
+    it('Should register user and login 2 times', async () => {
       await agent
         .post('/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(201);
-      await agent.post('/auth/login').send(correctLoginUser1).expect(200);
-
-      await agent
-        .post('/users')
-        .auth('admin', 'qwerty')
-        .send(correctUser2)
-        .expect(201);
-      const user2 = await agent
+      login = await agent
         .post('/auth/login')
-        .send(correctLoginUser2)
+        .set('user-agent', 'dev1')
+        .send(correctLoginUser1)
         .expect(200);
-      token = user2.headers['set-cookie'][0];
+      login2 = await agent
+        .post('/auth/login')
+        .set('user-agent', 'dev2')
+        .send(correctLoginUser1)
+        .expect(200);
+      refreshToken2 = login.headers['set-cookie'][0];
     });
 
     it('Should get device session', async () => {
       const session = await agent
         .get('/security/devices')
-        .set('cookie', token)
+        .set('cookie', refreshToken2)
         .expect(200);
+      expect(session.body).toHaveLength(2);
+      console.log({ devices_2: session.body });
     });
 
     it('Should not get device session, if auth incorrect', async () => {
@@ -108,7 +112,7 @@ describe('Device testing', () => {
     });
   });
 
-  // DELELETE: /security/devices
+  // DELETE: /security/devices
   describe('Delete devices', () => {
     beforeAll(async () => {
       await agent.delete('/testing/all-data');
@@ -136,22 +140,22 @@ describe('Device testing', () => {
         .expect(401);
     });
 
-    it('Should delete device', async () => {
+    it('Should delete devices', async () => {
       await agent
         .delete('/security/devices')
         .set('cookie', tokenUser2)
         .expect(204);
     });
 
-    it('Should return 401, after delete device', async () => {
+    it('Should return 204, after delete devices', async () => {
       await agent
         .delete('/security/devices')
         .set('cookie', tokenUser2)
-        .expect(401);
+        .expect(204);
     });
   });
 
-  // DELELETE: /security/devices/deviceID
+  // DELETE: /security/devices/deviceID
   describe('Delete device by id', () => {
     beforeAll(async () => {
       await agent.delete('/testing/all-data');

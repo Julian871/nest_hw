@@ -3,7 +3,8 @@ import { UsersRepository } from './users/infrastructure/users-repository';
 import { BlogsRepository } from './blogs/infrastructure/blogs-repository';
 import { PostsRepository } from './posts/infrastructure/posts-repository';
 import { CommentsRepository } from './comments/infrastructure/comments-repository';
-import { ConnectRepository } from './connect/connect-repository';
+import { SessionRepository } from './devices/session/session-repository';
+import { ConnectionRepository } from './connection/connection-repository';
 
 @Controller('testing')
 export class TestingController {
@@ -12,7 +13,8 @@ export class TestingController {
     private readonly bLogRepository: BlogsRepository,
     private readonly postRepository: PostsRepository,
     private readonly commentsRepository: CommentsRepository,
-    private readonly connectRepository: ConnectRepository,
+    private readonly sessionRepository: SessionRepository,
+    private readonly connectionRepository: ConnectionRepository,
   ) {}
   @Delete('/all-data')
   @HttpCode(204)
@@ -21,6 +23,7 @@ export class TestingController {
     await this.bLogRepository.deleteAllCollection();
     await this.postRepository.deleteAllCollection();
     await this.commentsRepository.deleteAllCollection();
-    await this.connectRepository.deleteAllCollection();
+    await this.sessionRepository.deleteAllCollection();
+    await this.connectionRepository.deleteAllCollection();
   }
 }

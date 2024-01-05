@@ -23,18 +23,20 @@ import { ObjectIdPipe } from '../../../pipes/objectID.pipe';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateBlogCommand } from '../application/use-cases/create-blog-use-case';
 import { CreatePostToBlogCommand } from '../application/use-cases/create-post-to-blog-use-case';
-import { ConnectGuard } from '../../../security/connect-guard';
 import { GetBlogsCommand } from '../application/use-cases/get-blogs-use-case';
 import { GetBlogByIdCommand } from '../application/use-cases/get-blog-by-id-use-case';
 import { GetPostsToBlogCommand } from '../application/use-cases/get-posts-to-blog-use-case';
 import { UpdateBlogCommand } from '../application/use-cases/update-blog-use-case';
 import { DeleteBLogCommand } from '../application/use-cases/delete-blog-use-case';
-import { InfoConnectGuard } from '../../../security/infoConnect-guard';
+import { AuthService } from '../../../security/auth-service';
 
-@UseGuards(InfoConnectGuard)
 @Controller('blogs')
 export class BlogsController {
-  constructor(private commandBus: CommandBus) {}
+  constructor(
+    private commandBus: CommandBus,
+    private authService: AuthService,
+  ) {}
+
   @UseGuards(BasicAuthGuard)
   @Post()
   @HttpCode(201)
@@ -80,8 +82,17 @@ export class BlogsController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
+    let userId: string | null;
+    if (!req.cookies.refreshToken) {
+      userId = null;
+    } else {
+      userId = await this.authService.getUserIdFromRefreshToken(
+        req.cookies.refreshToken,
+      );
+    }
+
     const postsList = await this.commandBus.execute(
-      new GetPostsToBlogCommand(query, blogId, req.infoConnect.userId),
+      new GetPostsToBlogCommand(query, blogId, userId),
     );
     if (!postsList) {
       res.status(HttpStatus.NOT_FOUND);

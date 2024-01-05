@@ -1,54 +1,37 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { AuthService } from './auth-service';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+  RequestTimeoutException,
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
 import { Request } from 'express';
-import { ConnectRepository } from '../features/connect/connect-repository';
-import { ConnectCreator } from '../features/connect/connect-input';
+import { AuthService } from './auth-service';
+import { ConnectionRepository } from '../features/connection/connection-repository';
+import { multerExceptions } from '@nestjs/platform-express/multer/multer/multer.constants';
 
 @Injectable()
 export class ConnectGuard implements CanActivate {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly connectRepository: ConnectRepository,
-  ) {}
+  constructor(private readonly connectionRepository: ConnectionRepository) {}
 
   async canActivate(context: ExecutionContext) {
     const req: Request = context.switchToHttp().getRequest();
-    let userId: string | null = null;
-    let deviceId: string | null = null;
-    if (req.cookies.refreshToken) {
-      userId = await this.authService.getUserIdFromRefreshToken(
-        req.cookies.refreshToken,
-      );
-      deviceId = await this.authService.getDeviceIdRefreshToken(
-        req.cookies.refreshToken,
-      );
-    }
-    if (req.headers.authorization) {
-      const userIdFromAccess = await this.authService.getUserIdFromAccessToken(
-        req.headers.authorization,
-      );
-      if (userIdFromAccess !== null) userId = userIdFromAccess;
-    }
-    const IP = req.ip ?? '';
-    const URL = req.method + req.originalUrl;
-    const deviceName = req.headers['user-agent'] || 'hacker';
-    const newConnection = new ConnectCreator(
-      IP,
+    const URL = req.originalUrl;
+    const IP = req.ip ?? 'hacker';
+    const lastActiveDate = new Date();
+    await this.connectionRepository.createConnectionInfo({
       URL,
-      deviceName,
-      userId,
-      deviceId,
-    );
-    await this.connectRepository.createConnectionInfo(newConnection);
-    const countConnection = await this.connectRepository.countConnection(
+      IP,
+      lastActiveDate,
+    });
+    const countConnection = await this.connectionRepository.countConnection(
       IP,
       URL,
     );
-    req.connect = {
-      userId,
-      deviceId: newConnection.deviceId,
-      count: countConnection,
-    };
+    if (countConnection > 5) {
+      return false;
+    }
     return true;
   }
 }

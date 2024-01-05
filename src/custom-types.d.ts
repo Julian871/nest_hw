@@ -3,11 +3,7 @@ declare namespace Express {
     connect: {
       userId: string | null;
       deviceId: string;
-      count: number;
-    };
-    infoConnect: {
-      userId: string | null;
-      deviceId: string;
+      tokenLastActiveDate: Date;
     };
   }
 }

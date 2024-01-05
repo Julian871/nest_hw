@@ -13,6 +13,7 @@ import { useContainer } from 'class-validator';
 import {
   correctLoginUser1,
   correctUser1,
+  correctUser2,
   expireRefreshToken,
   expireToken,
   incorrectUser1,
@@ -194,56 +195,72 @@ describe('Auth testing', () => {
         .expect(401);
     });
   });
+
+  // POST: /auth/refresh-token with delete devices
   describe('Refresh-token - devices', () => {
     beforeAll(async () => {
       await agent.delete('/testing/all-data');
     });
     let login: any;
-    let refreshToken: any;
+    let login2: any;
+    let refreshToken1: any;
+    let refreshToken2: any;
     let session: any;
+    let session2: any;
 
     it('Should register user, return status 204', async () => {
-      await agent.post('/auth/registration').send(correctUser1).expect(204);
+      await agent
+        .post('/users')
+        .auth('admin', 'qwerty')
+        .send(correctUser1)
+        .expect(201);
       login = await agent
         .post('/auth/login')
+        .set('user-agent', 'device1')
         .send(correctLoginUser1)
         .expect(200);
-      refreshToken = login.headers['set-cookie'][0];
+      refreshToken1 = login.headers['set-cookie'][0];
+      login2 = await agent
+        .post('/auth/login')
+        .set('user-agent', 'device2')
+        .send(correctLoginUser1)
+        .expect(200);
+      refreshToken2 = login2.headers['set-cookie'][0];
     });
 
-    it('Should not refresh token, after delete devices', async () => {
-      login = await agent
-        .post('/auth/login')
-        .send(correctLoginUser1)
-        .expect(200);
-      refreshToken = login.headers['set-cookie'][0];
-      await agent
-        .delete('/security/devices')
-        .set('cookie', refreshToken)
-        .expect(204);
-      await agent
-        .post('/auth/refresh-token')
-        .set('cookie', refreshToken)
-        .expect(401);
-    });
-
-    it('Should not refresh token, after delete devices by id', async () => {
-      login = await agent
-        .post('/auth/login')
-        .send(correctLoginUser1)
-        .expect(200);
-      refreshToken = login.headers['set-cookie'][0];
+    it('RefreshToken after delete device by id', async () => {
       session = await agent
         .get('/security/devices')
-        .set('cookie', refreshToken)
+        .set('cookie', refreshToken2)
         .expect(200);
+      expect(session.body).toHaveLength(2);
+      console.log({ devices_2: session.body });
+
       await agent
-        .delete('/security/devices/' + session.body[0].deviceId)
-        .set('cookie', refreshToken)
+        .delete('/security/devices/' + session.body[1].deviceId)
+        .set('Cookie', refreshToken2)
         .expect(204);
+
+      session2 = await agent
+        .get('/security/devices')
+        .set('cookie', refreshToken1)
+        .expect(200);
+      expect(session2.body).toHaveLength(1);
+      console.log({ device_1: session2.body });
+
       await agent
         .post('/auth/refresh-token')
-        .set('cookie', refreshToken)
+        .set('cookie', refreshToken2)
+        .expect(401);
+
+      await agent
+        .delete('/security/devices/' + session2.body[0].deviceId)
+        .set('Cookie', refreshToken1)
+        .expect(204);
+
+      await agent
+        .post('/auth/refresh-token')
+        .set('cookie', refreshToken1)
         .expect(401);
     });
   });

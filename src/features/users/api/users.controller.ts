@@ -21,12 +21,15 @@ import { CreateUserCommand } from '../application/use-cases/create-user-use-case
 import { GetUserCommand } from '../application/use-cases/get-users-use-case';
 import { DeleteUserCommand } from '../application/use-cases/delete-user-use-case';
 import { CommandBus } from '@nestjs/cqrs';
-import { InfoConnectGuard } from '../../../security/infoConnect-guard';
+import { AuthService } from '../../../security/auth-service';
 
-@UseGuards(BasicAuthGuard, InfoConnectGuard)
+@UseGuards(BasicAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private commandBus: CommandBus) {}
+  constructor(
+    private commandBus: CommandBus,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post()
   @HttpCode(201)
@@ -36,7 +39,7 @@ export class UsersController {
     @Req() req: Re,
   ) {
     const createUser = await this.commandBus.execute(
-      new CreateUserCommand(dto, req.infoConnect.deviceId),
+      new CreateUserCommand(dto),
     );
     if (!createUser) {
       res.status(400).send({

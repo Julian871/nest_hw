@@ -27,9 +27,12 @@ import { CommentsController } from './features/comments/api/comments.controllers
 import { CommentsService } from './features/comments/application/comments-service';
 import { CommentsRepository } from './features/comments/infrastructure/comments-repository';
 
-import { Connect, ConnectSchema } from './features/connect/connect-schema';
-import { ConnectService } from './features/connect/connect-service';
-import { ConnectRepository } from './features/connect/connect-repository';
+import {
+  Session,
+  SessionSchema,
+} from './features/devices/session/session-schema';
+import { SessionService } from './features/devices/session/session-service';
+import { SessionRepository } from './features/devices/session/session-repository';
 
 import dotenv from 'dotenv';
 import { AuthController } from './features/auth/api/auth.controller';
@@ -41,7 +44,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { LikesCommentsService } from './features/likes/likes-comment-service';
 import { DevicesController } from './features/devices/api/devices.controllers';
 import { join } from 'path';
-import { BlackList, BlackListSchema } from './security/blackList-schema';
 import { IsBlogExistConstraint } from './features/posts/application/blogId.exist';
 import { GetUsersUseCase } from './features/users/application/use-cases/get-users-use-case';
 import { DeleteUserUseCase } from './features/users/application/use-cases/delete-user-use-case';
@@ -65,6 +67,11 @@ import { GetCommentUseCase } from './features/comments/application/use-cases/get
 import { UpdateCommentUseCase } from './features/comments/application/use-cases/update-comment-use-case';
 import { UpdatePostLikeStatusUseCase } from './features/likes/use-cases/update-post-like-status-use-case';
 import { UpdateCommentLikeStatusUseCase } from './features/likes/use-cases/update-comment-like-status-use-case';
+import {
+  Connection,
+  ConnectionSchema,
+} from './features/connection/connection-schema';
+import { ConnectionRepository } from './features/connection/connection-repository';
 dotenv.config();
 
 @Module({
@@ -115,12 +122,12 @@ dotenv.config();
         schema: CommentSchema,
       },
       {
-        name: Connect.name,
-        schema: ConnectSchema,
+        name: Session.name,
+        schema: SessionSchema,
       },
       {
-        name: BlackList.name,
-        schema: BlackListSchema,
+        name: Connection.name,
+        schema: ConnectionSchema,
       },
     ]),
   ],
@@ -144,8 +151,8 @@ dotenv.config();
     PostsService,
     CommentsService,
     CommentsRepository,
-    ConnectService,
-    ConnectRepository,
+    SessionService,
+    SessionRepository,
     AuthService,
     EmailManager,
     LikesPostService,
@@ -172,6 +179,7 @@ dotenv.config();
     UpdateCommentUseCase,
     UpdatePostLikeStatusUseCase,
     UpdateCommentLikeStatusUseCase,
+    ConnectionRepository,
   ],
 })
 export class AppModule {}

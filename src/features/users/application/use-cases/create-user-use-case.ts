@@ -1,5 +1,5 @@
 import { UsersRepository } from '../../infrastructure/users-repository';
-import { ConnectRepository } from '../../../connect/connect-repository';
+import { SessionRepository } from '../../../devices/session/session-repository';
 import { EmailManager } from '../../../../email/email-manager';
 import { CreateUserInputModel } from '../../users-models';
 import { UserInformation } from '../users-output';
@@ -8,17 +8,13 @@ import { UserCreator } from '../users-input';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class CreateUserCommand {
-  constructor(
-    public dto: CreateUserInputModel,
-    public deviceId: string,
-  ) {}
+  constructor(public dto: CreateUserInputModel) {}
 }
 
 @CommandHandler(CreateUserCommand)
 export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
   constructor(
     private readonly usersRepository: UsersRepository,
-    private readonly connectRepository: ConnectRepository,
     private readonly emailManager: EmailManager,
   ) {}
 
@@ -40,9 +36,6 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
       passwordSalt,
     );
     const user = await this.usersRepository.createNewUser(newUser);
-
-    // update session
-    await this.connectRepository.updateUserId(user.id, command.deviceId);
 
     // send confirmation link with a code on email
     await this.emailManager.sendConfirmationLink(

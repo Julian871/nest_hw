@@ -1,15 +1,12 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export type connectDocument = HydratedDocument<Connect>;
+export type sessionDocument = HydratedDocument<Session>;
 
 @Schema()
-export class Connect {
+export class Session {
   @Prop({ required: true })
   IP: string;
-
-  @Prop({ required: true })
-  URL: string;
 
   @Prop({ required: true })
   lastActiveDate: Date;
@@ -24,4 +21,4 @@ export class Connect {
   userId: string | null;
 }
 
-export const ConnectSchema = SchemaFactory.createForClass(Connect);
+export const SessionSchema = SchemaFactory.createForClass(Session);

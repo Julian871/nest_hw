@@ -391,6 +391,7 @@ describe('Comments testing', () => {
     let newComment: any;
     let newUser1: any;
     let loginUser: any;
+    let refreshToken: any;
 
     it('Create blog and post', async () => {
       newBlog1 = await agent
@@ -420,6 +421,7 @@ describe('Comments testing', () => {
         .post('/auth/login')
         .send(correctLoginUser1)
         .expect(200);
+      refreshToken = loginUser.headers['set-cookie'][0];
       newComment = await agent
         .post('/posts/' + newPost1.body.id + '/comments')
         .auth(loginUser.body.accessToken, {
@@ -453,9 +455,7 @@ describe('Comments testing', () => {
         .expect(204);
       const updateComment = await agent
         .get('/comments/' + newComment.body.id)
-        .auth(loginUser.body.accessToken, {
-          type: 'bearer',
-        });
+        .set('Cookie', refreshToken);
       expect(updateComment.body.likesInfo.myStatus).toBe('Like');
     });
 

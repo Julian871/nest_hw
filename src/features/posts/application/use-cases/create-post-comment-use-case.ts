@@ -3,11 +3,12 @@ import { UsersRepository } from '../../../users/infrastructure/users-repository'
 import { CommentCreator } from '../../../comments/application/comments-input';
 import { CommentInformation } from '../../../comments/application/comments-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { AuthService } from '../../../../security/auth-service';
 export class CreatePostCommentCommand {
   constructor(
     public postId: string,
     public content: string,
-    public userId: string | null,
+    public accessToken: string,
   ) {}
 }
 
@@ -18,16 +19,20 @@ export class CreatePostCommentUseCase
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly usersRepository: UsersRepository,
+    private readonly authService: AuthService,
   ) {}
 
   async execute(command: CreatePostCommentCommand) {
-    if (command.userId === null) return false;
+    const userId = await this.authService.getUserIdFromAccessToken(
+      command.accessToken,
+    );
+    if (userId === null) return false;
     const checkPost = await this.postsRepository.getPostById(command.postId);
     if (!checkPost) return false;
-    const user = await this.usersRepository.getUserById(command.userId);
+    const user = await this.usersRepository.getUserById(userId);
     const newComment = new CommentCreator(
       command.content,
-      command.userId,
+      userId,
       user!.accountData.login,
       command.postId,
     );
@@ -35,7 +40,7 @@ export class CreatePostCommentUseCase
     return new CommentInformation(
       comment._id.toString(),
       command.content,
-      command.userId,
+      userId,
       comment.commentatorInfo.userLogin,
       comment.createdAt.toString(),
       0,

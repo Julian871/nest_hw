@@ -56,4 +56,9 @@ export class AuthService {
       return null;
     }
   }
+
+  async getLastActiveDateRefreshToken(token: string) {
+    const result: any = this.jwtService.decode(token);
+    return new Date(result.iat);
+  }
 }

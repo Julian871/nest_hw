@@ -3,17 +3,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, userDocument } from '../users-schema';
 import { UsersQuery } from '../users-query';
-import {
-  BlackList,
-  blackListDocument,
-} from '../../../security/blackList-schema';
 
 @Injectable()
 export class UsersRepository {
   constructor(
     @InjectModel(User.name) private UsersModel: Model<userDocument>,
-    @InjectModel(BlackList.name)
-    private BlackListModel: Model<blackListDocument>,
   ) {}
   async createNewUser(newUser: any) {
     return await this.UsersModel.create(newUser);
@@ -70,7 +64,6 @@ export class UsersRepository {
 
   async deleteAllCollection() {
     await this.UsersModel.deleteMany();
-    await this.BlackListModel.deleteMany();
   }
 
   async updateRecoveryCode(email: string, newRecoveryCode: string) {
@@ -135,14 +128,6 @@ export class UsersRepository {
 
   async getUserById(userId: string | null) {
     return this.UsersModel.findOne({ _id: userId });
-  }
-
-  async updateBlackList(refreshToken: string) {
-    await this.BlackListModel.create({ token: refreshToken });
-  }
-
-  async checkToken(token: string) {
-    return this.BlackListModel.findOne({ token });
   }
 
   async getUserByConfirmationCode(code: string) {

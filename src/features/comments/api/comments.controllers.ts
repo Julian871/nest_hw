@@ -21,24 +21,33 @@ import { CommandBus } from '@nestjs/cqrs';
 import { GetCommentCommand } from '../application/use-cases/get-comment-use-case';
 import { UpdateCommentCommand } from '../application/use-cases/update-comment-use-case';
 import { UpdateCommentLikeStatusCommand } from '../../likes/use-cases/update-comment-like-status-use-case';
-import { InfoConnectGuard } from '../../../security/infoConnect-guard';
+import { AuthService } from '../../../security/auth-service';
 
-@UseGuards(InfoConnectGuard)
 @Controller('comments')
 export class CommentsController {
   constructor(
     private readonly commentsService: CommentsService,
     private readonly commentsRepository: CommentsRepository,
+    private authService: AuthService,
     private commandBus: CommandBus,
   ) {}
+
   @Get(':id')
   async getComment(
     @Res({ passthrough: true }) res: Response,
     @Param('id') commentId: string,
     @Req() req: Re,
   ) {
+    let userId: string | null;
+    if (!req.cookies.refreshToken) {
+      userId = null;
+    } else {
+      userId = await this.authService.getUserIdFromRefreshToken(
+        req.cookies.refreshToken,
+      );
+    }
     const comment = await this.commandBus.execute(
-      new GetCommentCommand(commentId, req.infoConnect.userId),
+      new GetCommentCommand(commentId, userId),
     );
     if (!comment) {
       res.status(HttpStatus.NOT_FOUND);
@@ -54,6 +63,14 @@ export class CommentsController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
+    let userId: string | null;
+    if (!req.headers.authorization) {
+      userId = null;
+    } else {
+      userId = await this.authService.getUserIdFromAccessToken(
+        req.headers.authorization,
+      );
+    }
     const checkComment =
       await this.commentsRepository.getCommentById(commentId);
     if (!checkComment) {
@@ -61,11 +78,7 @@ export class CommentsController {
       return;
     }
     await this.commandBus.execute(
-      new UpdateCommentLikeStatusCommand(
-        commentId,
-        dto.likeStatus,
-        req.infoConnect.userId,
-      ),
+      new UpdateCommentLikeStatusCommand(commentId, dto.likeStatus, userId),
     );
     return true;
   }
@@ -79,10 +92,10 @@ export class CommentsController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    const checkOwner = await this.commentsService.checkOwner(
-      req.infoConnect.userId,
-      commentId,
+    const userId = await this.authService.getUserIdFromAccessToken(
+      req.headers.authorization!,
     );
+    const checkOwner = await this.commentsService.checkOwner(userId, commentId);
     if (checkOwner === null) {
       res.sendStatus(404);
       return;
@@ -104,10 +117,10 @@ export class CommentsController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    const checkOwner = await this.commentsService.checkOwner(
-      req.infoConnect.userId,
-      commentId,
+    const userId = await this.authService.getUserIdFromAccessToken(
+      req.headers.authorization!,
     );
+    const checkOwner = await this.commentsService.checkOwner(userId, commentId);
     if (checkOwner === null) {
       res.sendStatus(404);
       return;

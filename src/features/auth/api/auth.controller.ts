@@ -19,13 +19,12 @@ import { Response, Request as Re } from 'express';
 import { AuthService } from '../../../security/auth-service';
 import { UsersRepository } from '../../users/infrastructure/users-repository';
 import { SessionRepository } from '../../devices/session/session-repository';
-import { CreateUserInputModel } from '../../users/users-models';
+import { CreateUserInputModel } from '../../users/api/users-models';
 import { BearerAuthGuard } from '../../../security/auth-guard';
 import { CreateUserCommand } from '../../users/application/use-cases/create-user-use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { SessionGuard } from '../../../security/session-guard';
 import { ConnectGuard } from '../../../security/connect-guard';
-import { SessionService } from '../../devices/session/session-service';
 import { CheckSessionGuard } from '../../../security/checkSession-guard';
 
 @Controller('auth')
@@ -33,7 +32,6 @@ export class AuthController {
   constructor(
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
-    private readonly sessionService: SessionService,
     private readonly connectRepository: SessionRepository,
     private readonly usersRepository: UsersRepository,
     private commandBus: CommandBus,

@@ -1,5 +1,5 @@
 import { PostsRepository } from '../../infrastructure/posts-repository';
-import { CreatePostInputModel } from '../../posts-models';
+import { CreatePostInputModel } from '../../api/posts-models';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class UpdatePostCommand {

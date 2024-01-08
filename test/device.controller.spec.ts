@@ -178,6 +178,7 @@ describe('Device testing', () => {
         .send(correctLoginUser2)
         .expect(200);
       tokenUser2 = user2.headers['set-cookie'][0];
+      console.log('token: ', tokenUser2);
     });
 
     it('Get sessions', async () => {

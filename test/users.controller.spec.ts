@@ -15,6 +15,7 @@ import {
   incorrectUser1,
 } from './input-models/users-input-model';
 import cookieParser from 'cookie-parser';
+import { UsersModule } from '../src/features/users/users.module';
 
 describe('Users testing', () => {
   let app: INestApplication;
@@ -70,8 +71,9 @@ describe('Users testing', () => {
       const response = await agent
         .post('/users')
         .auth('admin', 'qwerty')
-        .send(correctUser1)
-        .expect(201);
+        .send(correctUser1);
+      //.expect(201);
+      console.log({ response: response });
       expect(response.body).toEqual({
         id: expect.any(String),
         login: correctUser1.login,

@@ -1,5 +1,5 @@
 import { BlogsRepository } from '../../infrastructure/blogs-repository';
-import { CreateBlogInputModel } from '../../blogs-models';
+import { CreateBlogInputModel } from '../../api/blogs-models';
 import { BlogCreator } from '../blogs-input';
 import { BlogInformation } from '../blogs-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';

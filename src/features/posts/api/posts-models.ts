@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IsNotEmpty, MaxLength } from 'class-validator';
 import { Transform, TransformFnParams } from 'class-transformer';
-import { isBlogExist } from './application/blogId.exist';
+import { isBlogExist } from '../application/blogId.exist';
 
 @Injectable()
 export class CreatePostForBlogInputModel {

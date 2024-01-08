@@ -1,7 +1,7 @@
 import { UsersRepository } from '../../infrastructure/users-repository';
 import { SessionRepository } from '../../../devices/session/session-repository';
 import { EmailManager } from '../../../../email/email-manager';
-import { CreateUserInputModel } from '../../users-models';
+import { CreateUserInputModel } from '../../api/users-models';
 import { UserInformation } from '../users-output';
 import * as bcrypt from 'bcrypt';
 import { UserCreator } from '../users-input';

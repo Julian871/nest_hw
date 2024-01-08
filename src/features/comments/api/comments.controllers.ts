@@ -16,7 +16,7 @@ import { CommentsService } from '../application/comments-service';
 import { BearerAuthGuard } from '../../../security/auth-guard';
 import { LikeStatusInputModel } from '../../likes/likes-models';
 import { CommentsRepository } from '../infrastructure/comments-repository';
-import { CreateCommentInputModel } from '../comments-model';
+import { CreateCommentInputModel } from './comments-model';
 import { CommandBus } from '@nestjs/cqrs';
 import { GetCommentCommand } from '../application/use-cases/get-comment-use-case';
 import { UpdateCommentCommand } from '../application/use-cases/update-comment-use-case';

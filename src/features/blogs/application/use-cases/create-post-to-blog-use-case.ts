@@ -1,6 +1,6 @@
 import { BlogsRepository } from '../../infrastructure/blogs-repository';
 import { PostsRepository } from '../../../posts/infrastructure/posts-repository';
-import { CreatePostForBlogInputModel } from '../../../posts/posts-models';
+import { CreatePostForBlogInputModel } from '../../../posts/api/posts-models';
 import { PostCreator } from '../../../posts/application/posts-input';
 import { PostInformation } from '../../../posts/application/posts-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';

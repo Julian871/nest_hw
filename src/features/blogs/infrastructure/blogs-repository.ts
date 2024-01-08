@@ -5,7 +5,7 @@ import { BlogsQuery } from '../blogs-query';
 import { Blog, blogDocument } from '../blogs-schema';
 import { Post, postDocument } from '../../posts/posts-schema';
 import { BlogsDefaultQuery } from '../default-query';
-import { UpdateBlogInputModel } from '../blogs-models';
+import { UpdateBlogInputModel } from '../api/blogs-models';
 
 @Injectable()
 export class BlogsRepository {

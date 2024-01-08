@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { Response, Request as Re } from 'express';
 import { UsersQuery } from '../users-query';
-import { CreateUserInputModel } from '../users-models';
+import { CreateUserInputModel } from './users-models';
 import { BasicAuthGuard } from '../../../security/auth-guard';
 import { ObjectIdPipe } from '../../../pipes/objectID.pipe';
 import { CreateUserCommand } from '../application/use-cases/create-user-use-case';
@@ -26,10 +26,7 @@ import { AuthService } from '../../../security/auth-service';
 @UseGuards(BasicAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(
-    private commandBus: CommandBus,
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private commandBus: CommandBus) {}
 
   @Post()
   @HttpCode(201)

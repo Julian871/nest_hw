@@ -3,24 +3,21 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ConnectCreator } from './session-input';
 import { Session, sessionDocument } from './session-schema';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class SessionRepository {
   constructor(
     @InjectModel(Session.name) private SessionModel: Model<sessionDocument>,
+    private dataSource: DataSource,
   ) {}
 
-  async countConnection(IP: string, URL: string) {
-    const limitDate = new Date(+new Date() - 10000);
-    return this.SessionModel.countDocuments({
-      IP: IP,
-      URL: URL,
-      lastActiveDate: { $gt: limitDate },
-    });
-  }
+  async createConnectionInfo(connectInfo: ConnectCreator) {
+    await this.dataSource.query(`
+INSERT INTO public."Session"("IP", "lastActiveDate", "deviceName", "deviceId", "userId")
 
-  async createConnectionInfo(connectInformation: ConnectCreator) {
-    await this.SessionModel.create(connectInformation);
+VALUES ('${connectInfo.IP}', '${connectInfo.lastActiveDate}', '${connectInfo.deviceName}',
+'${connectInfo.deviceId}', '${connectInfo.userId}');`);
   }
 
   async updateUserId(
@@ -28,14 +25,12 @@ export class SessionRepository {
     deviceId: string,
     tokenLastActiveDate: Date,
   ) {
-    await this.SessionModel.updateMany(
-      { deviceId: deviceId },
-      { $set: { userId, lastActiveDate: tokenLastActiveDate } },
-    );
-  }
+    await this.dataSource.query(`
+UPDATE public."Session"
 
-  async deleteAllCollection() {
-    await this.SessionModel.deleteMany();
+SET "lastActiveDate"='${tokenLastActiveDate.toISOString()}', "userId"='${userId}'
+
+WHERE "deviceId" = '${deviceId}';`);
   }
 
   async getDeviceList(userId: string) {

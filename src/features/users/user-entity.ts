@@ -24,7 +24,7 @@ export class UserEntity {
   ConfirmationCode: string;
 
   @Column()
-  ExpirationDate: string;
+  ExpirationDate: Date;
 
   @Column()
   IsConfirmation: boolean;

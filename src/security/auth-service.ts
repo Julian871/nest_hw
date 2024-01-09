@@ -9,12 +9,10 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
   async createAccessToken(userId: string) {
-    const accessToken = await this.jwtService.signAsync(
+    return this.jwtService.signAsync(
       { userId: userId },
       { secret: process.env.JWT_SECRET_ACCESS, expiresIn: '10s' },
     );
-    await this.usersService.updateToken(accessToken, userId);
-    return accessToken;
   }
 
   async createRefreshToken(userId: string, deviceId: string) {

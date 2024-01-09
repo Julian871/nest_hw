@@ -21,13 +21,11 @@ import { UsersRepository } from '../../users/infrastructure/users-repository';
 import { SessionRepository } from '../../devices/session/session-repository';
 import { CreateUserInputModel } from '../../users/api/users-models';
 import { BearerAuthGuard } from '../../../security/auth-guard';
-import { CreateUserCommand } from '../../users/application/use-cases/create-user-use-case';
 import { CommandBus } from '@nestjs/cqrs';
-import { SessionGuard } from '../../../security/session-guard';
-import { ConnectGuard } from '../../../security/connect-guard';
 import { CheckSessionGuard } from '../../../security/checkSession-guard';
 import { Throttle } from '@nestjs/throttler';
 import { RegistrationUserCommand } from '../registration-user-use-cases';
+import { SessionGuard } from '../../../security/session-guard';
 
 @Controller('auth')
 export class AuthController {
@@ -40,7 +38,7 @@ export class AuthController {
   ) {}
 
   @Throttle({ default: { limit: 5, ttl: 10000 } })
-  @UseGuards(ConnectGuard)
+  @UseGuards(SessionGuard)
   @Post('/password-recovery')
   @HttpCode(204)
   async passwordRecovery(
@@ -53,7 +51,7 @@ export class AuthController {
   }
 
   @Throttle({ default: { limit: 5, ttl: 10000 } })
-  @UseGuards(ConnectGuard)
+  @UseGuards(SessionGuard)
   @Post('/new-password')
   @HttpCode(204)
   async createNewPassword(
@@ -70,7 +68,7 @@ export class AuthController {
   }
 
   @Throttle({ default: { limit: 5, ttl: 10000 } })
-  @UseGuards(ConnectGuard)
+  @UseGuards(SessionGuard)
   @Post('/login')
   @HttpCode(204)
   async login(
@@ -81,10 +79,10 @@ export class AuthController {
     const user = await this.usersService.checkCredentials(dto);
     if (user) {
       const accessToken = await this.authService.createAccessToken(
-        user._id.toString(),
+        user[0].id.toString,
       );
       const refreshToken = await this.authService.createRefreshToken(
-        user._id.toString(),
+        user[0].id.toString,
         req.connect.deviceId,
       );
       res.cookie('refreshToken', refreshToken, {
@@ -95,7 +93,7 @@ export class AuthController {
       const tokenLastActiveDate =
         await this.authService.getLastActiveDateRefreshToken(refreshToken);
       await this.connectRepository.updateUserId(
-        user.id,
+        user[0].id,
         req.connect.deviceId,
         tokenLastActiveDate,
       );
@@ -140,7 +138,7 @@ export class AuthController {
   }
 
   @Throttle({ default: { limit: 5, ttl: 10000 } })
-  @UseGuards(ConnectGuard)
+  @UseGuards(SessionGuard)
   @Post('/registration-confirmation')
   async registrationConfirmation(
     @Body() dto: CodeInputModel,
@@ -162,7 +160,7 @@ export class AuthController {
   }
 
   @Throttle({ default: { limit: 5, ttl: 10000 } })
-  @UseGuards(ConnectGuard)
+  @UseGuards(SessionGuard)
   @Post('/registration')
   @HttpCode(204)
   async registration(
@@ -183,7 +181,7 @@ export class AuthController {
   }
 
   @Throttle({ default: { limit: 5, ttl: 10000 } })
-  @UseGuards(ConnectGuard)
+  @UseGuards(SessionGuard)
   @Post('/registration-email-resending')
   @HttpCode(204)
   async emailResending(

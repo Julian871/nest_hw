@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ConnectCreator } from '../devices/session/session-input';
 import { Connection, connectionDocument } from './connection-schema';
 
 @Injectable()

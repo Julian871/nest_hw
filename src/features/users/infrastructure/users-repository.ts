@@ -118,11 +118,18 @@ VALUES ('${user.login}', '${user.email}', '${user.passwordHash}', '${user.passwo
   }
 
   async findUserByLoginOrEmail(loginOrEmail: string) {
-    return this.UsersModel.findOne({
-      $or: [
-        { 'accountData.login': loginOrEmail },
-        { 'accountData.email': loginOrEmail },
-      ],
+    const result = await this.dataSource.query(`SELECT u.*
+    FROM public."Users" u 
+    
+    WHERE u."login" = '${loginOrEmail}' or u."email" = '${loginOrEmail}'
+    `);
+
+    return result.map((e) => {
+      return {
+        passwordSalt: e.passwordSalt,
+        passwordHash: e.passwordHash,
+        id: e.id,
+      };
     });
   }
 

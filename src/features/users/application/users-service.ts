@@ -55,12 +55,10 @@ export class UsersService {
     const user = await this.usersRepository.findUserByLoginOrEmail(
       dto.loginOrEmail,
     );
-    if (!user) return null;
-    const passwordHash = await bcrypt.hash(
-      dto.password,
-      user.accountData.passwordSalt,
-    );
-    if (user.accountData.passwordHash !== passwordHash) {
+    if (user.length === 0) return null;
+    const passwordHash = await bcrypt.hash(dto.password, user[0].passwordSalt);
+    console.log('');
+    if (user[0].passwordHash !== passwordHash) {
       return null;
     }
     return user;

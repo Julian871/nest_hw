@@ -14,7 +14,7 @@ import {
   EmailInputModel,
   LogInInputModel,
   NewPasswordInputModel,
-} from '../auth-model';
+} from './auth-model';
 import { Response, Request as Re } from 'express';
 import { AuthService } from '../../../security/auth-service';
 import { UsersRepository } from '../../users/infrastructure/users-repository';
@@ -26,6 +26,8 @@ import { CommandBus } from '@nestjs/cqrs';
 import { SessionGuard } from '../../../security/session-guard';
 import { ConnectGuard } from '../../../security/connect-guard';
 import { CheckSessionGuard } from '../../../security/checkSession-guard';
+import { Throttle } from '@nestjs/throttler';
+import { RegistrationUserCommand } from '../registration-user-use-cases';
 
 @Controller('auth')
 export class AuthController {
@@ -37,7 +39,8 @@ export class AuthController {
     private commandBus: CommandBus,
   ) {}
 
-  @UseGuards(SessionGuard, ConnectGuard)
+  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @UseGuards(ConnectGuard)
   @Post('/password-recovery')
   @HttpCode(204)
   async passwordRecovery(
@@ -49,7 +52,8 @@ export class AuthController {
     return true;
   }
 
-  @UseGuards(SessionGuard, ConnectGuard)
+  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @UseGuards(ConnectGuard)
   @Post('/new-password')
   @HttpCode(204)
   async createNewPassword(
@@ -65,7 +69,8 @@ export class AuthController {
     return true;
   }
 
-  @UseGuards(SessionGuard, ConnectGuard)
+  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @UseGuards(ConnectGuard)
   @Post('/login')
   @HttpCode(204)
   async login(
@@ -134,7 +139,8 @@ export class AuthController {
     res.status(200).send({ accessToken: token });
   }
 
-  @UseGuards(SessionGuard, ConnectGuard)
+  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @UseGuards(ConnectGuard)
   @Post('/registration-confirmation')
   async registrationConfirmation(
     @Body() dto: CodeInputModel,
@@ -155,7 +161,8 @@ export class AuthController {
     }
   }
 
-  @UseGuards(SessionGuard, ConnectGuard)
+  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @UseGuards(ConnectGuard)
   @Post('/registration')
   @HttpCode(204)
   async registration(
@@ -164,7 +171,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const createUser = await this.commandBus.execute(
-      new CreateUserCommand(dto),
+      new RegistrationUserCommand(dto),
     );
     if (!createUser) {
       res.status(400).send({
@@ -175,7 +182,8 @@ export class AuthController {
     res.status(204);
   }
 
-  @UseGuards(SessionGuard, ConnectGuard)
+  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @UseGuards(ConnectGuard)
   @Post('/registration-email-resending')
   @HttpCode(204)
   async emailResending(

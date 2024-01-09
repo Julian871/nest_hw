@@ -3,14 +3,35 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, userDocument } from '../users-schema';
 import { UsersQuery } from '../users-query';
+import { DataSource } from 'typeorm';
+import { UserCreatorToSql } from '../../auth/users-input';
 
 @Injectable()
 export class UsersRepository {
   constructor(
     @InjectModel(User.name) private UsersModel: Model<userDocument>,
+    private dataSource: DataSource,
   ) {}
   async createNewUser(newUser: any) {
     return await this.UsersModel.create(newUser);
+  }
+
+  async registrationNewUser(user: UserCreatorToSql) {
+    await this.dataSource.query(`
+INSERT INTO public."Users"(login, email, "passwordHash", "passwordSalt", "createdAt", 
+"confirmationCode", "expirationDate", "isConfirmation", "recoveryCode")
+
+VALUES ('${user.login}', '${user.email}', '${user.passwordHash}', '${user.passwordSalt}', 
+'${user.createdAt}', '${user.confirmationCode}', '${user.expirationDate}',
+'${user.isConfirmation}', '${user.recoveryCode}');`);
+  }
+
+  async checkExistUser(login: string, email: string) {
+    return this.dataSource.query(`SELECT u.*
+    FROM public."Users" u 
+    
+    WHERE u."login" = '${login}' or u."email" = '${email}'
+    `);
   }
 
   async getAllUsers(query: UsersQuery) {
@@ -60,10 +81,6 @@ export class UsersRepository {
   async deleteUserById(id: string) {
     const result = await this.UsersModel.deleteOne({ _id: id });
     return result.deletedCount === 1;
-  }
-
-  async deleteAllCollection() {
-    await this.UsersModel.deleteMany();
   }
 
   async updateRecoveryCode(email: string, newRecoveryCode: string) {

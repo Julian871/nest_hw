@@ -28,7 +28,7 @@ dotenv.config();
       type: 'postgres',
       host: 'localhost',
       port: 5432,
-      username: 'Julian',
+      username: 'julian',
       password: 'juliantest',
       database: 'home-work',
       synchronize: false,

@@ -15,9 +15,12 @@ import { Connection, ConnectionSchema } from '../connection/connection-schema';
 import { SessionService } from '../devices/session/session-service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../users/user-entity';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { RegistrationUserUseCase } from './registration-user-use-cases';
 
 const services = [AuthService, JwtService, UsersService, SessionService];
 const repositories = [SessionRepository, UsersRepository, ConnectionRepository];
+const useCases = [RegistrationUserUseCase];
 
 @Module({
   imports: [
@@ -30,8 +33,14 @@ const repositories = [SessionRepository, UsersRepository, ConnectionRepository];
       },
     ]),
     TypeOrmModule.forFeature([UserEntity]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 10000,
+        limit: 5,
+      },
+    ]),
   ],
-  providers: [...services, ...repositories, EmailManager],
+  providers: [...services, ...repositories, ...useCases, EmailManager],
   controllers: [AuthController],
   exports: [MongooseModule],
 })

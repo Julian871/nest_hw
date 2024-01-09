@@ -3,7 +3,10 @@ import { UsersRepository } from '../infrastructure/users-repository';
 import { UserInfoToMe } from './users-output';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import { LogInInputModel, NewPasswordInputModel } from '../../auth/auth-model';
+import {
+  LogInInputModel,
+  NewPasswordInputModel,
+} from '../../auth/api/auth-model';
 import { SessionRepository } from '../../devices/session/session-repository';
 import { EmailManager } from '../../../email/email-manager';
 

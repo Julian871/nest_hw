@@ -10,6 +10,7 @@ import {
   Connection,
   connectionDocument,
 } from '../connection/connection-schema';
+import { DataSource } from 'typeorm';
 
 @Controller('testing')
 export class TestingController {
@@ -21,6 +22,7 @@ export class TestingController {
     @InjectModel(Session.name) private SessionModel: Model<sessionDocument>,
     @InjectModel(Connection.name)
     private ConnectionModel: Model<connectionDocument>,
+    private dataSource: DataSource,
   ) {}
 
   @Delete('all-data')
@@ -32,5 +34,6 @@ export class TestingController {
     await this.UsersModel.deleteMany();
     await this.SessionModel.deleteMany();
     await this.ConnectionModel.deleteMany();
+    await this.dataSource.query(`DELETE FROM public."Users"`);
   }
 }

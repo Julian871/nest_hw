@@ -42,6 +42,7 @@ export class RegistrationUserUseCase
       command.dto.email,
       newUser.confirmationCode,
     );
+    console.log('confirmationCode', newUser.confirmationCode);
     return true;
   }
 }

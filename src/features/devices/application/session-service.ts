@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SessionRepository } from './session-repository';
+import { SessionRepository } from '../infrastructure/session-repository';
 import { AuthService } from '../../../security/auth-service';
 import { UsersRepository } from '../../users/infrastructure/users-repository';
 
@@ -11,19 +11,12 @@ export class SessionService {
   ) {}
 
   async getDeviceList(userId: string) {
-    const connectInfo = await this.connectRepository.getDeviceList(userId);
-    return connectInfo.map((p) => ({
-      ip: p.IP,
-      title: p.deviceName,
-      lastActiveDate: new Date(p.lastActiveDate),
-      deviceId: p.deviceId,
-    }));
+    return this.connectRepository.getDeviceList(userId);
   }
 
   async checkDeviceId(deviceId: string, token: string, userId: string | null) {
     const tokenUserId = await this.authService.getUserIdFromRefreshToken(token);
-
-    if (userId === tokenUserId) {
+    if (userId == tokenUserId.toString()) {
       await this.connectRepository.deleteByDeviceId(deviceId);
       return true;
     } else {

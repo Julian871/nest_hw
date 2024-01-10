@@ -9,14 +9,14 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
   async createAccessToken(userId: string) {
-    return this.jwtService.signAsync(
+    return this.jwtService.sign(
       { userId: userId },
       { secret: process.env.JWT_SECRET_ACCESS, expiresIn: '10s' },
     );
   }
 
   async createRefreshToken(userId: string, deviceId: string) {
-    return this.jwtService.signAsync(
+    return this.jwtService.sign(
       { userId: userId, deviceId: deviceId },
       { secret: process.env.JWT_SECRET_REFRESH, expiresIn: '20s' },
     );
@@ -27,7 +27,7 @@ export class AuthService {
       const result: any = this.jwtService.verify(token.split(' ')[1], {
         secret: process.env.JWT_SECRET_ACCESS,
       });
-      return result.userId.toString();
+      return result.userId;
     } catch (error) {
       return null;
     }
@@ -38,8 +38,9 @@ export class AuthService {
       const result: any = this.jwtService.verify(token, {
         secret: process.env.JWT_SECRET_REFRESH,
       });
-      return result.userId.toString();
+      return result.userId;
     } catch (error) {
+      console.log(error);
       return null;
     }
   }
@@ -57,6 +58,6 @@ export class AuthService {
 
   async getLastActiveDateRefreshToken(token: string) {
     const result: any = this.jwtService.decode(token);
-    return new Date(result.iat);
+    return new Date(result.iat).toISOString();
   }
 }

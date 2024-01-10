@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { SessionService } from '../features/devices/session/session-service';
+import { SessionService } from '../features/devices/application/session-service';
 
 @Injectable()
 export class CheckSessionGuard implements CanActivate {
@@ -19,7 +19,7 @@ export class CheckSessionGuard implements CanActivate {
     const checkLastActiveDate = await this.sessionService.activeDate(
       req.cookies.refreshToken,
     );
-    if (!checkLastActiveDate) {
+    if (checkLastActiveDate.length === 0) {
       throw new UnauthorizedException();
     }
     return true;

@@ -17,21 +17,35 @@ export class UsersRepository {
   }
 
   async registrationNewUser(user: UserCreatorToSql) {
-    await this.dataSource.query(`
-INSERT INTO public."Users"(login, email, "passwordHash", "passwordSalt", "createdAt", 
-"confirmationCode", "expirationDate", "isConfirmation", "recoveryCode")
+    await this.dataSource.query(
+      `
+    INSERT INTO public."Users"(login, email, "passwordHash", "passwordSalt", "createdAt", 
+    "confirmationCode", "expirationDate", "isConfirmation", "recoveryCode")
 
-VALUES ('${user.login}', '${user.email}', '${user.passwordHash}', '${user.passwordSalt}', 
-'${user.createdAt}', '${user.confirmationCode}', '${user.expirationDate}',
-'${user.isConfirmation}', '${user.recoveryCode}');`);
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
+      [
+        user.login,
+        user.email,
+        user.passwordHash,
+        user.passwordSalt,
+        user.createdAt,
+        user.confirmationCode,
+        user.expirationDate,
+        user.isConfirmation,
+        user.recoveryCode,
+      ],
+    );
   }
 
   async checkExistUser(login: string, email: string) {
-    return this.dataSource.query(`SELECT u.*
+    return this.dataSource.query(
+      `
+    SELECT u.*
     FROM public."Users" u 
-    
-    WHERE u."login" = '${login}' or u."email" = '${email}'
-    `);
+    WHERE u."login" = $1 or u."email" = $2
+    `,
+      [login, email],
+    );
   }
 
   async getAllUsers(query: UsersQuery) {
@@ -84,14 +98,23 @@ VALUES ('${user.login}', '${user.email}', '${user.passwordHash}', '${user.passwo
   }
 
   async updateRecoveryCode(email: string, newRecoveryCode: string) {
-    await this.UsersModel.updateOne(
-      { 'accountData.email': email },
-      { $set: { recoveryCode: newRecoveryCode } },
+    await this.dataSource.query(
+      `
+    UPDATE public."Users"
+    SET "recoveryCode"= $2
+    WHERE "email" = $1`,
+      [email, newRecoveryCode],
     );
   }
 
   async checkRecoveryCode(recoveryCode: string) {
-    return this.UsersModel.findOne({ recoveryCode: recoveryCode });
+    return this.dataSource.query(
+      `
+    SELECT *
+    FROM public."Users"
+    WHERE "recoveryCode" = $1`,
+      [recoveryCode],
+    );
   }
 
   async updatePassword(
@@ -99,30 +122,34 @@ VALUES ('${user.login}', '${user.email}', '${user.passwordHash}', '${user.passwo
     passwordHash: string,
     passwordSalt: string,
   ) {
-    return this.UsersModel.updateOne(
-      { recoveryCode: recoveryCode },
-      {
-        $set: {
-          'accountData.passwordHash': passwordHash,
-          'accountData.passwordSalt': passwordSalt,
-        },
-      },
+    await this.dataSource.query(
+      `
+    UPDATE public."Users"
+    SET "passwordHash" = $2, "passwordSalt" = $3
+    WHERE "recoveryCode" = $1`,
+      [recoveryCode, passwordHash, passwordSalt],
     );
   }
 
   async invalidRecoveryCode(recoveryCode: string) {
-    await this.UsersModel.updateOne(
-      { recoveryCode: recoveryCode },
-      { $set: { recoveryCode: null } },
+    await this.dataSource.query(
+      `
+    UPDATE public."Users"
+    SET "recoveryCode" = 'null'
+    WHERE "recoveryCode" = $1;`,
+      [recoveryCode],
     );
   }
 
   async findUserByLoginOrEmail(loginOrEmail: string) {
-    const result = await this.dataSource.query(`SELECT u.*
+    const result = await this.dataSource.query(
+      `
+    SELECT u.*
     FROM public."Users" u 
-    
-    WHERE u."login" = '${loginOrEmail}' or u."email" = '${loginOrEmail}'
-    `);
+    WHERE u."login" = $1 or u."email" = $1
+    `,
+      [loginOrEmail],
+    );
 
     return result.map((e) => {
       return {
@@ -151,38 +178,51 @@ VALUES ('${user.login}', '${user.email}', '${user.passwordHash}', '${user.passwo
   }
 
   async getUserById(userId: string | null) {
-    return this.UsersModel.findOne({ _id: userId });
+    return this.dataSource.query(
+      `SELECT *
+    FROM public."Users"
+    WHERE "id" = $1`,
+      [userId],
+    );
   }
 
   async getUserByConfirmationCode(code: string) {
-    return this.UsersModel.findOne({
-      'emailConfirmation.confirmationCode': code,
-    });
+    return this.dataSource.query(
+      `
+    SELECT *
+    FROM public."Users"
+    WHERE "confirmationCode" = $1`,
+      [code],
+    );
   }
 
   async updateConfirmStatus(userId: string) {
-    await this.UsersModel.updateOne(
-      { _id: userId },
-      {
-        $set: {
-          'emailConfirmation.isConfirmation': true,
-        },
-      },
+    await this.dataSource.query(
+      `
+    UPDATE public."Users"
+    SET "isConfirmation" = 'true', "confirmationCode" = 'null'
+    WHERE "id" = $1`,
+      [userId],
     );
   }
 
   async checkUserByEmail(email: string) {
-    return this.UsersModel.findOne({ 'accountData.email': email });
+    return this.dataSource.query(
+      `
+    SELECT *
+    FROM public."Users"
+    WHERE "email" = $1`,
+      [email],
+    );
   }
 
   async updateConfirmCode(userId: string, newConfirmationCode: string) {
-    await this.UsersModel.updateOne(
-      { _id: userId },
-      {
-        $set: {
-          'emailConfirmation.confirmationCode': newConfirmationCode,
-        },
-      },
+    await this.dataSource.query(
+      `
+    UPDATE public."Users"
+    SET "confirmationCode" = $2
+    WHERE "id" = $1;`,
+      [userId, newConfirmationCode],
     );
   }
 }

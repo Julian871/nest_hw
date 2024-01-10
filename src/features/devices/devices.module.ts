@@ -6,10 +6,10 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module';
 import { UsersService } from '../users/application/users-service';
 import { UsersRepository } from '../users/infrastructure/users-repository';
-import { SessionRepository } from './session/session-repository';
+import { SessionRepository } from './infrastructure/session-repository';
 import { EmailManager } from '../../email/email-manager';
 import { DevicesController } from './api/devices.controllers';
-import { SessionService } from './session/session-service';
+import { SessionService } from './application/session-service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SessionEntity } from './session-entity';
 

@@ -1,5 +1,5 @@
 import { UsersRepository } from '../../infrastructure/users-repository';
-import { SessionRepository } from '../../../devices/session/session-repository';
+import { SessionRepository } from '../../../devices/infrastructure/session-repository';
 import { EmailManager } from '../../../../email/email-manager';
 import { CreateUserInputModel } from '../../api/users-models';
 import { UserInformation } from '../users-output';

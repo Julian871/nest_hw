@@ -18,7 +18,7 @@ import {
 import { Response, Request as Re } from 'express';
 import { AuthService } from '../../../security/auth-service';
 import { UsersRepository } from '../../users/infrastructure/users-repository';
-import { SessionRepository } from '../../devices/session/session-repository';
+import { SessionRepository } from '../../devices/infrastructure/session-repository';
 import { CreateUserInputModel } from '../../users/api/users-models';
 import { BearerAuthGuard } from '../../../security/auth-guard';
 import { CommandBus } from '@nestjs/cqrs';
@@ -32,7 +32,7 @@ export class AuthController {
   constructor(
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
-    private readonly connectRepository: SessionRepository,
+    private readonly sessionRepository: SessionRepository,
     private readonly usersRepository: UsersRepository,
     private commandBus: CommandBus,
   ) {}
@@ -78,11 +78,9 @@ export class AuthController {
   ) {
     const user = await this.usersService.checkCredentials(dto);
     if (user) {
-      const accessToken = await this.authService.createAccessToken(
-        user[0].id.toString,
-      );
+      const accessToken = await this.authService.createAccessToken(user[0].id);
       const refreshToken = await this.authService.createRefreshToken(
-        user[0].id.toString,
+        user[0].id,
         req.connect.deviceId,
       );
       res.cookie('refreshToken', refreshToken, {
@@ -92,7 +90,7 @@ export class AuthController {
       res.status(200).send({ accessToken: accessToken });
       const tokenLastActiveDate =
         await this.authService.getLastActiveDateRefreshToken(refreshToken);
-      await this.connectRepository.updateUserId(
+      await this.sessionRepository.updateUserId(
         user[0].id,
         req.connect.deviceId,
         tokenLastActiveDate,
@@ -127,8 +125,7 @@ export class AuthController {
     );
     const tokenLastActiveDate =
       await this.authService.getLastActiveDateRefreshToken(refreshToken);
-    await this.usersService.updateToken(token, userId);
-    await this.connectRepository.updateConnectDate(
+    await this.sessionRepository.updateConnectDate(
       deviceId,
       tokenLastActiveDate,
     );
@@ -140,6 +137,7 @@ export class AuthController {
   @Throttle({ default: { limit: 5, ttl: 10000 } })
   @UseGuards(SessionGuard)
   @Post('/registration-confirmation')
+  @HttpCode(204)
   async registrationConfirmation(
     @Body() dto: CodeInputModel,
     @Req() req: Re,
@@ -151,8 +149,7 @@ export class AuthController {
       req.connect.tokenLastActiveDate,
     );
     if (confirmation === true) {
-      res.sendStatus(204);
-      return;
+      return true;
     } else {
       res.status(400).send(confirmation);
       return;
@@ -177,7 +174,7 @@ export class AuthController {
       });
       return;
     }
-    res.status(204);
+    return true;
   }
 
   @Throttle({ default: { limit: 5, ttl: 10000 } })
@@ -213,7 +210,7 @@ export class AuthController {
       return;
     }
     const user = await this.usersRepository.getUserById(userId);
-    if (user === null) {
+    if (user.length === 0) {
       res.sendStatus(401);
       return;
     }
@@ -224,7 +221,7 @@ export class AuthController {
       await this.authService.getLastActiveDateRefreshToken(
         req.cookies.refreshToken,
       );
-    await this.connectRepository.deleteCurrentSession(
+    await this.sessionRepository.deleteCurrentSession(
       deviceId,
       tokenActiveDate,
     );

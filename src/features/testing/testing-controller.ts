@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import { Post, postDocument } from '../posts/posts-schema';
 import { Comment, commentDocument } from '../comments/comments-schema';
 import { User, userDocument } from '../users/users-schema';
-import { Session, sessionDocument } from '../devices/session/session-schema';
+import { Session, sessionDocument } from '../devices/session-schema';
 import {
   Connection,
   connectionDocument,
@@ -35,5 +35,6 @@ export class TestingController {
     await this.SessionModel.deleteMany();
     await this.ConnectionModel.deleteMany();
     await this.dataSource.query(`DELETE FROM public."Users"`);
+    await this.dataSource.query(`DELETE FROM public."Session"`);
   }
 }

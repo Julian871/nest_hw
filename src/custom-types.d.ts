@@ -3,7 +3,7 @@ declare namespace Express {
     connect: {
       userId: string | null;
       deviceId: string;
-      tokenLastActiveDate: Date;
+      tokenLastActiveDate: string;
     };
   }
 }

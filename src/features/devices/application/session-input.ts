@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export class ConnectCreator {
   IP: string;
-  lastActiveDate: Date;
+  lastActiveDate: string;
   deviceName: string;
   deviceId: string;
   userId: string | null;
@@ -12,7 +12,7 @@ export class ConnectCreator {
     deviceName: string,
     userId: string | null,
     deviceId: string | null,
-    tokenLastActiveDate: Date,
+    tokenLastActiveDate: string,
   ) {
     this.IP = IP;
     this.lastActiveDate = tokenLastActiveDate;

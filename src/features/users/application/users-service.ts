@@ -7,14 +7,14 @@ import {
   LogInInputModel,
   NewPasswordInputModel,
 } from '../../auth/api/auth-model';
-import { SessionRepository } from '../../devices/session/session-repository';
+import { SessionRepository } from '../../devices/infrastructure/session-repository';
 import { EmailManager } from '../../../email/email-manager';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
-    private readonly connectRepository: SessionRepository,
+    private readonly sessionRepository: SessionRepository,
     private readonly emailManager: EmailManager,
   ) {}
 
@@ -71,47 +71,48 @@ export class UsersService {
   async checkConfirmationCode(
     code: string,
     deviceId: string,
-    tokenLastActiveDate: Date,
+    tokenLastActiveDate: string,
   ) {
     const user = await this.usersRepository.getUserByConfirmationCode(code);
-    if (!user) {
+    if (user.length === 0) {
       return { errorsMessages: [{ message: 'Incorrect code', field: 'code' }] };
-    } else if (!user.emailConfirmation.isConfirmation) {
-      await this.connectRepository.updateUserId(
-        user._id.toString(),
+    } else if (!user[0].isConfirmation) {
+      await this.sessionRepository.updateUserId(
+        user[0].id,
         deviceId,
         tokenLastActiveDate,
       );
       await this.emailManager.sendConfirmationLink(
-        user.accountData.email,
-        user.emailConfirmation.confirmationCode,
+        user[0].email,
+        user[0].confirmationCode,
       );
-      await this.usersRepository.updateConfirmStatus(user._id.toString());
+      await this.usersRepository.updateConfirmStatus(user[0].id);
       return true;
     } else {
       return { errorsMessages: [{ message: 'code confirm', field: 'code' }] };
     }
   }
 
-  async checkEmail(email: string, deviceId: string, tokenLastActiveDate: Date) {
+  async checkEmail(
+    email: string,
+    deviceId: string,
+    tokenLastActiveDate: string,
+  ) {
     const user = await this.usersRepository.checkUserByEmail(email);
     const newConfirmationCode = uuidv4();
-    if (!user) {
+    if (user.length === 0) {
       return {
         errorsMessages: [{ message: 'Incorrect email', field: 'email' }],
       };
-    } else if (!user.emailConfirmation.isConfirmation) {
-      await this.connectRepository.updateUserId(
-        user._id.toString(),
+    } else if (!user[0].isConfirmation) {
+      await this.sessionRepository.updateUserId(
+        user[0].id,
         deviceId,
         tokenLastActiveDate,
       );
-      await this.emailManager.sendConfirmationLink(
-        user.accountData.email,
-        newConfirmationCode,
-      );
+      await this.emailManager.sendConfirmationLink(email, newConfirmationCode);
       await this.usersRepository.updateConfirmCode(
-        user._id.toString(),
+        user[0].id,
         newConfirmationCode,
       );
       return true;
@@ -122,10 +123,6 @@ export class UsersService {
 
   async getUserToMe(userId: string | null) {
     const user = await this.usersRepository.getUserById(userId);
-    return new UserInfoToMe(
-      userId!,
-      user!.accountData.login,
-      user!.accountData.email,
-    );
+    return new UserInfoToMe(user[0].id, user[0].login, user[0].email);
   }
 }

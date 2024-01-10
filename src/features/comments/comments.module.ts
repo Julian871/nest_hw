@@ -7,7 +7,7 @@ import { UsersModule } from '../users/users.module';
 import { Comment, CommentSchema } from './comments-schema';
 import { UsersService } from '../users/application/users-service';
 import { UsersRepository } from '../users/infrastructure/users-repository';
-import { SessionRepository } from '../devices/session/session-repository';
+import { SessionRepository } from '../devices/infrastructure/session-repository';
 import { EmailManager } from '../../email/email-manager';
 
 const services = [AuthService, JwtService, UsersService];

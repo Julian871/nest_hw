@@ -18,17 +18,12 @@ export class UserCreatorToSql {
     passwordHash: string,
     passwordSalt: string,
   ) {
-    const date = new Date();
-    const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
     this.login = login;
     this.email = email;
     this.passwordHash = passwordHash;
     this.passwordSalt = passwordSalt;
-    this.expirationDate = add(new Date(), { hours: 25 })
-      .toISOString()
-      .slice(0, 19)
-      .replace('T', ' ');
-    this.createdAt = formattedDate;
+    this.expirationDate = add(new Date(), { hours: 1 }).toISOString();
+    this.createdAt = new Date().toISOString();
     this.isConfirmation = false;
     this.recoveryCode = null;
   }

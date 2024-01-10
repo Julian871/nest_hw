@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { AuthService } from '../../../security/auth-service';
 import { Request as Re, Response } from 'express';
-import { SessionService } from '../session/session-service';
-import { SessionRepository } from '../session/session-repository';
+import { SessionService } from '../application/session-service';
+import { SessionRepository } from '../infrastructure/session-repository';
 import { CheckSessionGuard } from '../../../security/checkSession-guard';
 
 @UseGuards(CheckSessionGuard)
@@ -79,7 +79,7 @@ export class DevicesController {
       return;
     }
     const checkSession = await this.connectRepository.findSession(deviceId);
-    if (!checkSession) {
+    if (checkSession.length === 0) {
       res.sendStatus(404);
       return;
     }
@@ -87,7 +87,7 @@ export class DevicesController {
     const deleteSession = await this.connectService.checkDeviceId(
       deviceId,
       req.cookies.refreshToken,
-      checkSession.userId,
+      checkSession[0].userId,
     );
 
     if (!deleteSession) {

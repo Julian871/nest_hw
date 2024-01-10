@@ -21,7 +21,7 @@ import { UsersService } from '../users/application/users-service';
 import { JwtService } from '@nestjs/jwt';
 import { UsersRepository } from '../users/infrastructure/users-repository';
 import { EmailManager } from '../../email/email-manager';
-import { SessionRepository } from '../devices/session/session-repository';
+import { SessionRepository } from '../devices/infrastructure/session-repository';
 import { CommentsModule } from '../comments/comments.module';
 
 const services = [

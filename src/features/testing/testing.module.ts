@@ -5,7 +5,7 @@ import { Post, PostSchema } from '../posts/posts-schema';
 import { Comment, CommentSchema } from '../comments/comments-schema';
 import { User, UserSchema } from '../users/users-schema';
 import { Connection, ConnectionSchema } from '../connection/connection-schema';
-import { Session, SessionSchema } from '../devices/session/session-schema';
+import { Session, SessionSchema } from '../devices/session-schema';
 import { TestingController } from './testing-controller';
 
 @Module({

@@ -16,11 +16,11 @@ import { Response, Request as Re } from 'express';
 import { UsersQuery } from '../users-query';
 import { CreateUserInputModel } from './users-models';
 import { BasicAuthGuard } from '../../../security/auth-guard';
-import { ObjectIdPipe } from '../../../pipes/objectID.pipe';
 import { CreateUserCommand } from '../application/use-cases/create-user-use-case';
 import { GetUserCommand } from '../application/use-cases/get-users-use-case';
 import { DeleteUserCommand } from '../application/use-cases/delete-user-use-case';
 import { CommandBus } from '@nestjs/cqrs';
+import { IsNumberPipe } from '../../../pipes/integerId.pipe';
 
 @UseGuards(BasicAuthGuard)
 @Controller('sa/users')
@@ -53,7 +53,7 @@ export class UsersController {
 
   @Delete('/:id')
   async deleteUser(
-    @Param('id', ObjectIdPipe) userId: string,
+    @Param('id', IsNumberPipe) userId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
     const isDelete = await this.commandBus.execute(

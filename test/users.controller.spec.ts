@@ -5,8 +5,6 @@ import {
 } from '@nestjs/common';
 import supertest, { SuperAgentTest } from 'supertest';
 import { Test } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AppModule } from '../src/app.module';
 import { HttpExceptionFilter } from '../src/exeption-filter';
 import {
@@ -15,7 +13,6 @@ import {
   incorrectUser1,
 } from './input-models/users-input-model';
 import cookieParser from 'cookie-parser';
-import { UsersModule } from '../src/features/users/users.module';
 
 describe('Users testing', () => {
   let app: INestApplication;
@@ -23,11 +20,7 @@ describe('Users testing', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot(),
-        MongooseModule.forRoot(process.env.MONGO_URL || ''),
-        AppModule,
-      ],
+      imports: [AppModule],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -69,11 +62,10 @@ describe('Users testing', () => {
 
     it('Should create user, return status 201 and user information', async () => {
       const response = await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1);
       //.expect(201);
-      console.log({ response: response });
       expect(response.body).toEqual({
         id: expect.any(String),
         login: correctUser1.login,
@@ -84,7 +76,7 @@ describe('Users testing', () => {
 
     it('Should not create user, if this login or email already exists, return status 400', async () => {
       await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(400);
@@ -92,7 +84,7 @@ describe('Users testing', () => {
 
     it('Should not create user, if input values incorrect. Return status 400 and errorsMessages', async () => {
       const response = await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(incorrectUser1)
         .expect(400);
@@ -116,7 +108,7 @@ describe('Users testing', () => {
 
     it('Should not create user, if incorrect auth data. Return status 401', async () => {
       await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'incorrect')
         .send(incorrectUser1)
         .expect(401);
@@ -131,7 +123,7 @@ describe('Users testing', () => {
 
     it('Should get list of users, status 200', async () => {
       const response = await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(201);
@@ -142,7 +134,7 @@ describe('Users testing', () => {
         createdAt: expect.any(String),
       });
       const response2 = await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser2)
         .expect(201);
@@ -153,7 +145,7 @@ describe('Users testing', () => {
         createdAt: expect.any(String),
       });
       const responseGet = await agent
-        .get('/users')
+        .get('/sa/users')
         .auth('admin', 'qwerty')
         .expect(200);
       expect(responseGet.body).toEqual({
@@ -164,14 +156,14 @@ describe('Users testing', () => {
         items: [
           {
             id: expect.any(String),
-            login: correctUser2.login,
-            email: correctUser2.email,
+            login: correctUser1.login,
+            email: correctUser1.email,
             createdAt: expect.any(String),
           },
           {
             id: expect.any(String),
-            login: correctUser1.login,
-            email: correctUser1.email,
+            login: correctUser2.login,
+            email: correctUser2.email,
             createdAt: expect.any(String),
           },
         ],
@@ -179,7 +171,7 @@ describe('Users testing', () => {
     });
 
     it('Should not get user, if incorrect auth data. Return status 401', async () => {
-      await agent.get('/users').auth('admin', 'incorrect').expect(401);
+      await agent.get('/sa/users').auth('admin', 'incorrect').expect(401);
     });
   });
 
@@ -191,7 +183,7 @@ describe('Users testing', () => {
 
     it('Should delete users by id, status 200', async () => {
       const response = await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(201);
@@ -202,11 +194,11 @@ describe('Users testing', () => {
         createdAt: expect.any(String),
       });
       await agent
-        .delete('/users/' + response.body.id)
+        .delete('/sa/users/' + response.body.id)
         .auth('admin', 'qwerty')
         .expect(204);
       const responseGet = await agent
-        .get('/users')
+        .get('/sa/users')
         .auth('admin', 'qwerty')
         .expect(200);
       expect(responseGet.body).toEqual({
@@ -219,12 +211,15 @@ describe('Users testing', () => {
     });
 
     it('Should not delete user, if incorrect auth data. Return status 401', async () => {
-      await agent.delete('/users/anyId').auth('admin', 'incorrect').expect(401);
+      await agent
+        .delete('/sa/users/anyId')
+        .auth('admin', 'incorrect')
+        .expect(401);
     });
 
     it('Should not delete user, if specified user is not exists. Return status 401', async () => {
       await agent
-        .delete('/users/658d153438c7b301a4707f40')
+        .delete('/sa/users/658d153438c7b301a4707f40')
         .auth('admin', 'qwerty')
         .expect(404);
     });

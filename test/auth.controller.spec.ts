@@ -5,8 +5,6 @@ import {
 } from '@nestjs/common';
 import supertest, { SuperAgentTest } from 'supertest';
 import { Test } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AppModule } from '../src/app.module';
 import { HttpExceptionFilter } from '../src/exeption-filter';
 import { useContainer } from 'class-validator';
@@ -25,11 +23,7 @@ describe('Auth testing', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot(),
-        MongooseModule.forRoot(process.env.MONGO_URL || ''),
-        AppModule,
-      ],
+      imports: [AppModule],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -124,14 +118,14 @@ describe('Auth testing', () => {
         })
         .expect(200);
       expect(myInfo.body).toEqual({
-        userId: expect.any(String),
+        userId: expect.any(Number),
         login: correctUser1.login,
         email: correctUser1.email,
       });
     });
 
     it('Should not get my status, if auth incorrect 401', async () => {
-      const myInfo = await agent
+      await agent
         .get('/auth/me')
         .auth(expireToken, {
           type: 'bearer',
@@ -210,7 +204,7 @@ describe('Auth testing', () => {
 
     it('Should register user, return status 204', async () => {
       await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(201);
@@ -271,8 +265,6 @@ describe('Auth testing', () => {
       await agent.delete('/testing/all-data');
     });
     let login: any;
-    let refreshToken: any;
-    let newToken: any;
 
     it('Should login user, return status 200', async () => {
       await agent.post('/auth/registration').send(correctUser1).expect(204);
@@ -280,7 +272,6 @@ describe('Auth testing', () => {
         .post('/auth/login')
         .send(correctLoginUser1)
         .expect(200);
-      refreshToken = login.headers['set-cookie'][0];
     });
 
     it('Should not login user, if input values incorrect', async () => {
@@ -302,7 +293,6 @@ describe('Auth testing', () => {
     });
     let login: any;
     let refreshToken: any;
-    let newToken: any;
 
     it('Should login user, return status 200', async () => {
       await agent.post('/auth/registration').send(correctUser1).expect(204);

@@ -84,12 +84,13 @@ export class UsersRepository {
   }*/
 
   async deleteUserById(id: string) {
-    await this.dataSource.query(
+    const result = await this.dataSource.query(
       `
     DELETE FROM public."Users"
     WHERE "id" = $1`,
       [id],
     );
+    return result[1] === 1;
   }
 
   async updateRecoveryCode(email: string, newRecoveryCode: string) {

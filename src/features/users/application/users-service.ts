@@ -57,7 +57,6 @@ export class UsersService {
     );
     if (user.length === 0) return null;
     const passwordHash = await bcrypt.hash(dto.password, user[0].passwordSalt);
-    console.log('');
     if (user[0].passwordHash !== passwordHash) {
       return null;
     }

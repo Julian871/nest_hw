@@ -5,8 +5,6 @@ import {
 } from '@nestjs/common';
 import supertest, { SuperAgentTest } from 'supertest';
 import { Test } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AppModule } from '../src/app.module';
 import { HttpExceptionFilter } from '../src/exeption-filter';
 import cookieParser from 'cookie-parser';
@@ -25,11 +23,7 @@ describe('Device testing', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot(),
-        MongooseModule.forRoot(process.env.MONGO_URL || ''),
-        AppModule,
-      ],
+      imports: [AppModule],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -71,14 +65,12 @@ describe('Device testing', () => {
       await agent.delete('/testing/all-data');
     });
 
-    let token: any;
     let login: any;
-    let login2: any;
     let refreshToken2: any;
 
     it('Should register user and login 2 times', async () => {
       await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(201);
@@ -87,7 +79,7 @@ describe('Device testing', () => {
         .set('user-agent', 'dev1')
         .send(correctLoginUser1)
         .expect(200);
-      login2 = await agent
+      await agent
         .post('/auth/login')
         .set('user-agent', 'dev2')
         .send(correctLoginUser1)
@@ -122,7 +114,7 @@ describe('Device testing', () => {
 
     it('Should register and login new user', async () => {
       await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser2)
         .expect(201);
@@ -166,10 +158,11 @@ describe('Device testing', () => {
     let tokenUser2: any;
     let tokenUser1: any;
     let session: any;
+    let deviceId: any;
 
     it('Register and login new user2', async () => {
       await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser2)
         .expect(201);
@@ -178,7 +171,6 @@ describe('Device testing', () => {
         .send(correctLoginUser2)
         .expect(200);
       tokenUser2 = user2.headers['set-cookie'][0];
-      console.log('token: ', tokenUser2);
     });
 
     it('Get sessions', async () => {
@@ -186,7 +178,7 @@ describe('Device testing', () => {
         .get('/security/devices')
         .set('cookie', tokenUser2)
         .expect(200);
-      console.log('deviceId: ', session.body[0].deviceId);
+      deviceId = session.body[0].deviceId;
     });
 
     it('Should not delete device if id incorrect', async () => {
@@ -198,7 +190,7 @@ describe('Device testing', () => {
 
     it('Register and login new user1', async () => {
       await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(201);
@@ -211,25 +203,25 @@ describe('Device testing', () => {
 
     it('Should not delete if try to delete the deviceId of other user', async () => {
       await agent
-        .delete('/security/devices/' + session.body[0].deviceId)
+        .delete('/security/devices/' + deviceId)
         .set('cookie', tokenUser1)
         .expect(403);
     });
 
     it('Should not delete device if auth incorrect', async () => {
       await agent
-        .delete('/security/devices/' + session.body[0].deviceId)
+        .delete('/security/devices/' + deviceId)
         .set('cookie', expireRefreshToken)
         .expect(401);
     });
 
     it('Should delete device by id', async () => {
       await agent
-        .delete('/security/devices/' + session.body[0].deviceId)
+        .delete('/security/devices/' + deviceId)
         .set('cookie', tokenUser2)
         .expect(204);
       await agent
-        .get('/security/devices/' + session.body[0].deviceId)
+        .get('/security/devices/' + deviceId)
         .set('cookie', tokenUser2)
         .expect(404);
     });

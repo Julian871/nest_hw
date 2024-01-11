@@ -4,9 +4,9 @@ import { Blog, BlogSchema } from '../blogs/blogs-schema';
 import { Post, PostSchema } from '../posts/posts-schema';
 import { Comment, CommentSchema } from '../comments/comments-schema';
 import { User, UserSchema } from '../users/users-schema';
-import { Connection, ConnectionSchema } from '../connection/connection-schema';
 import { Session, SessionSchema } from '../devices/session-schema';
 import { TestingController } from './testing-controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
@@ -15,9 +15,9 @@ import { TestingController } from './testing-controller';
       { name: Post.name, schema: PostSchema },
       { name: Comment.name, schema: CommentSchema },
       { name: User.name, schema: UserSchema },
-      { name: Connection.name, schema: ConnectionSchema },
       { name: Session.name, schema: SessionSchema },
     ]),
+    TypeOrmModule.forFeature(),
   ],
   controllers: [TestingController],
 })

@@ -64,10 +64,6 @@ export class UsersService {
     return user;
   }
 
-  async updateToken(token: string, userId: string) {
-    await this.usersRepository.updateToken(token, userId);
-  }
-
   async checkConfirmationCode(
     code: string,
     deviceId: string,

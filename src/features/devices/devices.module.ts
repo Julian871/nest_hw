@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AuthService } from '../../security/auth-service';
 import { JwtService } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module';
@@ -21,6 +20,6 @@ const useCases = [];
   imports: [CqrsModule, UsersModule, TypeOrmModule.forFeature([SessionEntity])],
   providers: [...services, ...repositories, ...useCases, EmailManager],
   controllers: [DevicesController],
-  exports: [],
+  exports: [TypeOrmModule],
 })
 export class DevicesModule {}

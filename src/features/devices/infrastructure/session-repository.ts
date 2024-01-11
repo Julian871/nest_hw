@@ -1,16 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { ConnectCreator } from '../application/session-input';
-import { Session, sessionDocument } from '../session-schema';
 import { DataSource } from 'typeorm';
 
 @Injectable()
 export class SessionRepository {
-  constructor(
-    @InjectModel(Session.name) private SessionModel: Model<sessionDocument>,
-    private dataSource: DataSource,
-  ) {}
+  constructor(private dataSource: DataSource) {}
 
   async createConnectionInfo(connectInfo: ConnectCreator) {
     await this.dataSource.query(

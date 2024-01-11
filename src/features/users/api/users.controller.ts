@@ -21,10 +21,9 @@ import { CreateUserCommand } from '../application/use-cases/create-user-use-case
 import { GetUserCommand } from '../application/use-cases/get-users-use-case';
 import { DeleteUserCommand } from '../application/use-cases/delete-user-use-case';
 import { CommandBus } from '@nestjs/cqrs';
-import { AuthService } from '../../../security/auth-service';
 
 @UseGuards(BasicAuthGuard)
-@Controller('users')
+@Controller('sa/users')
 export class UsersController {
   constructor(private commandBus: CommandBus) {}
 

@@ -10,7 +10,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { join } from 'path';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from './features/users/user-entity';
 import { UsersModule } from './features/users/users.module';
 import { PostsModule } from './features/posts/posts.module';
 import { BlogsModule } from './features/blogs/blogs.module';

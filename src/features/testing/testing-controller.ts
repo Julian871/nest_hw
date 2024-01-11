@@ -6,10 +6,6 @@ import { Post, postDocument } from '../posts/posts-schema';
 import { Comment, commentDocument } from '../comments/comments-schema';
 import { User, userDocument } from '../users/users-schema';
 import { Session, sessionDocument } from '../devices/session-schema';
-import {
-  Connection,
-  connectionDocument,
-} from '../connection/connection-schema';
 import { DataSource } from 'typeorm';
 
 @Controller('testing')
@@ -20,8 +16,6 @@ export class TestingController {
     @InjectModel(Comment.name) private CommentsModel: Model<commentDocument>,
     @InjectModel(User.name) private UsersModel: Model<userDocument>,
     @InjectModel(Session.name) private SessionModel: Model<sessionDocument>,
-    @InjectModel(Connection.name)
-    private ConnectionModel: Model<connectionDocument>,
     private dataSource: DataSource,
   ) {}
 
@@ -33,7 +27,6 @@ export class TestingController {
     await this.CommentsModel.deleteMany();
     await this.UsersModel.deleteMany();
     await this.SessionModel.deleteMany();
-    await this.ConnectionModel.deleteMany();
     await this.dataSource.query(`DELETE FROM public."Users"`);
     await this.dataSource.query(`DELETE FROM public."Session"`);
   }

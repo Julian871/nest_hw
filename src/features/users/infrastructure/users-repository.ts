@@ -51,11 +51,11 @@ export class UsersRepository {
   async usersCount(query: UsersQuery) {
     const result = await this.dataSource.query(
       `
-    SELECT *
+    SELECT count(*)
     FROM public."Users"
     `,
     );
-    return result.length;
+    return result[0].count;
   }
 
   /*async getAllUsers(query: UsersQuery) {

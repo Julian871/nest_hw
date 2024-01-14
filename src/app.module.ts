@@ -24,14 +24,16 @@ dotenv.config();
     ConfigModule,
     CqrsModule,
     TypeOrmModule.forRoot({
-      type: 'postgres',
+      /*type: 'postgres',
       host: 'localhost',
       port: 5432,
       username: 'julian',
       password: 'juliantest',
       database: 'home-work',
       synchronize: false,
-      autoLoadEntities: false,
+      autoLoadEntities: false,*/
+      url: 'postgresql://Julian871:Vj8Kuond3JsP@ep-divine-sound-a5s2hopy-pooler.us-east-2.aws.neon.tech/cabinetTests?sslmode=require',
+      ssl: true,
     }),
     MongooseModule.forRoot(process.env.MONGO_URL || 'local connectio', {
       dbName: 'hw3',

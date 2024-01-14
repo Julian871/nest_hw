@@ -1,9 +1,9 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'Session' })
 export class SessionEntity {
   @PrimaryGeneratedColumn()
-  Id: number;
+  id: number;
 
   @Column()
   IP: string;

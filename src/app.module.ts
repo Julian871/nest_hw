@@ -17,6 +17,8 @@ import { AuthModule } from './features/auth/auth.module';
 import { CommentsModule } from './features/comments/comments.module';
 import { DevicesModule } from './features/devices/devices.module';
 import { TestingModule } from './features/testing/testing.module';
+import { UserEntity } from './features/users/user-entity';
+import { SessionEntity } from './features/devices/session-entity';
 dotenv.config();
 
 @Module({
@@ -32,6 +34,8 @@ dotenv.config();
       database: 'home-work',
       synchronize: false,
       autoLoadEntities: false,*/
+      entities: [UserEntity, SessionEntity],
+      synchronize: true,
       type: 'postgres',
       url: 'postgresql://Julian871:Vj8Kuond3JsP@ep-divine-sound-a5s2hopy-pooler.us-east-2.aws.neon.tech/cabinetTests?sslmode=require',
       ssl: true,

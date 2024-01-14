@@ -1,34 +1,34 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'Users' })
 export class UserEntity {
   @PrimaryGeneratedColumn()
-  Id: number;
+  id: number;
 
   @Column()
-  Login: string;
+  login: string;
 
   @Column()
-  Email: string;
+  email: string;
 
   @Column()
-  PasswordHash: string;
+  passwordHash: string;
 
   @Column()
-  PasswordSalt: string;
+  passwordSalt: string;
 
   @Column()
-  CreatedAt: Date;
+  createdAt: string;
 
   @Column()
-  ConfirmationCode: string;
+  confirmationCode: string;
 
   @Column()
-  ExpirationDate: Date;
+  expirationDate: string;
 
   @Column()
-  IsConfirmation: boolean;
+  isConfirmation: boolean;
 
   @Column()
-  RecoveryCode: string;
+  recoveryCode: string;
 }

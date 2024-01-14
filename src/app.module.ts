@@ -32,6 +32,7 @@ dotenv.config();
       database: 'home-work',
       synchronize: false,
       autoLoadEntities: false,*/
+      type: 'postgres',
       url: 'postgresql://Julian871:Vj8Kuond3JsP@ep-divine-sound-a5s2hopy-pooler.us-east-2.aws.neon.tech/cabinetTests?sslmode=require',
       ssl: true,
     }),

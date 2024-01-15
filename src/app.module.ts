@@ -28,7 +28,7 @@ dotenv.config();
     CqrsModule,
     TypeOrmModule.forRoot({
       entities: [UserEntity, SessionEntity, BlogEntity],
-      synchronize: true,
+      synchronize: false,
       type: 'postgres',
       url: process.env.SQL_URL,
       ssl: true,

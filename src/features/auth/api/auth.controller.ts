@@ -24,7 +24,7 @@ import { CreateUserInputModel } from '../../users/api/users-models';
 import { BearerAuthGuard } from '../../../security/auth-guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { CheckSessionGuard } from '../../../security/checkSession-guard';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { RegistrationUserCommand } from '../registration-user-use-cases';
 import { SessionGuard } from '../../../security/session-guard';
 
@@ -38,7 +38,7 @@ export class AuthController {
     private commandBus: CommandBus,
   ) {}
 
-  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @UseGuards(ThrottlerGuard)
   @UseGuards(SessionGuard)
   @Post('/password-recovery')
   @HttpCode(204)
@@ -51,7 +51,7 @@ export class AuthController {
     return true;
   }
 
-  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @UseGuards(ThrottlerGuard)
   @UseGuards(SessionGuard)
   @Post('/new-password')
   @HttpCode(204)
@@ -68,7 +68,7 @@ export class AuthController {
     return true;
   }
 
-  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @UseGuards(ThrottlerGuard)
   @UseGuards(SessionGuard)
   @Post('/login')
   @HttpCode(204)
@@ -135,7 +135,7 @@ export class AuthController {
     res.status(200).send({ accessToken: token });
   }
 
-  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @UseGuards(ThrottlerGuard)
   @UseGuards(SessionGuard)
   @Post('/registration-confirmation')
   @HttpCode(204)
@@ -157,7 +157,7 @@ export class AuthController {
     }
   }
 
-  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @UseGuards(ThrottlerGuard)
   @UseGuards(SessionGuard)
   @Post('/registration')
   @HttpCode(204)
@@ -170,7 +170,7 @@ export class AuthController {
     return true;
   }
 
-  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @UseGuards(ThrottlerGuard)
   @UseGuards(SessionGuard)
   @Post('/registration-email-resending')
   @HttpCode(204)

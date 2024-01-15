@@ -14,7 +14,7 @@ export class PageInformation {
     this.pagesCount = Math.max(Math.ceil(totalCount / pageSize), 1);
     this.page = +page;
     this.pageSize = +pageSize;
-    this.totalCount = totalCount;
+    this.totalCount = +totalCount;
     this.items = items;
   }
 }

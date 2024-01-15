@@ -1,5 +1,5 @@
 import { BlogsRepository } from '../../infrastructure/blogs-repository';
-import { UpdateBlogInputModel } from '../../api/blogs-models';
+import { UpdateBlogInputModel } from '../../api/blogs-dto-models';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class UpdateBlogCommand {

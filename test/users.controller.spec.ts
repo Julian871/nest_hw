@@ -65,7 +65,6 @@ describe('Users testing', () => {
         .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1);
-      //.expect(201);
       expect(response.body).toEqual({
         id: expect.any(String),
         login: correctUser1.login,
@@ -156,14 +155,14 @@ describe('Users testing', () => {
         items: [
           {
             id: expect.any(String),
-            login: correctUser1.login,
-            email: correctUser1.email,
+            login: correctUser2.login,
+            email: correctUser2.email,
             createdAt: expect.any(String),
           },
           {
             id: expect.any(String),
-            login: correctUser2.login,
-            email: correctUser2.email,
+            login: correctUser1.login,
+            email: correctUser1.email,
             createdAt: expect.any(String),
           },
         ],

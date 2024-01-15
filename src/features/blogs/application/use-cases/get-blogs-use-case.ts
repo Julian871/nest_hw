@@ -20,7 +20,7 @@ export class GetBlogsUseCase implements ICommandHandler<GetBlogsCommand> {
     const filterBlogs = allBlogs.map(
       (p) =>
         new BlogInformation(
-          p._id.toString(),
+          p.id.toString(),
           p.name,
           p.description,
           p.websiteUrl,

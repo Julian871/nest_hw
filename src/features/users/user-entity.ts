@@ -29,6 +29,6 @@ export class UserEntity {
   @Column()
   isConfirmation: boolean;
 
-  @Column()
-  recoveryCode: string;
+  @Column({ type: 'varchar', nullable: true })
+  recoveryCode: string | null;
 }

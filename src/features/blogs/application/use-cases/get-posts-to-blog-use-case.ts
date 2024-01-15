@@ -36,7 +36,7 @@ export class GetPostsToBlogUseCase
       allPosts.map(
         async (p) =>
           new PostInformation(
-            p._id.toString(),
+            p.id.toString(),
             p.title,
             p.shortDescription,
             p.content,
@@ -46,10 +46,10 @@ export class GetPostsToBlogUseCase
             p.extendedLikesInfo.countLike,
             p.extendedLikesInfo.countDislike,
             await this.likesPostService.getMyStatusToPost(
-              p._id.toString(),
+              p.id.toString(),
               command.userId,
             ),
-            await this.likesPostService.getLikeListToPost(p._id.toString()),
+            await this.likesPostService.getLikeListToPost(p.id.toString()),
           ),
       ),
     );

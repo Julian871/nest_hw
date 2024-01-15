@@ -23,6 +23,9 @@ import { UsersRepository } from '../users/infrastructure/users-repository';
 import { EmailManager } from '../../email/email-manager';
 import { SessionRepository } from '../devices/infrastructure/session-repository';
 import { CommentsModule } from '../comments/comments.module';
+import { SaBlogsController } from './api/sa.blogs.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { BlogEntity } from './blog-entity';
 
 const services = [
   BlogsService,
@@ -53,6 +56,7 @@ const useCases = [
     PostsModule,
     UsersModule,
     CommentsModule,
+    TypeOrmModule.forFeature([BlogEntity]),
     MongooseModule.forFeature([
       {
         name: Blog.name,
@@ -61,7 +65,7 @@ const useCases = [
     ]),
   ],
   providers: [...services, ...repositories, ...useCases, EmailManager],
-  controllers: [BlogsController],
-  exports: [MongooseModule],
+  controllers: [BlogsController, SaBlogsController],
+  exports: [MongooseModule, TypeOrmModule],
 })
 export class BlogsModule {}

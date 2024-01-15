@@ -2,36 +2,52 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { BlogsQuery } from '../blogs-query';
-import { Blog, blogDocument } from '../blogs-schema';
+import { Blog } from '../blogs-schema';
 import { Post, postDocument } from '../../posts/posts-schema';
 import { BlogsDefaultQuery } from '../default-query';
-import { UpdateBlogInputModel } from '../api/blogs-models';
+import { UpdateBlogInputModel } from '../api/blogs-dto-models';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class BlogsRepository {
   constructor(
-    @InjectModel(Blog.name) private BlogsModel: Model<blogDocument>,
     @InjectModel(Post.name) private PostsModel: Model<postDocument>,
+    private dataSource: DataSource,
   ) {}
   async createNewBlog(newBlog: Blog) {
-    return await this.BlogsModel.create(newBlog);
+    return await this.dataSource.query(
+      `
+    INSERT INTO public."Blogs"("name", "description", "websiteUrl", "createdAt")
+
+    VALUES ($1, $2, $3, $4)
+    returning id;`,
+      [newBlog.name, newBlog.createdAt, newBlog.websiteUrl, newBlog.createdAt],
+    );
   }
 
   async getAllBlogs(query: BlogsQuery) {
-    return this.BlogsModel.find({
-      name: {
-        $regex: query.searchNameTerm ? query.searchNameTerm : '',
-        $options: 'i',
-      },
-    })
-      .sort({ [query.sortBy ?? 'createdAt']: query.sortDirection ?? -1 })
-      .skip((query.pageNumber - 1 ?? 1) * query.pageSize ?? 10)
-      .limit(query.pageSize ?? 10)
-      .lean();
+    return await this.dataSource.query(
+      `
+    SELECT *
+    FROM public."Blogs"
+    WHERE "name" like $1
+    
+    ORDER by "${query.sortBy}" ${query.sortDirection}
+    LIMIT ${query.pageSize} offset (${query.pageNumber} - 1) * ${query.pageSize}
+    `,
+      [`%${query.searchNameTerm}%`],
+    );
   }
 
   async getBlogById(blogId: string) {
-    return this.BlogsModel.findOne({ _id: blogId });
+    const blog = await this.dataSource.query(
+      `
+    SELECT *
+    FROM public."Blogs"
+    WHERE "id" = $1`,
+      [blogId],
+    );
+    return blog[0];
   }
 
   async getPostByBlogId(query: BlogsDefaultQuery, blogId: string) {
@@ -45,35 +61,36 @@ export class BlogsRepository {
   }
 
   async updateBlogById(id: string, dto: UpdateBlogInputModel) {
-    const result = await this.BlogsModel.updateOne(
-      { _id: id },
-      {
-        $set: {
-          name: dto.name,
-          description: dto.description,
-          websiteUrl: dto.websiteUrl,
-        },
-      },
+    const result = await this.dataSource.query(
+      `
+    UPDATE public."Blogs"
+    SET "name" = $1, "description" = $2, "websiteUrl" = $3
+    WHERE "id" = $4`,
+      [dto.name, dto.description, dto.websiteUrl, id],
     );
-    return result.matchedCount === 1;
+    return result[1] === 1;
   }
 
-  async deleteAllCollection() {
-    await this.BlogsModel.deleteMany();
-  }
-
-  async deleteBlogById(id: string) {
-    const result = await this.BlogsModel.deleteOne({ _id: id });
-    return result.deletedCount === 1;
+  async deleteBlogById(blogId: string) {
+    const result = await this.dataSource.query(
+      `
+    DELETE FROM public."Blogs"
+    WHERE "id" = $1`,
+      [blogId],
+    );
+    return result[1] === 1;
   }
 
   async countBlogsByName(query: BlogsQuery) {
-    return this.BlogsModel.countDocuments({
-      name: {
-        $regex: query.searchNameTerm ? query.searchNameTerm : '',
-        $options: 'i',
-      },
-    });
+    const result = await this.dataSource.query(
+      `
+    SELECT count(*)
+    FROM public."Blogs"
+    WHERE "name" like $1
+    `,
+      [`%${query.searchNameTerm}%`],
+    );
+    return result[0].count;
   }
 
   async countBlogsByBlogId(blogId: string) {

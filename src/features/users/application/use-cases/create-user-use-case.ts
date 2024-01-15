@@ -30,11 +30,7 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
       passwordHash,
       passwordSalt,
     );
-    await this.usersRepository.registrationNewUser(newUser);
-    const user = await this.usersRepository.checkExistUser(
-      command.dto.login,
-      command.dto.email,
-    );
+    const user = await this.usersRepository.registrationNewUser(newUser);
 
     //return new user
     return new UserInformation(

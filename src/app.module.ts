@@ -19,6 +19,7 @@ import { DevicesModule } from './features/devices/devices.module';
 import { TestingModule } from './features/testing/testing.module';
 import { UserEntity } from './features/users/user-entity';
 import { SessionEntity } from './features/devices/session-entity';
+import { BlogEntity } from './features/blogs/blog-entity';
 dotenv.config();
 
 @Module({
@@ -26,18 +27,10 @@ dotenv.config();
     ConfigModule,
     CqrsModule,
     TypeOrmModule.forRoot({
-      /*type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'julian',
-      password: 'juliantest',
-      database: 'home-work',
-      synchronize: false,
-      autoLoadEntities: false,*/
-      entities: [UserEntity, SessionEntity],
+      entities: [UserEntity, SessionEntity, BlogEntity],
       synchronize: true,
       type: 'postgres',
-      url: 'postgresql://Julian871:Vj8Kuond3JsP@ep-divine-sound-a5s2hopy-pooler.us-east-2.aws.neon.tech/cabinetTests?sslmode=require',
+      url: process.env.SQL_URL,
       ssl: true,
     }),
     MongooseModule.forRoot(process.env.MONGO_URL || 'local connectio', {

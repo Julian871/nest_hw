@@ -14,7 +14,7 @@ export class GetBlogByIdUseCase implements ICommandHandler<GetBlogByIdCommand> {
     const blog = await this.blogsRepository.getBlogById(command.blogId);
     if (!blog) return false;
     return new BlogInformation(
-      blog._id.toString(),
+      blog.id.toString(),
       blog.name,
       blog.description,
       blog.websiteUrl,

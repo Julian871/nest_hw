@@ -8,12 +8,13 @@ export class UsersRepository {
   constructor(private dataSource: DataSource) {}
 
   async registrationNewUser(user: UserCreatorToSql) {
-    await this.dataSource.query(
+    return await this.dataSource.query(
       `
     INSERT INTO public."Users"(login, email, "passwordHash", "passwordSalt", "createdAt", 
     "confirmationCode", "expirationDate", "isConfirmation", "recoveryCode")
 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    returning id, "createdAt";`,
       [
         user.login,
         user.email,
@@ -43,8 +44,13 @@ export class UsersRepository {
     return await this.dataSource.query(
       `
     SELECT *
-    FROM public."Users"
+    FROM public."Users" u
+    WHERE u."login" like $1 or u."email" like $2
+    
+    ORDER by "${query.sortBy}" ${query.sortDirection}
+    LIMIT ${query.pageSize} offset (${query.pageNumber} - 1) * ${query.pageSize}
     `,
+      [`%${query.searchLoginTerm}%`, `%${query.searchEmailTerm}%`],
     );
   }
 
@@ -52,36 +58,13 @@ export class UsersRepository {
     const result = await this.dataSource.query(
       `
     SELECT count(*)
-    FROM public."Users"
+    FROM public."Users" u
+    WHERE u."login" like $1 or u."email" like $2
     `,
+      [`%${query.searchLoginTerm}%`, `%${query.searchEmailTerm}%`],
     );
     return result[0].count;
   }
-
-  /*async getAllUsers(query: UsersQuery) {
-    return this.UsersModel.find({
-      $or: [
-        {
-          'accountData.login': {
-            $regex: query.searchLoginTerm ? query.searchLoginTerm : '',
-            $options: 'i',
-          },
-        },
-        {
-          'accountData.email': {
-            $regex: query.searchEmailTerm ? query.searchEmailTerm : '',
-            $options: 'i',
-          },
-        },
-      ],
-    })
-      .sort({
-        ['accountData.' + query.sortBy]: query.sortDirection,
-      })
-      .skip((query.pageNumber - 1) * query.pageSize)
-      .limit(query.pageSize)
-      .lean();
-  }*/
 
   async deleteUserById(id: string) {
     const result = await this.dataSource.query(

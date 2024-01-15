@@ -1,5 +1,5 @@
 import { BlogsRepository } from '../../infrastructure/blogs-repository';
-import { CreateBlogInputModel } from '../../api/blogs-models';
+import { CreateBlogInputModel } from '../../api/blogs-dto-models';
 import { BlogCreator } from '../blogs-input';
 import { BlogInformation } from '../blogs-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
@@ -20,7 +20,7 @@ export class CreateBlogUseCase implements ICommandHandler<CreateBlogCommand> {
     );
     const blog = await this.blogsRepository.createNewBlog(newBlog);
     return new BlogInformation(
-      blog._id.toString(),
+      blog[0].id.toString(),
       newBlog.name,
       newBlog.description,
       newBlog.websiteUrl,

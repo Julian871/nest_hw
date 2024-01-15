@@ -33,7 +33,7 @@ dotenv.config();
       url: process.env.SQL_URL,
       ssl: true,
     }),
-    TypeOrmModule.forFeature([UserEntity, SessionEntity, BlogEntity]),
+    TypeOrmModule.forFeature([]),
     MongooseModule.forRoot(process.env.MONGO_URL || 'local connectio', {
       dbName: 'hw3',
     }),

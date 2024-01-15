@@ -59,7 +59,7 @@ export class UsersRepository {
       `
     SELECT *
     FROM public."Users" u
-    WHERE u."login" like $1 or u."email" like $2
+    WHERE u."login" ilike $1 or u."email" ilike $2
     
     ORDER by "${query.sortBy}" ${query.sortDirection}
     LIMIT ${query.pageSize} offset (${query.pageNumber} - 1) * ${query.pageSize}
@@ -73,7 +73,7 @@ export class UsersRepository {
       `
     SELECT count(*)
     FROM public."Users" u
-    WHERE u."login" like $1 or u."email" like $2
+    WHERE u."login" ilike $1 or u."email" ilike $2
     `,
       [`%${query.searchLoginTerm}%`, `%${query.searchEmailTerm}%`],
     );

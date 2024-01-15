@@ -30,7 +30,7 @@ export class BlogsRepository {
       `
     SELECT *
     FROM public."Blogs"
-    WHERE "name" like $1
+    WHERE "name" ilike $1
     
     ORDER by "${query.sortBy}" ${query.sortDirection}
     LIMIT ${query.pageSize} offset (${query.pageNumber} - 1) * ${query.pageSize}
@@ -86,7 +86,7 @@ export class BlogsRepository {
       `
     SELECT count(*)
     FROM public."Blogs"
-    WHERE "name" like $1
+    WHERE "name" ilike $1
     `,
       [`%${query.searchNameTerm}%`],
     );

@@ -12,6 +12,7 @@ export class GetBlogByIdUseCase implements ICommandHandler<GetBlogByIdCommand> {
 
   async execute(command: GetBlogByIdCommand) {
     const blog = await this.blogsRepository.getBlogById(command.blogId);
+    console.log('blog', blog);
     if (!blog) return false;
     return new BlogInformation(
       blog.id.toString(),

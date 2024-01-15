@@ -17,15 +17,16 @@ export class BlogsRepository {
   async createNewBlog(newBlog: Blog) {
     return await this.dataSource.query(
       `
-    INSERT INTO public."Blogs"("name", "description", "websiteUrl", "createdAt")
+    INSERT INTO public."Blogs"("name", "description", "websiteUrl", "createdAt", "isMembership")
 
-    VALUES ($1, $2, $3, $4)
+    VALUES ($1, $2, $3, $4, $5)
     returning id;`,
       [
         newBlog.name,
         newBlog.description,
         newBlog.websiteUrl,
         newBlog.createdAt,
+        newBlog.isMembership,
       ],
     );
   }

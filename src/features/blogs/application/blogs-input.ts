@@ -10,6 +10,6 @@ export class BlogCreator {
     this.description = description;
     this.websiteUrl = websiteUrl;
     this.createdAt = new Date().toISOString();
-    this.isMembership = true;
+    this.isMembership = false;
   }
 }

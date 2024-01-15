@@ -17,6 +17,6 @@ export class BlogEntity {
   @Column()
   createdAt: string;
 
-  @Column({ type: 'boolean', default: true })
+  @Column()
   isMembership: boolean;
 }

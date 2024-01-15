@@ -26,7 +26,7 @@ export class PostInformation {
     myStatus: string,
     newestLikes: any,
   ) {
-    this.id = id;
+    this.id = id.toString();
     this.title = title;
     this.shortDescription = shortDescription;
     this.content = content;

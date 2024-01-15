@@ -18,7 +18,10 @@ import { Request as Re, Response } from 'express';
 import { BlogsDefaultQuery } from '../default-query';
 import { BasicAuthGuard } from '../../../security/auth-guard';
 import { CreateBlogInputModel, UpdateBlogInputModel } from './blogs-dto-models';
-import { CreatePostForBlogInputModel } from '../../posts/api/posts-models';
+import {
+  CreatePostForBlogInputModel,
+  UpdatePostInputModel,
+} from '../../posts/api/posts-models';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateBlogCommand } from '../application/use-cases/create-blog-use-case';
 import { CreatePostToBlogCommand } from '../application/use-cases/create-post-to-blog-use-case';
@@ -28,6 +31,8 @@ import { GetPostsToBlogCommand } from '../application/use-cases/get-posts-to-blo
 import { UpdateBlogCommand } from '../application/use-cases/update-blog-use-case';
 import { DeleteBLogCommand } from '../application/use-cases/delete-blog-use-case';
 import { AuthService } from '../../../security/auth-service';
+import { UpdatePostCommand } from '../../posts/application/use-cases/update-post-use-case';
+import { DeletePostCommand } from '../../posts/application/use-cases/delete-post-use-case';
 
 @UseGuards(BasicAuthGuard)
 @Controller('sa/blogs')
@@ -111,6 +116,20 @@ export class SaBlogsController {
     } else res.status(HttpStatus.NO_CONTENT);
   }
 
+  @Put('/:blogId/posts/:postId')
+  async updatePost(
+    @Param() params: { blogId: string; postId: string },
+    @Body() dto: UpdatePostInputModel,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const isUpdate = await this.commandBus.execute(
+      new UpdatePostCommand(params.postId, params.blogId, dto),
+    );
+    if (!isUpdate) {
+      res.status(HttpStatus.NOT_FOUND);
+    } else res.status(HttpStatus.NO_CONTENT);
+  }
+
   @Delete('/:id')
   async deleteBlog(
     @Param('id') blogId: string,
@@ -118,6 +137,19 @@ export class SaBlogsController {
   ) {
     const isDelete = await this.commandBus.execute(
       new DeleteBLogCommand(blogId),
+    );
+    if (!isDelete) {
+      res.status(HttpStatus.NOT_FOUND);
+    } else res.status(HttpStatus.NO_CONTENT);
+  }
+
+  @Delete('/:blogId/posts/:postId')
+  async deletePost(
+    @Param() params: { blogId: string; postId: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const isDelete = await this.commandBus.execute(
+      new DeletePostCommand(params.postId, params.blogId),
     );
     if (!isDelete) {
       res.status(HttpStatus.NOT_FOUND);

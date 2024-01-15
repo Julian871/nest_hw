@@ -43,3 +43,21 @@ export class CreatePostInputModel {
   @Transform(({ value }: TransformFnParams) => value?.trim())
   blogId: string;
 }
+
+@Injectable()
+export class UpdatePostInputModel {
+  @IsNotEmpty()
+  @Transform(({ value }: TransformFnParams) => value?.trim())
+  @MaxLength(30)
+  title: string;
+
+  @IsNotEmpty()
+  @Transform(({ value }: TransformFnParams) => value?.trim())
+  @MaxLength(100)
+  shortDescription: string;
+
+  @IsNotEmpty()
+  @Transform(({ value }: TransformFnParams) => value?.trim())
+  @MaxLength(1000)
+  content: string;
+}

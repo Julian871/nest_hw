@@ -23,10 +23,11 @@ import { LikesCommentsService } from '../likes/likes-comment-service';
 import { CommentsRepository } from '../comments/infrastructure/comments-repository';
 import { LikesPostService } from '../likes/likes-post-service';
 import { CommentsModule } from '../comments/comments.module';
-import { BlogsModule } from '../blogs/blogs.module';
 import { Blog, BlogSchema } from '../blogs/blogs-schema';
 import { GetBlogByIdUseCase } from '../blogs/application/use-cases/get-blog-by-id-use-case';
 import { IsBlogExistConstraint } from './application/blogId.exist';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { PostEntity } from './post-entity';
 
 const services = [
   AuthService,
@@ -58,6 +59,7 @@ const useCases = [
     CqrsModule,
     UsersModule,
     CommentsModule,
+    TypeOrmModule.forFeature([PostEntity]),
     MongooseModule.forFeature([
       {
         name: Post.name,
@@ -77,6 +79,6 @@ const useCases = [
     IsBlogExistConstraint,
   ],
   controllers: [PostsController],
-  exports: [MongooseModule],
+  exports: [MongooseModule, TypeOrmModule],
 })
 export class PostsModule {}

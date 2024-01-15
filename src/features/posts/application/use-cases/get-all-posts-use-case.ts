@@ -1,5 +1,4 @@
 import { PostsRepository } from '../../infrastructure/posts-repository';
-import { LikesPostService } from '../../../likes/likes-post-service';
 import { PostsDefaultQuery } from '../../default-query';
 import { PostInformation } from '../posts-output';
 import { PageInformation } from '../../../page-information';
@@ -14,10 +13,7 @@ export class GetAllPostsCommand {
 
 @CommandHandler(GetAllPostsCommand)
 export class GetAllPostsUseCase implements ICommandHandler<GetAllPostsCommand> {
-  constructor(
-    private readonly postsRepository: PostsRepository,
-    private readonly likesPostService: LikesPostService,
-  ) {}
+  constructor(private readonly postsRepository: PostsRepository) {}
 
   async execute(command: GetAllPostsCommand) {
     const countPosts = await this.postsRepository.countPosts();
@@ -26,20 +22,17 @@ export class GetAllPostsUseCase implements ICommandHandler<GetAllPostsCommand> {
       allPosts.map(
         async (p) =>
           new PostInformation(
-            p._id.toString(),
+            p.id,
             p.title,
             p.shortDescription,
             p.content,
             p.blogId,
             p.blogName,
             p.createdAt,
-            p.extendedLikesInfo.countLike,
-            p.extendedLikesInfo.countDislike,
-            await this.likesPostService.getMyStatusToPost(
-              p._id.toString(),
-              command.userId,
-            ),
-            await this.likesPostService.getLikeListToPost(p._id.toString()),
+            0,
+            0,
+            'None',
+            [],
           ),
       ),
     );

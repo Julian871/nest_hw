@@ -5,8 +5,6 @@ import {
 } from '@nestjs/common';
 import supertest, { SuperAgentTest } from 'supertest';
 import { Test } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AppModule } from '../src/app.module';
 import { HttpExceptionFilter } from '../src/exeption-filter';
 import {
@@ -28,11 +26,7 @@ describe('Blogs testing', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot(),
-        MongooseModule.forRoot(process.env.MONGO_URL || ''),
-        AppModule,
-      ],
+      imports: [AppModule],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -75,7 +69,7 @@ describe('Blogs testing', () => {
 
     it('Should create blog, return status 201 and blog information', async () => {
       const response = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
@@ -91,7 +85,7 @@ describe('Blogs testing', () => {
 
     it('Should not create blog, return status 400 and errors list', async () => {
       const response = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(incorrectBlog)
         .expect(400);
@@ -115,7 +109,7 @@ describe('Blogs testing', () => {
 
     it('Should not create blog, return status 401, if auth incorrect', async () => {
       await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('incorrect', 'qwerty')
         .send(correctBlog1)
         .expect(401);
@@ -129,8 +123,8 @@ describe('Blogs testing', () => {
     });
 
     it('Should return all blogs', async () => {
-      await agent.post('/blogs').auth('admin', 'qwerty').send(correctBlog1);
-      await agent.post('/blogs').auth('admin', 'qwerty').send(correctBlog2);
+      await agent.post('/sa/blogs').auth('admin', 'qwerty').send(correctBlog1);
+      await agent.post('/sa/blogs').auth('admin', 'qwerty').send(correctBlog2);
       const responseGet = await agent.get('/blogs').expect(200);
       expect(responseGet.body).toEqual({
         pagesCount: 1,
@@ -144,7 +138,7 @@ describe('Blogs testing', () => {
             description: correctBlog2.description,
             websiteUrl: correctBlog2.websiteUrl,
             createdAt: expect.any(String),
-            isMembership: false,
+            isMembership: true,
           },
           {
             id: expect.any(String),
@@ -152,7 +146,7 @@ describe('Blogs testing', () => {
             description: correctBlog1.description,
             websiteUrl: correctBlog1.websiteUrl,
             createdAt: expect.any(String),
-            isMembership: false,
+            isMembership: true,
           },
         ],
       });
@@ -160,11 +154,12 @@ describe('Blogs testing', () => {
 
     it('Should return blog by id', async () => {
       const responsePost = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1);
       const responseGet = await agent
-        .get('/blogs/' + responsePost.body.id)
+        .get('/sa/blogs/' + responsePost.body.id)
+        .auth('admin', 'qwerty')
         .expect(200);
       expect(responseGet.body).toEqual({
         id: responsePost.body.id,
@@ -172,13 +167,13 @@ describe('Blogs testing', () => {
         description: correctBlog1.description,
         websiteUrl: correctBlog1.websiteUrl,
         createdAt: expect.any(String),
-        isMembership: false,
+        isMembership: true,
       });
     });
 
     it('Should not return blog by id, if id incorrect', async () => {
-      await agent.post('/blogs').auth('admin', 'qwerty').send(correctBlog1);
-      await agent.get('/blogs/658d4c81e8285273a1f97c0a').expect(404);
+      await agent.post('/sa/blogs').auth('admin', 'qwerty').send(correctBlog1);
+      await agent.get('/sa/blogs/658').auth('admin', 'qwerty').expect(404);
     });
   });
 
@@ -190,12 +185,12 @@ describe('Blogs testing', () => {
 
     it('Should create post, return status 201 and post information', async () => {
       const responsePost1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1);
 
       const responsePost2 = await agent
-        .post('/blogs/' + responsePost1.body.id + '/posts')
+        .post('/sa/blogs/' + responsePost1.body.id + '/posts')
         .auth('admin', 'qwerty')
         .send(correctPost1)
         .expect(201);
@@ -218,12 +213,12 @@ describe('Blogs testing', () => {
 
     it('Should not create post, return status 400, if incorrect input', async () => {
       const responsePost1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1);
 
       const responsePost2 = await agent
-        .post('/blogs/' + responsePost1.body.id + '/posts')
+        .post('/sa/blogs/' + responsePost1.body.id + '/posts')
         .auth('admin', 'qwerty')
         .send(incorrectPost1)
         .expect(400);
@@ -247,22 +242,22 @@ describe('Blogs testing', () => {
 
     it('Should not create post, return status 401, if incorrect auth', async () => {
       const responsePost1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1);
 
       await agent
-        .post('/blogs/' + responsePost1.body.id + '/posts')
+        .post('/sa/blogs/' + responsePost1.body.id + '/posts')
         .auth('admin', 'incorrect')
         .send(correctBlog1)
         .expect(401);
     });
 
     it('Should not create post, return status 404, if specified blog does not exists', async () => {
-      await agent.post('/blogs').auth('admin', 'qwerty').send(correctBlog1);
+      await agent.post('/sa/blogs').auth('admin', 'qwerty').send(correctBlog1);
 
       await agent
-        .post('/blogs/658d0d8b6e78ef9ce0470741/posts')
+        .post('/sa/blogs/658d0d8b6e78ef9ce0470741/posts')
         .auth('admin', 'qwerty')
         .send(incorrectPost1)
         .expect(400);
@@ -277,23 +272,24 @@ describe('Blogs testing', () => {
 
     it('Should get post to specific blog, return status 200 and posts list', async () => {
       const blog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1);
 
       await agent
-        .post('/blogs/' + blog1.body.id + '/posts')
+        .post('/sa/blogs/' + blog1.body.id + '/posts')
         .auth('admin', 'qwerty')
         .send(correctPost1)
         .expect(201);
       await agent
-        .post('/blogs/' + blog1.body.id + '/posts')
+        .post('/sa/blogs/' + blog1.body.id + '/posts')
         .auth('admin', 'qwerty')
         .send(correctPost2)
         .expect(201);
 
       const responseGet = await agent
-        .get('/blogs/' + blog1.body.id + '/posts')
+        .get('/sa/blogs/' + blog1.body.id + '/posts')
+        .auth('admin', 'qwerty')
         .expect(200);
       expect(responseGet.body).toEqual({
         pagesCount: 1,
@@ -336,7 +332,10 @@ describe('Blogs testing', () => {
     });
 
     it('Should not get posts, if blogID is not exists. Return status 404', async () => {
-      await agent.get('/blogs/658edaa4c070ea0c2fab5e70/posts').expect(404);
+      await agent
+        .get('/sa/blogs/658/posts')
+        .auth('admin', 'qwerty')
+        .expect(404);
     });
 
     /*it('Should not get posts, if blogID is not objectId. Return 400', async () => {
@@ -352,12 +351,12 @@ describe('Blogs testing', () => {
 
     it('Should update blog, return status 204', async () => {
       const newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
       await agent
-        .put('/blogs/' + newBlog1.body.id)
+        .put('/sa/blogs/' + newBlog1.body.id)
         .auth('admin', 'qwerty')
         .send(correctUpdateBlog1)
         .expect(204);
@@ -365,12 +364,12 @@ describe('Blogs testing', () => {
 
     it('Should not update blog, if input incorrect. Return status 400', async () => {
       const newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
       const updateBlog = await agent
-        .put('/blogs/' + newBlog1.body.id)
+        .put('/sa/blogs/' + newBlog1.body.id)
         .auth('admin', 'qwerty')
         .send(incorrectBlog)
         .expect(400);
@@ -394,12 +393,12 @@ describe('Blogs testing', () => {
 
     it('Should not update blog, if auth incorrect, return status 401', async () => {
       const newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
       await agent
-        .put('/blogs/' + newBlog1.body.id)
+        .put('/sa/blogs/' + newBlog1.body.id)
         .auth('incorrect', 'incorrect')
         .send(correctUpdateBlog1)
         .expect(401);
@@ -407,7 +406,7 @@ describe('Blogs testing', () => {
 
     it('Should not update blog, if incorrect blogId return status 404', async () => {
       await agent
-        .put('/blogs/658edaa4c070ea0c2fab5e70')
+        .put('/sa/blogs/658')
         .auth('admin', 'qwerty')
         .send(correctUpdateBlog1)
         .expect(404);
@@ -422,24 +421,24 @@ describe('Blogs testing', () => {
 
     it('Should delete blog, return status 204', async () => {
       const newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
       await agent
-        .delete('/blogs/' + newBlog1.body.id)
+        .delete('/sa/blogs/' + newBlog1.body.id)
         .auth('admin', 'qwerty')
         .expect(204);
     });
 
     it('Should not delete blog, if auth incorrect, return status 401', async () => {
       const newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
       await agent
-        .delete('/blogs/' + newBlog1.body.id)
+        .delete('/sa/blogs/' + newBlog1.body.id)
         .auth('incorrect', 'incorrect')
         .send(correctUpdateBlog1)
         .expect(401);
@@ -447,7 +446,7 @@ describe('Blogs testing', () => {
 
     it('Should not delete blog, if incorrect blogId return status 404', async () => {
       await agent
-        .put('/blogs/658edaa4c070ea0c2fab5e70')
+        .put('/sa/blogs/658')
         .auth('admin', 'qwerty')
         .send(correctUpdateBlog1)
         .expect(404);

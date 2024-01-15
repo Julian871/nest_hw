@@ -34,13 +34,13 @@ export class CreatePostToBlogUseCase
     );
     const post = await this.postsRepository.createNewPost(newPost);
     return new PostInformation(
-      post._id.toString(),
+      post[0].id,
       newPost.title,
       newPost.shortDescription,
       newPost.content,
       newPost.blogId,
-      post.blogName,
-      post.createdAt,
+      post[0].blogName,
+      post[0].createdAt,
       0,
       0,
       'None',

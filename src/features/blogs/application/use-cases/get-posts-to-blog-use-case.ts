@@ -1,5 +1,4 @@
 import { BlogsRepository } from '../../infrastructure/blogs-repository';
-import { LikesPostService } from '../../../likes/likes-post-service';
 import { BlogsDefaultQuery } from '../../default-query';
 import { PostInformation } from '../../../posts/application/posts-output';
 import { PageInformation } from '../../../page-information';
@@ -17,10 +16,7 @@ export class GetPostsToBlogCommand {
 export class GetPostsToBlogUseCase
   implements ICommandHandler<GetPostsToBlogCommand>
 {
-  constructor(
-    private readonly blogsRepository: BlogsRepository,
-    private readonly likesPostService: LikesPostService,
-  ) {}
+  constructor(private readonly blogsRepository: BlogsRepository) {}
 
   async execute(command: GetPostsToBlogCommand) {
     const blog = await this.blogsRepository.getBlogById(command.blogId);
@@ -29,27 +25,24 @@ export class GetPostsToBlogUseCase
       command.query,
       command.blogId,
     );
-    const countPost = await this.blogsRepository.countBlogsByBlogId(
+    const countPost = await this.blogsRepository.countPostsByBlogId(
       command.blogId,
     );
     const filterPostsByBlogId = await Promise.all(
       allPosts.map(
         async (p) =>
           new PostInformation(
-            p.id.toString(),
+            p.id,
             p.title,
             p.shortDescription,
             p.content,
             command.blogId,
             p.blogName,
             p.createdAt,
-            p.extendedLikesInfo.countLike,
-            p.extendedLikesInfo.countDislike,
-            await this.likesPostService.getMyStatusToPost(
-              p.id.toString(),
-              command.userId,
-            ),
-            await this.likesPostService.getLikeListToPost(p.id.toString()),
+            0,
+            0,
+            'None',
+            [],
           ),
       ),
     );

@@ -5,8 +5,6 @@ import {
 } from '@nestjs/common';
 import supertest, { SuperAgentTest } from 'supertest';
 import { Test } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AppModule } from '../src/app.module';
 import { HttpExceptionFilter } from '../src/exeption-filter';
 import { correctBlog1, correctBlog2 } from './input-models/blogs-input-model';
@@ -28,11 +26,7 @@ describe('Posts testing', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot(),
-        MongooseModule.forRoot(process.env.MONGO_URL || ''),
-        AppModule,
-      ],
+      imports: [AppModule],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -71,7 +65,7 @@ describe('Posts testing', () => {
   describe('Create post', () => {
     it('Should create post, return status 201 and post information', async () => {
       const newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
@@ -493,7 +487,7 @@ describe('Posts testing', () => {
     });
 
     it('Should not create comment, if auth incorrect return status 401', async () => {
-      const newComment = await agent
+      await agent
         .post('/posts/' + newPost1.body.id + '/comments')
         .auth(expireToken, {
           type: 'bearer',
@@ -613,7 +607,7 @@ describe('Posts testing', () => {
     });
 
     it('Should not get comment to post, if postId incorrect return status 404', async () => {
-      const getPostComments = await agent
+      await agent
         .get('/posts/658fcb001c34ccb6b9e9e4a8/comments')
         .auth('admin', 'qwerty')
         .expect(404);
@@ -628,7 +622,6 @@ describe('Posts testing', () => {
 
     let newPost1: any;
     let newBlog1: any;
-    let newUser1: any;
     let refreshToken: any;
 
     it('Create blog and post', async () => {
@@ -650,7 +643,7 @@ describe('Posts testing', () => {
     });
 
     it('Should take Like, return status 201', async () => {
-      newUser1 = await agent
+      await agent
         .post('/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
@@ -702,10 +695,7 @@ describe('Posts testing', () => {
     });
 
     it('Should not take like, if auth incorrect', async () => {
-      const loginUser = await agent
-        .post('/auth/login')
-        .send(correctLoginUser1)
-        .expect(200);
+      await agent.post('/auth/login').send(correctLoginUser1).expect(200);
       await agent
         .put('/posts/' + newPost1.body.id + '/like-status')
         .auth(expireToken, {

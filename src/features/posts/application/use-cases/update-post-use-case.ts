@@ -1,11 +1,12 @@
 import { PostsRepository } from '../../infrastructure/posts-repository';
-import { CreatePostInputModel } from '../../api/posts-models';
+import { UpdatePostInputModel } from '../../api/posts-models';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class UpdatePostCommand {
   constructor(
     public postId: string,
-    public dto: CreatePostInputModel,
+    public blogId: string,
+    public dto: UpdatePostInputModel,
   ) {}
 }
 
@@ -14,6 +15,10 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
   constructor(private readonly postsRepository: PostsRepository) {}
 
   async execute(command: UpdatePostCommand) {
-    return this.postsRepository.updatePostById(command.postId, command.dto);
+    return this.postsRepository.updatePostById(
+      command.postId,
+      command.blogId,
+      command.dto,
+    );
   }
 }

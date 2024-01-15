@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -25,8 +24,6 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreatePostCommand } from '../application/use-cases/create-post-use-case';
 import { GetAllPostsCommand } from '../application/use-cases/get-all-posts-use-case';
 import { GetPostByIdCommand } from '../application/use-cases/get-post-by-id-use-case';
-import { UpdatePostCommand } from '../application/use-cases/update-post-use-case';
-import { DeletePostCommand } from '../application/use-cases/delete-post-use-case';
 import { CreatePostCommentCommand } from '../application/use-cases/create-post-comment-use-case';
 import { GetAllPostCommentCommand } from '../application/use-cases/get-all-post-comments-use-case';
 import { UpdatePostLikeStatusCommand } from '../../likes/use-cases/update-post-like-status-use-case';
@@ -84,7 +81,7 @@ export class PostsController {
 
   @Get('/:id')
   async getPost(
-    @Param('id', ObjectIdPipe) postId: string,
+    @Param('id') postId: string,
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
@@ -118,21 +115,6 @@ export class PostsController {
     } else res.status(HttpStatus.OK).send(comments);
   }
 
-  @UseGuards(BasicAuthGuard)
-  @Put('/:id')
-  async updatePost(
-    @Param('id', ObjectIdPipe) postId: string,
-    @Body() dto: CreatePostInputModel,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const isUpdate = await this.commandBus.execute(
-      new UpdatePostCommand(postId, dto),
-    );
-    if (!isUpdate) {
-      res.status(HttpStatus.NOT_FOUND);
-    } else res.status(HttpStatus.NO_CONTENT);
-  }
-
   @UseGuards(BearerAuthGuard)
   @Put('/:id/like-status')
   @HttpCode(204)
@@ -159,19 +141,5 @@ export class PostsController {
       new UpdatePostLikeStatusCommand(postId, dto.likeStatus, userId),
     );
     return true;
-  }
-
-  @UseGuards(BasicAuthGuard)
-  @Delete('/:id')
-  async deletePost(
-    @Param('id', ObjectIdPipe) postId: string,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const isDelete = await this.commandBus.execute(
-      new DeletePostCommand(postId),
-    );
-    if (!isDelete) {
-      res.status(HttpStatus.NOT_FOUND);
-    } else res.status(HttpStatus.NO_CONTENT);
   }
 }

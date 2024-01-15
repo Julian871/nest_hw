@@ -21,7 +21,12 @@ export class BlogsRepository {
 
     VALUES ($1, $2, $3, $4)
     returning id;`,
-      [newBlog.name, newBlog.createdAt, newBlog.websiteUrl, newBlog.createdAt],
+      [
+        newBlog.name,
+        newBlog.description,
+        newBlog.websiteUrl,
+        newBlog.createdAt,
+      ],
     );
   }
 
@@ -51,13 +56,17 @@ export class BlogsRepository {
   }
 
   async getPostByBlogId(query: BlogsDefaultQuery, blogId: string) {
-    return this.PostsModel.find({
-      blogId: { $regex: blogId ? blogId : '', $options: 'i' },
-    })
-      .sort({ [query.sortBy ?? 'createdAt']: query.sortDirection ?? -1 })
-      .skip((query.pageNumber - 1 ?? 1) * query.pageSize ?? 10)
-      .limit(query.pageSize ?? 10)
-      .lean();
+    return await this.dataSource.query(
+      `
+    SELECT *
+    FROM public."Posts"
+    WHERE "blogId" ilike $1
+    
+    ORDER by "${query.sortBy}" ${query.sortDirection}
+    LIMIT ${query.pageSize} offset (${query.pageNumber} - 1) * ${query.pageSize}
+    `,
+      [`%${blogId}%`],
+    );
   }
 
   async updateBlogById(id: string, dto: UpdateBlogInputModel) {
@@ -93,9 +102,15 @@ export class BlogsRepository {
     return result[0].count;
   }
 
-  async countBlogsByBlogId(blogId: string) {
-    return this.PostsModel.countDocuments({
-      blogId: { $regex: blogId ? blogId : '', $options: 'i' },
-    });
+  async countPostsByBlogId(blogId: string) {
+    const result = await this.dataSource.query(
+      `
+    SELECT count(*)
+    FROM public."Posts"
+    WHERE "blogId" ilike $1
+    `,
+      [`%${blogId}%`],
+    );
+    return result[0].count;
   }
 }

@@ -20,6 +20,7 @@ import { TestingModule } from './features/testing/testing.module';
 import { UserEntity } from './features/users/user-entity';
 import { SessionEntity } from './features/devices/session-entity';
 import { BlogEntity } from './features/blogs/blog-entity';
+import { PostEntity } from './features/posts/post-entity';
 dotenv.config();
 
 @Module({
@@ -27,13 +28,18 @@ dotenv.config();
     ConfigModule,
     CqrsModule,
     TypeOrmModule.forRoot({
-      entities: [UserEntity, SessionEntity, BlogEntity],
+      entities: [UserEntity, SessionEntity, BlogEntity, PostEntity],
       synchronize: true,
       type: 'postgres',
       url: process.env.SQL_URL,
       ssl: true,
     }),
-    TypeOrmModule.forFeature([UserEntity, SessionEntity, BlogEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      SessionEntity,
+      BlogEntity,
+      PostEntity,
+    ]),
     MongooseModule.forRoot(process.env.MONGO_URL || 'local connectio', {
       dbName: 'hw3',
     }),

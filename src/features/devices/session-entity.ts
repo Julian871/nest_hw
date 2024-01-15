@@ -17,6 +17,6 @@ export class SessionEntity {
   @Column()
   deviceId: string;
 
-  @Column()
-  userId: number;
+  @Column({ type: 'varchar', nullable: true })
+  userId: number | null;
 }

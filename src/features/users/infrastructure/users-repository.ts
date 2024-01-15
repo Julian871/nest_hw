@@ -29,15 +29,29 @@ export class UsersRepository {
     );
   }
 
-  async checkExistUser(login: string, email: string) {
-    return this.dataSource.query(
+  async checkExistLogin(login: string) {
+    const result = await this.dataSource.query(
       `
     SELECT u.*
     FROM public."Users" u 
-    WHERE u."login" = $1 or u."email" = $2
+    WHERE u."login" = $1
     `,
-      [login, email],
+      [login],
     );
+    return result.length === 1;
+  }
+
+  async checkExistEmail(email: string) {
+    const result = await this.dataSource.query(
+      `
+    SELECT u.*
+    FROM public."Users" u 
+    WHERE u."email" = $1
+    `,
+      [email],
+    );
+
+    return result.length === 1;
   }
 
   async getAllUsers(query: UsersQuery) {

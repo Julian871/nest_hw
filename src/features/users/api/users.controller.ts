@@ -37,12 +37,6 @@ export class UsersController {
     const createUser = await this.commandBus.execute(
       new CreateUserCommand(dto),
     );
-    if (!createUser) {
-      res.status(400).send({
-        errorsMessages: [{ message: 'Login or Email exist', field: 'exist' }],
-      });
-      return;
-    }
     res.status(201).send(createUser);
   }
 

@@ -4,6 +4,7 @@ import { UserInformation } from '../users-output';
 import * as bcrypt from 'bcrypt';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserCreatorToSql } from '../../../auth/users-input';
+import { BadRequestException } from '@nestjs/common';
 
 export class CreateUserCommand {
   constructor(public dto: CreateUserInputModel) {}
@@ -15,11 +16,15 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
 
   async execute(command: CreateUserCommand) {
     //check input information on exists
-    const checkInputInfo = await this.usersRepository.checkExistUser(
+    const checkLoginExist = await this.usersRepository.checkExistLogin(
       command.dto.login,
+    );
+    if (checkLoginExist) throw new BadRequestException('login');
+
+    const checkEmailExist = await this.usersRepository.checkExistEmail(
       command.dto.email,
     );
-    if (checkInputInfo.length !== 0) return false;
+    if (checkEmailExist) throw new BadRequestException('email');
 
     //create user
     const passwordSalt = await bcrypt.genSalt(10);

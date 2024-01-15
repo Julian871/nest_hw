@@ -19,19 +19,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
         errorsMessages: [],
       };
       const responseBody: any = exception.getResponse();
-      console.log(responseBody.message);
 
       if (Array.isArray(responseBody.message)) {
-        responseBody.message.forEach((m) =>
+        responseBody.message.forEach((m) => {
           errorResponse.errorsMessages.push({
             message: 'Incorrect ' + m.field,
             field: m.field,
-          }),
-        );
+          });
+        });
       } else {
         errorResponse.errorsMessages.push({
-          message: 'Check input data',
-          field: responseBody.message.field,
+          message: 'Incorrect ' + responseBody.message,
+          field: responseBody.message,
         });
       }
 

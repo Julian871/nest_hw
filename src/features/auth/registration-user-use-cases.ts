@@ -4,6 +4,7 @@ import { CreateUserInputModel } from '../users/api/users-models';
 import { UsersRepository } from '../users/infrastructure/users-repository';
 import { EmailManager } from '../../email/email-manager';
 import { UserCreatorToSql } from './users-input';
+import { BadRequestException } from '@nestjs/common';
 
 export class RegistrationUserCommand {
   constructor(public dto: CreateUserInputModel) {}
@@ -20,17 +21,15 @@ export class RegistrationUserUseCase
 
   async execute(command: RegistrationUserCommand) {
     //check input information on exists
-    const checkInputInfo = await this.usersRepository.checkExistUser(
+    const checkLoginExist = await this.usersRepository.checkExistLogin(
       command.dto.login,
+    );
+    if (checkLoginExist) throw new BadRequestException('login');
+
+    const checkEmailExist = await this.usersRepository.checkExistEmail(
       command.dto.email,
     );
-    if (checkInputInfo.length !== 0) {
-      if (checkInputInfo[0].login === command.dto.login) {
-        return 'login';
-      } else {
-        return 'email';
-      }
-    }
+    if (checkEmailExist) throw new BadRequestException('email');
 
     //create user
     const passwordSalt = await bcrypt.genSalt(10);

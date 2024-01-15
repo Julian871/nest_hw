@@ -166,19 +166,7 @@ export class AuthController {
     @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const createUser = await this.commandBus.execute(
-      new RegistrationUserCommand(dto),
-    );
-    if (createUser === 'login') {
-      res.status(400).send({
-        errorsMessages: [{ message: 'Login is exist', field: 'login' }],
-      });
-      return;
-    } else {
-      res.status(400).send({
-        errorsMessages: [{ message: 'Email is exist', field: 'email' }],
-      });
-    }
+    await this.commandBus.execute(new RegistrationUserCommand(dto));
     return true;
   }
 

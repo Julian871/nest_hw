@@ -24,7 +24,13 @@ export class RegistrationUserUseCase
       command.dto.login,
       command.dto.email,
     );
-    if (checkInputInfo.length !== 0) return false;
+    if (checkInputInfo.length !== 0) {
+      if (checkInputInfo[0].login === command.dto.login) {
+        return 'login';
+      } else {
+        return 'email';
+      }
+    }
 
     //create user
     const passwordSalt = await bcrypt.genSalt(10);

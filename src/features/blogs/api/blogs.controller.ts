@@ -10,7 +10,6 @@ import {
 import { BlogsQuery } from '../blogs-query';
 import { Request as Re, Response } from 'express';
 import { BlogsDefaultQuery } from '../default-query';
-import { ObjectIdPipe } from '../../../pipes/objectID.pipe';
 import { CommandBus } from '@nestjs/cqrs';
 import { GetBlogsCommand } from '../application/use-cases/get-blogs-use-case';
 import { GetBlogByIdCommand } from '../application/use-cases/get-blog-by-id-use-case';
@@ -31,7 +30,7 @@ export class BlogsController {
 
   @Get('/:id')
   async getBlog(
-    @Param('id', ObjectIdPipe) blogId: string,
+    @Param('id') blogId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
     const blog = await this.commandBus.execute(new GetBlogByIdCommand(blogId));
@@ -42,7 +41,7 @@ export class BlogsController {
 
   @Get('/:id/posts')
   async getPostsToBlog(
-    @Param('id', ObjectIdPipe) blogId: string,
+    @Param('id') blogId: string,
     @Query() query: BlogsDefaultQuery,
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,

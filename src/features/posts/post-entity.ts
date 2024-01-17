@@ -5,21 +5,21 @@ export class PostEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'varchar' })
   title: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   shortDescription: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   content: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   blogId: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   blogName: string;
 
-  @Column()
-  createdAt: string;
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  createdAt: Date;
 }

@@ -16,8 +16,7 @@ export class GetUsersUseCase implements ICommandHandler<GetUserCommand> {
     const usersCount = await this.usersRepository.usersCount(command.query);
     const allUsers = await this.usersRepository.getAllUsers(command.query);
     const filterUsers = allUsers.map(
-      (p) =>
-        new UserInformation(p.id.toString(), p.login, p.email, p.createdAt),
+      (p) => new UserInformation(p.id, p.login, p.email, p.createdAt),
     );
     return new PageInformation(
       command.query.pageNumber,

@@ -3,6 +3,7 @@ import { BlogsDefaultQuery } from '../../default-query';
 import { PostInformation } from '../../../posts/application/posts-output';
 import { PageInformation } from '../../../page-information';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { NotFoundException } from '@nestjs/common';
 
 export class GetPostsToBlogCommand {
   constructor(
@@ -20,7 +21,7 @@ export class GetPostsToBlogUseCase
 
   async execute(command: GetPostsToBlogCommand) {
     const blog = await this.blogsRepository.getBlogById(command.blogId);
-    if (!blog) return false;
+    if (!blog) throw new NotFoundException();
     const allPosts = await this.blogsRepository.getPostByBlogId(
       command.query,
       command.blogId,

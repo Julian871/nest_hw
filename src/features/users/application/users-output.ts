@@ -4,11 +4,11 @@ export class UserInformation {
   email: string;
   createdAt: string;
 
-  constructor(id: string, login: string, email: string, createdAt: string) {
-    this.id = id;
+  constructor(id: number, login: string, email: string, createdAt: Date) {
+    this.id = id.toString();
     this.login = login;
     this.email = email;
-    this.createdAt = createdAt;
+    this.createdAt = createdAt.toISOString();
   }
 }
 

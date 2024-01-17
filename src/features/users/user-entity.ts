@@ -5,30 +5,30 @@ export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'varchar' })
   login: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   email: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   passwordHash: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   passwordSalt: string;
 
-  @Column()
-  createdAt: string;
+  @Column({ type: 'timestamp with time zone' })
+  createdAt: Date;
 
-  @Column()
+  @Column({ type: 'varchar' })
   confirmationCode: string;
 
-  @Column()
-  expirationDate: string;
+  @Column({ type: 'timestamp with time zone' })
+  expirationDate: Date;
 
-  @Column()
+  @Column({ type: 'boolean', default: false })
   isConfirmation: boolean;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, default: null })
   recoveryCode: string | null;
 }

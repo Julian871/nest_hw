@@ -34,9 +34,7 @@ export class BlogsController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const blog = await this.commandBus.execute(new GetBlogByIdCommand(blogId));
-    if (!blog) {
-      res.status(HttpStatus.NOT_FOUND);
-    } else res.status(HttpStatus.OK).send(blog);
+    res.status(HttpStatus.OK).send(blog);
   }
 
   @Get('/:id/posts')
@@ -58,8 +56,6 @@ export class BlogsController {
     const postsList = await this.commandBus.execute(
       new GetPostsToBlogCommand(query, blogId, userId),
     );
-    if (!postsList) {
-      res.status(HttpStatus.NOT_FOUND);
-    } else res.status(HttpStatus.OK).send(postsList);
+    res.status(HttpStatus.OK).send(postsList);
   }
 }

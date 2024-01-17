@@ -14,20 +14,14 @@ export class BlogsRepository {
     @InjectModel(Post.name) private PostsModel: Model<postDocument>,
     private dataSource: DataSource,
   ) {}
-  async createNewBlog(newBlog: Blog) {
+  async createNewBlog(name: string, description: string, websiteUrl: string) {
     return await this.dataSource.query(
       `
-    INSERT INTO public."Blogs"("name", "description", "websiteUrl", "createdAt", "isMembership")
+    INSERT INTO public."Blogs"("name", "description", "websiteUrl", "createdAt")
 
-    VALUES ($1, $2, $3, $4, $5)
+    VALUES ($1, $2, $3, now())
     returning id;`,
-      [
-        newBlog.name,
-        newBlog.description,
-        newBlog.websiteUrl,
-        newBlog.createdAt,
-        newBlog.isMembership,
-      ],
+      [name, description, websiteUrl],
     );
   }
 

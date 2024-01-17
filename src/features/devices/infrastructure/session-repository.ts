@@ -22,7 +22,7 @@ export class SessionRepository {
   }
 
   async updateUserId(
-    userId: string,
+    userId: number,
     deviceId: string,
     tokenLastActiveDate: string,
   ) {

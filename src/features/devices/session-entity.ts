@@ -5,16 +5,16 @@ export class SessionEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'varchar' })
   IP: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   lastActiveDate: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   deviceName: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   deviceId: string;
 
   @Column({ type: 'varchar', nullable: true })

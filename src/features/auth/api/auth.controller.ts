@@ -7,6 +7,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from '../../users/application/users-service';
@@ -60,11 +61,7 @@ export class AuthController {
     @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const updatePassword = await this.usersService.updatePassword(body);
-    if (updatePassword !== true) {
-      res.status(400).send(updatePassword);
-      return;
-    }
+    await this.usersService.updatePassword(body);
     return true;
   }
 
@@ -78,28 +75,25 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const user = await this.usersService.checkCredentials(dto);
-    if (user) {
-      const accessToken = await this.authService.createAccessToken(user[0].id);
-      const refreshToken = await this.authService.createRefreshToken(
-        user[0].id,
-        req.connect.deviceId,
-      );
-      res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: true,
-      });
-      res.status(200).send({ accessToken: accessToken });
-      const tokenLastActiveDate =
-        await this.authService.getLastActiveDateRefreshToken(refreshToken);
-      await this.sessionRepository.updateUserId(
-        user[0].id,
-        req.connect.deviceId,
-        tokenLastActiveDate,
-      );
-      return;
-    } else {
-      res.sendStatus(401);
-    }
+
+    const accessToken = await this.authService.createAccessToken(user[0].id);
+    const refreshToken = await this.authService.createRefreshToken(
+      user[0].id,
+      req.connect.deviceId,
+    );
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    res.status(200).send({ accessToken: accessToken });
+    const tokenLastActiveDate =
+      await this.authService.getLastActiveDateRefreshToken(refreshToken);
+    await this.sessionRepository.updateUserId(
+      user[0].id,
+      req.connect.deviceId,
+      tokenLastActiveDate,
+    );
+    return;
   }
 
   @UseGuards(CheckSessionGuard)
@@ -111,14 +105,11 @@ export class AuthController {
     const userId = await this.authService.getUserIdFromRefreshToken(
       req.cookies.refreshToken,
     );
-    if (!userId) {
-      res.sendStatus(401);
-      return;
-    }
+    if (!userId) throw new UnauthorizedException();
+
     const deviceId = await this.authService.getDeviceIdRefreshToken(
       req.cookies.refreshToken,
     );
-
     const token = await this.authService.createAccessToken(userId);
     const refreshToken = await this.authService.createRefreshToken(
       userId,
@@ -144,17 +135,12 @@ export class AuthController {
     @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const confirmation = await this.usersService.checkConfirmationCode(
+    await this.usersService.checkConfirmationCode(
       dto.code,
       req.connect.deviceId,
       req.connect.tokenLastActiveDate,
     );
-    if (confirmation === true) {
-      return true;
-    } else {
-      res.status(400).send(confirmation);
-      return;
-    }
+    return true;
   }
 
   @UseGuards(ThrottlerGuard)
@@ -166,8 +152,7 @@ export class AuthController {
     @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
-    await this.commandBus.execute(new RegistrationUserCommand(dto));
-    return true;
+    return await this.commandBus.execute(new RegistrationUserCommand(dto));
   }
 
   @UseGuards(ThrottlerGuard)
@@ -179,16 +164,11 @@ export class AuthController {
     @Req() req: Re,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const user = await this.usersService.checkEmail(
+    return await this.usersService.checkEmail(
       dto.email,
       req.connect.deviceId,
       req.connect.tokenLastActiveDate,
     );
-    if (user !== true) {
-      res.status(400).send(user);
-      return;
-    }
-    return true;
   }
 
   @UseGuards(CheckSessionGuard)
@@ -198,15 +178,11 @@ export class AuthController {
     const userId = await this.authService.getUserIdFromRefreshToken(
       req.cookies.refreshToken,
     );
-    if (!userId) {
-      res.sendStatus(401);
-      return;
-    }
+    if (!userId) throw new UnauthorizedException();
+
     const user = await this.usersRepository.getUserById(userId);
-    if (user.length === 0) {
-      res.sendStatus(401);
-      return;
-    }
+    if (user.length === 0) throw new UnauthorizedException();
+
     const deviceId = await this.authService.getDeviceIdRefreshToken(
       req.cookies.refreshToken,
     );
@@ -229,10 +205,6 @@ export class AuthController {
       req.headers.authorization!,
     );
     const user = await this.usersService.getUserToMe(userId);
-    if (user === null) {
-      res.sendStatus(401);
-      return;
-    }
     res.status(200).send(user);
   }
 }

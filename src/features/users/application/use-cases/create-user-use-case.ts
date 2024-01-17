@@ -3,8 +3,8 @@ import { CreateUserInputModel } from '../../api/users-models';
 import { UserInformation } from '../users-output';
 import * as bcrypt from 'bcrypt';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UserCreatorToSql } from '../../../auth/users-input';
 import { BadRequestException } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 
 export class CreateUserCommand {
   constructor(public dto: CreateUserInputModel) {}
@@ -29,17 +29,19 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
     //create user
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(command.dto.password, passwordSalt);
-    const newUser = new UserCreatorToSql(
+    const confirmationCode = uuidv4();
+
+    const user = await this.usersRepository.registrationNewUser(
+      passwordSalt,
+      passwordHash,
+      confirmationCode,
       command.dto.login,
       command.dto.email,
-      passwordHash,
-      passwordSalt,
     );
-    const user = await this.usersRepository.registrationNewUser(newUser);
 
-    //return new user
+    //return new User
     return new UserInformation(
-      user[0].id.toString(),
+      user[0].id,
       command.dto.login,
       command.dto.email,
       user[0].createdAt,

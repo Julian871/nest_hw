@@ -50,13 +50,7 @@ export class UsersController {
     @Param('id', IsNumberPipe) userId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const isDelete = await this.commandBus.execute(
-      new DeleteUserCommand(userId),
-    );
-    if (!isDelete) {
-      res.status(HttpStatus.NOT_FOUND);
-      return;
-    }
+    await this.commandBus.execute(new DeleteUserCommand(userId));
     res.status(HttpStatus.NO_CONTENT);
     return;
   }

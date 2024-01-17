@@ -7,25 +7,21 @@ import { UserCreatorToSql } from '../../auth/users-input';
 export class UsersRepository {
   constructor(private dataSource: DataSource) {}
 
-  async registrationNewUser(user: UserCreatorToSql) {
+  async registrationNewUser(
+    passwordSalt: string,
+    passwordHash: string,
+    confirmationCode: string,
+    login: string,
+    email: string,
+  ) {
     return await this.dataSource.query(
       `
     INSERT INTO public."Users"(login, email, "passwordHash", "passwordSalt", "createdAt", 
-    "confirmationCode", "expirationDate", "isConfirmation", "recoveryCode")
+    "confirmationCode", "expirationDate")
 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-    returning id, "createdAt";`,
-      [
-        user.login,
-        user.email,
-        user.passwordHash,
-        user.passwordSalt,
-        user.createdAt,
-        user.confirmationCode,
-        user.expirationDate,
-        user.isConfirmation,
-        user.recoveryCode,
-      ],
+    VALUES ($1, $2, $3, $4, now(), $5, now() + interval '1 hours')
+    returning id, "createdAt", "expirationDate";`,
+      [login, email, passwordHash, passwordSalt, confirmationCode],
     );
   }
 

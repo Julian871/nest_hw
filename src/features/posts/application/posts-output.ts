@@ -20,19 +20,19 @@ export class PostInformation {
     content: string,
     blogId: string,
     blogName: string,
-    createdAt: string,
+    createdAt: Date,
     likesCount: number,
     dislikesCount: number,
     myStatus: string,
     newestLikes: any,
   ) {
-    this.id = id.toString();
+    this.id = id;
     this.title = title;
     this.shortDescription = shortDescription;
     this.content = content;
     this.blogId = blogId;
     this.blogName = blogName;
-    this.createdAt = createdAt;
+    this.createdAt = createdAt.toISOString();
     this.extendedLikesInfo = {
       likesCount: likesCount,
       dislikesCount: dislikesCount,

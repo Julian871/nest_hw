@@ -11,14 +11,14 @@ export class BlogInformation {
     name: string,
     description: string,
     websiteUrl: string,
-    createdAt: string,
+    createdAt: Date,
     isMembership: boolean,
   ) {
-    this.id = id;
+    this.id = id.toString();
     this.name = name;
     this.description = description;
     this.websiteUrl = websiteUrl;
-    this.createdAt = createdAt;
+    this.createdAt = createdAt.toISOString();
     this.isMembership = isMembership;
   }
 }

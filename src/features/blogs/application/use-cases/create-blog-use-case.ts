@@ -13,19 +13,18 @@ export class CreateBlogUseCase implements ICommandHandler<CreateBlogCommand> {
   constructor(private readonly blogsRepository: BlogsRepository) {}
 
   async execute(command: CreateBlogCommand) {
-    const newBlog = new BlogCreator(
+    const blog = await this.blogsRepository.createNewBlog(
       command.data.name,
       command.data.description,
       command.data.websiteUrl,
     );
-    const blog = await this.blogsRepository.createNewBlog(newBlog);
     return new BlogInformation(
       blog[0].id.toString(),
-      newBlog.name,
-      newBlog.description,
-      newBlog.websiteUrl,
-      newBlog.createdAt,
-      newBlog.isMembership,
+      command.data.name,
+      command.data.description,
+      command.data.websiteUrl,
+      blog[0].createdAt,
+      false,
     );
   }
 }

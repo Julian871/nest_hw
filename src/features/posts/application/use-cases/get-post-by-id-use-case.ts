@@ -15,7 +15,6 @@ export class GetPostByIdUseCase implements ICommandHandler<GetPostByIdCommand> {
 
   async execute(command: GetPostByIdCommand) {
     const post = await this.postsRepository.getPostById(command.postId);
-    console.log(post);
     if (!post) {
       return false;
     }

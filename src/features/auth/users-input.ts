@@ -6,11 +6,8 @@ export class UserCreatorToSql {
   email: string;
   passwordHash: string;
   passwordSalt: string;
-  createdAt: string;
   confirmationCode = uuidv4();
   expirationDate: string;
-  isConfirmation: boolean;
-  recoveryCode: null;
 
   constructor(
     login: string,
@@ -23,8 +20,5 @@ export class UserCreatorToSql {
     this.passwordHash = passwordHash;
     this.passwordSalt = passwordSalt;
     this.expirationDate = add(new Date(), { hours: 1 }).toISOString();
-    this.createdAt = new Date().toISOString();
-    this.isConfirmation = false;
-    this.recoveryCode = null;
   }
 }

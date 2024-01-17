@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users-repository';
 import { UserInfoToMe } from './users-output';
 import * as bcrypt from 'bcrypt';
@@ -20,7 +24,6 @@ export class UsersService {
 
   async sendRecoveryCode(email: string) {
     const newRecoveryCode = uuidv4();
-    console.log('newRecoveryCode: ', newRecoveryCode);
     await this.emailManager.sendRecoveryCode(email, newRecoveryCode);
     await this.usersRepository.updateRecoveryCode(email, newRecoveryCode);
   }
@@ -29,16 +32,7 @@ export class UsersService {
     const checkRecoveryCode = await this.usersRepository.checkRecoveryCode(
       body.recoveryCode,
     );
-    if (!checkRecoveryCode) {
-      return {
-        errorsMessages: [
-          {
-            message: 'recovery code incorrect',
-            field: 'recoveryCode',
-          },
-        ],
-      };
-    }
+    if (!checkRecoveryCode) throw new BadRequestException('recovery code');
 
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(body.newPassword, passwordSalt);
@@ -55,11 +49,10 @@ export class UsersService {
     const user = await this.usersRepository.findUserByLoginOrEmail(
       dto.loginOrEmail,
     );
-    if (user.length === 0) return null;
+    if (user.length === 0) throw new UnauthorizedException();
     const passwordHash = await bcrypt.hash(dto.password, user[0].passwordSalt);
-    if (user[0].passwordHash !== passwordHash) {
-      return null;
-    }
+    if (user[0].passwordHash !== passwordHash)
+      throw new UnauthorizedException();
     return user;
   }
 
@@ -70,7 +63,7 @@ export class UsersService {
   ) {
     const user = await this.usersRepository.getUserByConfirmationCode(code);
     if (user.length === 0) {
-      return { errorsMessages: [{ message: 'Incorrect code', field: 'code' }] };
+      throw new BadRequestException('code');
     } else if (!user[0].isConfirmation) {
       await this.sessionRepository.updateUserId(
         user[0].id,
@@ -84,7 +77,7 @@ export class UsersService {
       await this.usersRepository.updateConfirmStatus(user[0].id);
       return true;
     } else {
-      return { errorsMessages: [{ message: 'code confirm', field: 'code' }] };
+      throw new BadRequestException('code');
     }
   }
 
@@ -96,9 +89,7 @@ export class UsersService {
     const user = await this.usersRepository.checkUserByEmail(email);
     const newConfirmationCode = uuidv4();
     if (user.length === 0) {
-      return {
-        errorsMessages: [{ message: 'Incorrect email', field: 'email' }],
-      };
+      throw new BadRequestException('email');
     } else if (!user[0].isConfirmation) {
       await this.sessionRepository.updateUserId(
         user[0].id,
@@ -112,12 +103,13 @@ export class UsersService {
       );
       return true;
     } else {
-      return { errorsMessages: [{ message: 'no confirm', field: 'email' }] };
+      throw new BadRequestException('email');
     }
   }
 
   async getUserToMe(userId: string | null) {
     const user = await this.usersRepository.getUserById(userId);
+    if (user.length === 0) throw new UnauthorizedException();
     return new UserInfoToMe(user[0].id, user[0].login, user[0].email);
   }
 }

@@ -5,18 +5,18 @@ export class BlogEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'varchar' })
   name: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   description: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   websiteUrl: string;
 
-  @Column()
-  createdAt: string;
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  createdAt: Date;
 
-  @Column()
+  @Column({ type: 'boolean', default: false })
   isMembership: boolean;
 }

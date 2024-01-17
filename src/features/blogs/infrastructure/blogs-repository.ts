@@ -1,26 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { BlogsQuery } from '../blogs-query';
-import { Blog } from '../blogs-schema';
-import { Post, postDocument } from '../../posts/posts-schema';
 import { BlogsDefaultQuery } from '../default-query';
 import { UpdateBlogInputModel } from '../api/blogs-dto-models';
 import { DataSource } from 'typeorm';
 
 @Injectable()
 export class BlogsRepository {
-  constructor(
-    @InjectModel(Post.name) private PostsModel: Model<postDocument>,
-    private dataSource: DataSource,
-  ) {}
+  constructor(private dataSource: DataSource) {}
   async createNewBlog(name: string, description: string, websiteUrl: string) {
     return await this.dataSource.query(
       `
     INSERT INTO public."Blogs"("name", "description", "websiteUrl", "createdAt")
 
     VALUES ($1, $2, $3, now())
-    returning id;`,
+    returning "id", "createdAt";`,
       [name, description, websiteUrl],
     );
   }

@@ -3,6 +3,7 @@ import { BlogsRepository } from '../../../blogs/infrastructure/blogs-repository'
 import { CreatePostInputModel } from '../../api/posts-models';
 import { PostInformation } from '../posts-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { NotFoundException } from '@nestjs/common';
 
 export class CreatePostCommand {
   constructor(public dto: CreatePostInputModel) {}
@@ -19,6 +20,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
     const blogName = await this.blogsRepository.getBlogById(
       +command.dto.blogId,
     );
+    if (!blogName) throw new NotFoundException();
 
     const post = await this.postsRepository.createNewPost(
       command.dto.title,

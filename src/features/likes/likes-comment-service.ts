@@ -16,10 +16,13 @@ export class LikesCommentsService {
   }
 
   async getLikeCount(commentId: number) {
-    return await this.commentsRepository.countCommentLike(commentId);
+    const likeCount = await this.commentsRepository.countCommentLike(commentId);
+    return +likeCount;
   }
 
   async getDislikeCount(commentId: number) {
-    return await this.commentsRepository.countCommentDislike(commentId);
+    const dislikeCount =
+      await this.commentsRepository.countCommentDislike(commentId);
+    return +dislikeCount;
   }
 }

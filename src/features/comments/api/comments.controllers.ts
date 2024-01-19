@@ -106,7 +106,6 @@ export class CommentsController {
       req.headers.authorization!,
     );
     if (!userId) throw new ForbiddenException();
-
     await this.commentsService.checkOwner(+userId, +commentId);
 
     await this.commentsRepository.deleteCommentById(+commentId);

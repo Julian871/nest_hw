@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BlogsQuery } from '../blogs-query';
 import { BlogsDefaultQuery } from '../default-query';
 import { UpdateBlogInputModel } from '../api/blogs-dto-models';
@@ -40,6 +40,7 @@ export class BlogsRepository {
     WHERE "id" = $1`,
       [blogId],
     );
+    if (blog.length === 0) throw new NotFoundException();
     return blog[0].name;
   }
 

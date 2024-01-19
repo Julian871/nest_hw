@@ -49,7 +49,7 @@ export class PostsRepository {
   }
 
   async getUserLikeInfoToPost(userId: number, postId: number) {
-    const likeInfo = await this.dataSource.query(
+    return await this.dataSource.query(
       `
     SELECT *
     FROM public."PostLikes"
@@ -57,7 +57,6 @@ export class PostsRepository {
     `,
       [userId, postId],
     );
-    return likeInfo[0];
   }
 
   async takeLikeOrDislike(

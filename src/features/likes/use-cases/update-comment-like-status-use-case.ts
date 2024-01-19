@@ -26,22 +26,23 @@ export class UpdateCommentLikeStatusUseCase
     );
 
     const user = await this.usersRepository.getUserById(command.userId);
-    if (infoLike === null && command.likeStatus === 'None') return;
+    if (infoLike.length === 0 && command.likeStatus === 'None') return;
 
     // if user didn't like or dislike post
-    if (infoLike === null) {
+    if (infoLike.length === 0) {
       await this.commentsRepository.takeLikeOrDislike(
         command.commentId,
         command.likeStatus,
         command.userId,
         user[0].login,
       );
+      return;
     }
 
-    if (command.likeStatus === infoLike.status) return;
+    if (command.likeStatus === infoLike[0].status) return;
 
     // if user like in db differs from input like, delete there likeStatus in db
-    await this.commentsRepository.deleteLikeOrDislikeInfo(infoLike.id);
+    await this.commentsRepository.deleteLikeOrDislikeInfo(infoLike[0].id);
 
     // if likeStatus = like or dislike, create new likeInfo
     if (command.likeStatus !== 'None') {

@@ -28,6 +28,7 @@ import { PostEntity } from './post-entity';
 import { PostLikeEntity } from '../likes/post-like-entity';
 import { CommentLikeEntity } from '../likes/comment-like-entity';
 import { CommentEntity } from '../comments/comment-entity';
+import { UpdatePostLikeStatusUseCase } from '../likes/use-cases/update-post-like-status-use-case';
 
 const services = [
   AuthService,
@@ -52,6 +53,7 @@ const useCases = [
   GetPostByIdUseCase,
   UpdatePostUseCase,
   GetBlogByIdUseCase,
+  UpdatePostLikeStatusUseCase,
 ];
 
 const Entity = [PostEntity, PostLikeEntity, CommentLikeEntity, CommentEntity];

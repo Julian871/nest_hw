@@ -41,11 +41,11 @@ export class CreatePostCommentUseCase
       user[0].login,
     );
     return new CommentInformation(
-      comment.id,
+      comment[0].id,
       command.content,
       userId,
       user[0].login,
-      comment.createdAt,
+      comment[0].createdAt,
       0,
       0,
       'None',

@@ -16,7 +16,7 @@ export class CommentsRepository {
     INSERT INTO public."Comments"("postId", "content", "createdAt", "userId", "login")
 
     VALUES ($1, $2, now(), $3, $4)
-    returning "id", "blogName", "createdAt";`,
+    returning "id", "createdAt";`,
       [postId, content, userId, login],
     );
   }
@@ -78,7 +78,7 @@ export class CommentsRepository {
   }
 
   async getUserLikeInfoToComment(userId: number, commentId: number) {
-    const likeInfo = await this.dataSource.query(
+    return await this.dataSource.query(
       `
     SELECT *
     FROM public."CommentLikes"
@@ -86,7 +86,6 @@ export class CommentsRepository {
     `,
       [userId, commentId],
     );
-    return likeInfo[0];
   }
 
   async takeLikeOrDislike(

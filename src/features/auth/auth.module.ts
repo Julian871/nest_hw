@@ -26,7 +26,7 @@ const useCases = [RegistrationUserUseCase];
     ThrottlerModule.forRoot([
       {
         ttl: 10000,
-        limit: 5,
+        limit: 15,
       },
     ]),
   ],

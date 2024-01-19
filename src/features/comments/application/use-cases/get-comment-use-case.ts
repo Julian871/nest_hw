@@ -28,7 +28,7 @@ export class GetCommentUseCase implements ICommandHandler<GetCommentCommand> {
       content: commentInfo.content,
       commentatorInfo: {
         userId: commentInfo.userId.toString(),
-        userLogin: commentInfo.userLogin,
+        userLogin: commentInfo.login,
       },
       createdAt: commentInfo.createdAt.toISOString(),
       likesInfo: {

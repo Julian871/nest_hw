@@ -34,7 +34,7 @@ export class CommentsController {
     private commandBus: CommandBus,
   ) {}
 
-  @Get(':id')
+  @Get('/:id')
   async getComment(
     @Res({ passthrough: true }) res: Response,
     @Param('id') commentId: string,

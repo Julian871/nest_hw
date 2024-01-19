@@ -3,17 +3,21 @@ import { PostsDefaultQuery } from '../../default-query';
 import { PostInformation } from '../posts-output';
 import { PageInformation } from '../../../page-information';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { LikesPostService } from '../../../likes/likes-post-service';
 
 export class GetAllPostsCommand {
   constructor(
     public query: PostsDefaultQuery,
-    public userId: string | null,
+    public userId: number | null,
   ) {}
 }
 
 @CommandHandler(GetAllPostsCommand)
 export class GetAllPostsUseCase implements ICommandHandler<GetAllPostsCommand> {
-  constructor(private readonly postsRepository: PostsRepository) {}
+  constructor(
+    private readonly postsRepository: PostsRepository,
+    private readonly likesPostService: LikesPostService,
+  ) {}
 
   async execute(command: GetAllPostsCommand) {
     const countPosts = await this.postsRepository.countPosts();
@@ -29,10 +33,10 @@ export class GetAllPostsUseCase implements ICommandHandler<GetAllPostsCommand> {
             p.blogId,
             p.blogName,
             p.createdAt,
-            0,
-            0,
-            'None',
-            [],
+            await this.likesPostService.getLikeCount(p.id),
+            await this.likesPostService.getDislikeCount(p.id),
+            await this.likesPostService.getMyStatusToPost(p.id, command.userId),
+            await this.likesPostService.getLikeListToPost(p.id),
           ),
       ),
     );

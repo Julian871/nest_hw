@@ -1,11 +1,12 @@
 import { CommentsRepository } from '../../infrastructure/comments-repository';
 import { LikesCommentsService } from '../../../likes/likes-comment-service';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { NotFoundException } from '@nestjs/common';
 
 export class GetCommentCommand {
   constructor(
-    public commentId: string,
-    public userId: string | null,
+    public commentId: number,
+    public userId: number | null,
   ) {}
 }
 
@@ -20,21 +21,25 @@ export class GetCommentUseCase implements ICommandHandler<GetCommentCommand> {
     const commentInfo = await this.commentsRepository.getCommentById(
       command.commentId,
     );
-    if (!commentInfo) return false;
+    if (!commentInfo) throw new NotFoundException();
 
     return {
-      id: commentInfo._id.toString(),
+      id: commentInfo.id.toString(),
       content: commentInfo.content,
       commentatorInfo: {
-        userId: commentInfo.commentatorInfo.userId,
-        userLogin: commentInfo.commentatorInfo.userLogin,
+        userId: commentInfo.userId.toString(),
+        userLogin: commentInfo.userLogin,
       },
-      createdAt: commentInfo.createdAt,
+      createdAt: commentInfo.createdAt.toISOString(),
       likesInfo: {
-        likesCount: commentInfo.likesInfo.countLike,
-        dislikesCount: commentInfo.likesInfo.countDislike,
-        myStatus: await this.likesCommentService.getMyStatus(
-          commentInfo._id.toString(),
+        likesCount: await this.likesCommentService.getLikeCount(
+          command.commentId,
+        ),
+        dislikesCount: await this.likesCommentService.getDislikeCount(
+          command.commentId,
+        ),
+        myStatus: await this.likesCommentService.getMyStatusToComment(
+          command.commentId,
           command.userId,
         ),
       },

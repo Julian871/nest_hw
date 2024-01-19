@@ -4,9 +4,9 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class UpdatePostLikeStatusCommand {
   constructor(
-    public postId: string,
+    public postId: number,
     public likeStatus: string,
-    public userId: string | null,
+    public userId: number,
   ) {}
 }
 
@@ -20,60 +20,37 @@ export class UpdatePostLikeStatusUseCase
   ) {}
 
   async execute(command: UpdatePostLikeStatusCommand) {
-    if (command.userId === null) return;
+    const infoLike = await this.postsRepository.getUserLikeInfoToPost(
+      command.userId,
+      command.postId,
+    );
     const user = await this.usersRepository.getUserById(command.userId);
-    const newLike = {
-      addedAt: new Date(),
-      userId: command.userId,
-      login: user?.accountData.login,
-    };
-    const checkOnLike = await this.postsRepository.getLikeStatus(
-      command.postId,
-      command.userId,
-    );
-    if (checkOnLike && command.likeStatus === 'None') {
-      return await this.postsRepository.updateLikeToNoneStatus(
-        command.postId,
-        command.userId,
-      );
-    } else if (checkOnLike && command.likeStatus === 'Dislike') {
-      return await this.postsRepository.updateLikeToDislike(
-        command.postId,
-        command.userId,
-      );
-    } else if (checkOnLike && command.likeStatus === 'Like') return true;
+    if (infoLike === null && command.likeStatus === 'None') return;
 
-    const checkDislike = await this.postsRepository.getDislikeStatus(
-      command.postId,
-      command.userId,
-    );
-    if (checkDislike && command.likeStatus === 'None') {
-      return await this.postsRepository.updateDislikeToNoneStatus(
+    // if user didn't like or dislike post
+    if (infoLike === null) {
+      await this.postsRepository.takeLikeOrDislike(
         command.postId,
+        command.likeStatus,
         command.userId,
-      );
-    } else if (checkDislike && command.likeStatus === 'Like') {
-      return await this.postsRepository.updateDislikeToLike(
-        command.postId,
-        newLike,
-        command.userId,
-      );
-    } else if (checkDislike && command.likeStatus === 'Dislike') return true;
-
-    if (command.likeStatus === 'Like') {
-      return await this.postsRepository.updateLikeStatus(
-        command.postId,
-        newLike,
+        user[0].login,
       );
     }
 
-    if (command.likeStatus === 'Dislike') {
-      return await this.postsRepository.updateDislikeStatus(
+    if (command.likeStatus === infoLike.status) return;
+
+    // if user like in db differs from input like, delete there likeStatus in db
+    await this.postsRepository.deleteLikeOrDislikeInfo(infoLike.id);
+
+    // if likeStatus = like or dislike, create new likeInfo
+    if (command.likeStatus !== 'None') {
+      await this.postsRepository.takeLikeOrDislike(
         command.postId,
+        command.likeStatus,
         command.userId,
+        user[0].login,
       );
     }
-
-    if (command.likeStatus === 'None') return true;
+    return;
   }
 }

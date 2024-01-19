@@ -1,23 +1,27 @@
 import { PostsRepository } from '../../infrastructure/posts-repository';
 import { PostInformation } from '../posts-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { NotFoundException } from '@nestjs/common';
+import { LikesPostService } from '../../../likes/likes-post-service';
 
 export class GetPostByIdCommand {
   constructor(
-    public postId: string,
-    public userId: string | null,
+    public postId: number,
+    public userId: number | null,
   ) {}
 }
 
 @CommandHandler(GetPostByIdCommand)
 export class GetPostByIdUseCase implements ICommandHandler<GetPostByIdCommand> {
-  constructor(private readonly postsRepository: PostsRepository) {}
+  constructor(
+    private readonly postsRepository: PostsRepository,
+    private readonly likesPostService: LikesPostService,
+  ) {}
 
   async execute(command: GetPostByIdCommand) {
     const post = await this.postsRepository.getPostById(command.postId);
-    if (!post) {
-      return false;
-    }
+    if (!post) throw new NotFoundException();
+
     return new PostInformation(
       command.postId,
       post.title,
@@ -26,10 +30,13 @@ export class GetPostByIdUseCase implements ICommandHandler<GetPostByIdCommand> {
       post.blogId,
       post.blogName,
       post.createdAt,
-      0,
-      0,
-      'None',
-      [],
+      await this.likesPostService.getLikeCount(command.postId),
+      await this.likesPostService.getDislikeCount(command.postId),
+      await this.likesPostService.getMyStatusToPost(
+        command.postId,
+        command.userId,
+      ),
+      await this.likesPostService.getLikeListToPost(command.postId),
     );
   }
 }

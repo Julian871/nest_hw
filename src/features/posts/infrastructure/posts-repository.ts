@@ -1,41 +1,27 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { PostsDefaultQuery } from '../default-query';
-import { Post, postDocument } from '../posts-schema';
-import { Comment, commentDocument } from '../../comments/comments-schema';
 import { DataSource } from 'typeorm';
-import { PostCreator } from '../application/posts-input';
 import { UpdatePostInputModel } from '../api/posts-models';
 
 @Injectable()
 export class PostsRepository {
-  constructor(
-    @InjectModel(Post.name) private PostsModel: Model<postDocument>,
-    @InjectModel(Comment.name) private CommentsModel: Model<commentDocument>,
-    private dataSource: DataSource,
-  ) {}
+  constructor(private dataSource: DataSource) {}
 
-  async createNewPost(newPost: PostCreator) {
+  async createNewPost(
+    title: string,
+    shortDescription: string,
+    blogId: number,
+    blogName: string,
+    content: string,
+  ) {
     return await this.dataSource.query(
       `
     INSERT INTO public."Posts"("title", "shortDescription", "blogId", "blogName", "createdAt", "content")
 
-    VALUES ($1, $2, $3, $4, $5, $6)
+    VALUES ($1, $2, $3, $4, now(), $5)
     returning "id", "blogName", "createdAt";`,
-      [
-        newPost.title,
-        newPost.shortDescription,
-        newPost.blogId,
-        newPost.blogName,
-        newPost.createdAt,
-        newPost.content,
-      ],
+      [title, shortDescription, blogId, blogName, content],
     );
-  }
-
-  async createNewPostComment(newPostComment: any) {
-    return await this.CommentsModel.create(newPostComment);
   }
 
   async getAllPosts(query: PostsDefaultQuery) {
@@ -50,7 +36,7 @@ export class PostsRepository {
     );
   }
 
-  async getPostById(postId: string) {
+  async getPostById(postId: number) {
     const result = await this.dataSource.query(
       `
     SELECT *
@@ -62,14 +48,78 @@ export class PostsRepository {
     return result[0];
   }
 
-  async getAllPostsComments(query: PostsDefaultQuery, id: string) {
-    return this.CommentsModel.find({
-      idPost: { $regex: id ? id : '', $options: 'i' },
-    })
-      .sort({ [query.sortBy ?? 'createdAt']: query.sortDirection ?? -1 })
-      .skip((query.pageNumber - 1 ?? 1) * query.pageSize ?? 10)
-      .limit(query.pageSize ?? 10)
-      .lean();
+  async getUserLikeInfoToPost(userId: number, postId: number) {
+    const likeInfo = await this.dataSource.query(
+      `
+    SELECT *
+    FROM public."PostLikes"
+    WHERE "userId" = $1 and "postId" = $2
+    `,
+      [userId, postId],
+    );
+    return likeInfo[0];
+  }
+
+  async takeLikeOrDislike(
+    postId: number,
+    likeStatus: string,
+    userId: number,
+    login: string,
+  ) {
+    return await this.dataSource.query(
+      `
+    INSERT INTO public."PostLikes"("postId", "userId", "userLogin", "status", "addedAt")
+
+    VALUES ($1, $2, $3, $4, now())`,
+      [postId, userId, login, likeStatus],
+    );
+  }
+
+  async deleteLikeOrDislikeInfo(likeId: number) {
+    await this.dataSource.query(
+      `
+    DELETE FROM public."PostLikes"
+    WHERE "id" = $1`,
+      [likeId],
+    );
+  }
+
+  async countPostLike(postId: number) {
+    const result = await this.dataSource.query(
+      `
+    SELECT count(*)
+    FROM public."PostLikes"
+    WHERE "postId" = $1 and "status" = 'Like'
+    `,
+      [postId],
+    );
+    return result[0].count;
+  }
+
+  async countPostDislike(postId: number) {
+    const result = await this.dataSource.query(
+      `
+    SELECT count(*)
+    FROM public."PostLikes"
+    WHERE "postId" = $1 and "status" = 'Dislike'
+    `,
+      [postId],
+    );
+    return result[0].count;
+  }
+
+  async getListLike(postId: number) {
+    const result = await this.dataSource.query(
+      `
+    SELECT *
+    FROM public."PostLikes"
+    WHERE "postId" = $1
+    ORDER BY "createdAt" DESC
+    LIMIT 3
+    `,
+      [postId],
+    );
+    return result[0];
   }
 
   async updatePostById(
@@ -105,100 +155,5 @@ export class PostsRepository {
     `,
     );
     return result[0].count;
-  }
-
-  async countPostsComments(id: string) {
-    return this.CommentsModel.countDocuments({
-      idPost: { $regex: id ? id : '', $options: 'i' },
-    });
-  }
-
-  async getLikeStatus(postId: string, userId: string) {
-    return this.PostsModel.findOne({
-      _id: postId,
-      'extendedLikesInfo.likeList.userId': userId,
-    });
-  }
-
-  async getDislikeStatus(postId: string, userId: string) {
-    return this.PostsModel.findOne({
-      _id: postId,
-      'extendedLikesInfo.dislikeList': userId,
-    });
-  }
-
-  async updateLikeStatus(postId: string, newLike: any) {
-    await this.PostsModel.updateOne(
-      { _id: postId },
-      {
-        $inc: { 'extendedLikesInfo.countLike': 1 },
-        $push: { 'extendedLikesInfo.likeList': newLike },
-      },
-    );
-  }
-
-  async updateDislikeStatus(postId: string, userId: string) {
-    await this.PostsModel.updateOne(
-      { _id: postId },
-      {
-        $inc: { 'extendedLikesInfo.countDislike': 1 },
-        $push: { 'extendedLikesInfo.dislikeList': userId },
-      },
-    );
-  }
-
-  async updateLikeToNoneStatus(postId: string, userId: string) {
-    await this.PostsModel.updateOne(
-      { _id: postId },
-      {
-        $pull: { 'extendedLikesInfo.likeList': { userId: userId } },
-        $inc: { 'extendedLikesInfo.countLike': -1 },
-      },
-    );
-  }
-
-  async updateDislikeToNoneStatus(postId: string, userId: string) {
-    await this.PostsModel.updateOne(
-      { _id: postId },
-      {
-        $pull: { 'extendedLikesInfo.dislikeList': userId },
-        $inc: { 'extendedLikesInfo.countDislike': -1 },
-      },
-    );
-  }
-
-  async updateLikeToDislike(postId: string, userId: string) {
-    await this.PostsModel.updateOne(
-      { _id: postId },
-      {
-        $pull: { 'extendedLikesInfo.likeList': { userId: userId } },
-        $inc: {
-          'extendedLikesInfo.countLike': -1,
-          'extendedLikesInfo.countDislike': 1,
-        },
-        $push: { 'extendedLikesInfo.dislikeList': userId },
-      },
-    );
-  }
-
-  async updateDislikeToLike(postId: string, newLike: any, userId: string) {
-    await this.PostsModel.updateOne(
-      { _id: postId },
-      {
-        $pull: { 'extendedLikesInfo.dislikeList': userId },
-        $inc: {
-          'extendedLikesInfo.countDislike': -1,
-          'extendedLikesInfo.countLike': 1,
-        },
-        $push: { 'extendedLikesInfo.likeList': newLike },
-      },
-    );
-  }
-
-  async getLikeListToPost(postId: string) {
-    return this.PostsModel.findOne(
-      { _id: postId },
-      { 'extendedLikesInfo.likeList': { $slice: -3 } },
-    );
   }
 }

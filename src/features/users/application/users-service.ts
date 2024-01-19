@@ -107,7 +107,7 @@ export class UsersService {
     }
   }
 
-  async getUserToMe(userId: string | null) {
+  async getUserToMe(userId: number) {
     const user = await this.usersRepository.getUserById(userId);
     if (user.length === 0) throw new UnauthorizedException();
     return new UserInfoToMe(user[0].id, user[0].login, user[0].email);

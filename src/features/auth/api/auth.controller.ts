@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -25,7 +24,7 @@ import { CreateUserInputModel } from '../../users/api/users-models';
 import { BearerAuthGuard } from '../../../security/auth-guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { CheckSessionGuard } from '../../../security/checkSession-guard';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { RegistrationUserCommand } from '../registration-user-use-cases';
 import { SessionGuard } from '../../../security/session-guard';
 
@@ -43,11 +42,7 @@ export class AuthController {
   @UseGuards(SessionGuard)
   @Post('/password-recovery')
   @HttpCode(204)
-  async passwordRecovery(
-    @Body() dto: EmailInputModel,
-    @Req() req: Re,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async passwordRecovery(@Body() dto: EmailInputModel) {
     await this.usersService.sendRecoveryCode(dto.email);
     return true;
   }
@@ -56,11 +51,7 @@ export class AuthController {
   @UseGuards(SessionGuard)
   @Post('/new-password')
   @HttpCode(204)
-  async createNewPassword(
-    @Body() body: NewPasswordInputModel,
-    @Req() req: Re,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async createNewPassword(@Body() body: NewPasswordInputModel) {
     await this.usersService.updatePassword(body);
     return true;
   }
@@ -130,11 +121,7 @@ export class AuthController {
   @UseGuards(SessionGuard)
   @Post('/registration-confirmation')
   @HttpCode(204)
-  async registrationConfirmation(
-    @Body() dto: CodeInputModel,
-    @Req() req: Re,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async registrationConfirmation(@Body() dto: CodeInputModel, @Req() req: Re) {
     await this.usersService.checkConfirmationCode(
       dto.code,
       req.connect.deviceId,
@@ -147,11 +134,7 @@ export class AuthController {
   @UseGuards(SessionGuard)
   @Post('/registration')
   @HttpCode(204)
-  async registration(
-    @Body() dto: CreateUserInputModel,
-    @Req() req: Re,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async registration(@Body() dto: CreateUserInputModel) {
     return await this.commandBus.execute(new RegistrationUserCommand(dto));
   }
 
@@ -159,11 +142,7 @@ export class AuthController {
   @UseGuards(SessionGuard)
   @Post('/registration-email-resending')
   @HttpCode(204)
-  async emailResending(
-    @Body() dto: EmailInputModel,
-    @Req() req: Re,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async emailResending(@Body() dto: EmailInputModel, @Req() req: Re) {
     return await this.usersService.checkEmail(
       dto.email,
       req.connect.deviceId,
@@ -174,7 +153,7 @@ export class AuthController {
   @UseGuards(CheckSessionGuard)
   @Post('/logout')
   @HttpCode(204)
-  async logout(@Req() req: Re, @Res({ passthrough: true }) res: Response) {
+  async logout(@Req() req: Re) {
     const userId = await this.authService.getUserIdFromRefreshToken(
       req.cookies.refreshToken,
     );
@@ -204,7 +183,7 @@ export class AuthController {
     const userId = await this.authService.getUserIdFromAccessToken(
       req.headers.authorization!,
     );
-    const user = await this.usersService.getUserToMe(userId);
+    const user = await this.usersService.getUserToMe(+userId);
     res.status(200).send(user);
   }
 }

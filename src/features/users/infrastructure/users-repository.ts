@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UsersQuery } from '../users-query';
 import { DataSource } from 'typeorm';
-import { UserCreatorToSql } from '../../auth/users-input';
 
 @Injectable()
 export class UsersRepository {
@@ -149,7 +148,7 @@ export class UsersRepository {
     });
   }
 
-  async getUserById(userId: string | null) {
+  async getUserById(userId: number) {
     return this.dataSource.query(
       `
     SELECT *

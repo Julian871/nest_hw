@@ -14,11 +14,11 @@ export class PostInformation {
   };
 
   constructor(
-    id: string,
+    id: number,
     title: string,
     shortDescription: string,
     content: string,
-    blogId: string,
+    blogId: number,
     blogName: string,
     createdAt: Date,
     likesCount: number,
@@ -30,7 +30,7 @@ export class PostInformation {
     this.title = title;
     this.shortDescription = shortDescription;
     this.content = content;
-    this.blogId = blogId;
+    this.blogId = blogId.toString();
     this.blogName = blogName;
     this.createdAt = createdAt.toISOString();
     this.extendedLikesInfo = {

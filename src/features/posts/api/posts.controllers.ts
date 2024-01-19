@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -19,7 +20,6 @@ import { LikeStatusInputModel } from '../../likes/likes-models';
 import { PostsRepository } from '../infrastructure/posts-repository';
 import { CreateCommentInputModel } from '../../comments/api/comments-model';
 import { CreatePostInputModel } from './posts-models';
-import { ObjectIdPipe } from '../../../pipes/objectID.pipe';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreatePostCommand } from '../application/use-cases/create-post-use-case';
 import { GetAllPostsCommand } from '../application/use-cases/get-all-posts-use-case';
@@ -48,27 +48,22 @@ export class PostsController {
   @Post('/:id/comments')
   async createCommentToPost(
     @Body() dto: CreateCommentInputModel,
-    @Param('id', ObjectIdPipe) postId: string,
+    @Param('id') postId: string,
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    const comment = await this.commandBus.execute(
+    return await this.commandBus.execute(
       new CreatePostCommentCommand(
-        postId,
+        +postId,
         dto.content,
         req.headers.authorization!,
       ),
     );
-    if (!comment) {
-      res.sendStatus(404);
-      return;
-    }
-    return comment;
   }
 
   @Get()
   async getPosts(@Query() query: PostsDefaultQuery, @Req() req: Re) {
-    let userId: string | null;
+    let userId: number | null;
     if (!req.cookies.refreshToken) {
       userId = null;
     } else {
@@ -85,7 +80,7 @@ export class PostsController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    let userId: string | null;
+    let userId: number | null;
     if (!req.cookies.refreshToken) {
       userId = null;
     } else {
@@ -94,51 +89,48 @@ export class PostsController {
       );
     }
     const post = await this.commandBus.execute(
-      new GetPostByIdCommand(postId, userId),
+      new GetPostByIdCommand(+postId, userId),
     );
-    if (!post) {
-      res.status(HttpStatus.NOT_FOUND);
-    } else res.status(HttpStatus.OK).send(post);
+    res.status(HttpStatus.OK).send(post);
   }
 
   @Get('/:id/comments')
   async getPostComments(
-    @Param('id', ObjectIdPipe) postId: string,
+    @Param('id') postId: string,
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Re,
     @Query() query: PostsDefaultQuery,
   ) {
+    let userId: number | null;
+    if (!req.cookies.refreshToken) {
+      userId = null;
+    } else {
+      userId = await this.authService.getUserIdFromRefreshToken(
+        req.cookies.refreshToken,
+      );
+    }
     const comments = await this.commandBus.execute(
-      new GetAllPostCommentCommand(query, postId),
+      new GetAllPostCommentCommand(query, +postId, userId),
     );
-    if (!comments) {
-      res.status(HttpStatus.NOT_FOUND);
-    } else res.status(HttpStatus.OK).send(comments);
+    res.status(HttpStatus.OK).send(comments);
   }
 
   @UseGuards(BearerAuthGuard)
   @Put('/:id/like-status')
   @HttpCode(204)
   async likesOperation(
-    @Param('id', ObjectIdPipe) postId: string,
+    @Param('id') postId: string,
     @Body() dto: LikeStatusInputModel,
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    const checkPost = await this.postsRepository.getPostById(postId);
-    if (!checkPost) {
-      res.status(404);
-      return;
-    }
-    let userId: string | null;
-    if (!req.headers.authorization) {
-      userId = null;
-    } else {
-      userId = await this.authService.getUserIdFromAccessToken(
-        req.headers.authorization,
-      );
-    }
+    const checkPost = await this.postsRepository.getPostById(+postId);
+    if (!checkPost) throw new NotFoundException();
+    const userId = await this.authService.getUserIdFromAccessToken(
+      req.headers.authorization!,
+    );
     await this.commandBus.execute(
-      new UpdatePostLikeStatusCommand(postId, dto.likeStatus, userId),
+      new UpdatePostLikeStatusCommand(+postId, dto.likeStatus, +userId),
     );
     return true;
   }

@@ -28,15 +28,12 @@ export class BearerAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const request: Request = context.switchToHttp().getRequest();
-    if (!request.headers.authorization) {
-      throw new UnauthorizedException();
-    }
+    if (!request.headers.authorization) throw new UnauthorizedException();
 
     const token = request.headers.authorization;
     const userId = await this.authService.getUserIdFromAccessToken(token);
-    if (userId) {
-      return true;
-    }
-    throw new UnauthorizedException();
+    if (!userId) throw new UnauthorizedException();
+
+    return true;
   }
 }

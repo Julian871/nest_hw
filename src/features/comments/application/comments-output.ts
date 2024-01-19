@@ -13,22 +13,22 @@ export class CommentInformation {
   };
 
   constructor(
-    id: string,
+    id: number,
     content: string,
-    userId: string,
+    userId: number,
     userLogin: string,
-    createdAt: string,
+    createdAt: Date,
     likesCount: number,
     dislikesCount: number,
     myStatus: string,
   ) {
-    this.id = id;
+    this.id = id.toString();
     this.content = content;
     this.commentatorInfo = {
-      userId: userId,
+      userId: userId.toString(),
       userLogin: userLogin,
     };
-    this.createdAt = createdAt;
+    this.createdAt = createdAt.toISOString();
     this.likesInfo = {
       likesCount: likesCount,
       dislikesCount: dislikesCount,

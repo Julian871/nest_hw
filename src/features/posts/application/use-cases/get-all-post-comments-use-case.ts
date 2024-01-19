@@ -4,11 +4,14 @@ import { PostsDefaultQuery } from '../../default-query';
 import { CommentInformation } from '../../../comments/application/comments-output';
 import { PageInformation } from '../../../page-information';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { NotFoundException } from '@nestjs/common';
+import { CommentsRepository } from '../../../comments/infrastructure/comments-repository';
 
 export class GetAllPostCommentCommand {
   constructor(
     public query: PostsDefaultQuery,
-    public postId: string,
+    public postId: number,
+    public userId: number | null,
   ) {}
 }
 
@@ -18,33 +21,36 @@ export class GetAllPostCommentUseCase
 {
   constructor(
     private readonly postsRepository: PostsRepository,
+    private readonly commentsRepository: CommentsRepository,
     private readonly likesCommentsService: LikesCommentsService,
   ) {}
 
   async execute(command: GetAllPostCommentCommand) {
     const isFindPost = await this.postsRepository.getPostById(command.postId);
-    if (!isFindPost) return false;
-    const countPostsComments = await this.postsRepository.countPostsComments(
+    if (!isFindPost) throw new NotFoundException();
+
+    const countPostsComments = await this.commentsRepository.countCommentToPost(
       command.postId,
     );
-    const allPostsComments = await this.postsRepository.getAllPostsComments(
+    const allPostsComments = await this.commentsRepository.getAllCommentsToPost(
       command.query,
       command.postId,
     );
+
     const filterPostsComments = await Promise.all(
       allPostsComments.map(
         async (p) =>
           new CommentInformation(
-            p._id.toString(),
+            p.id,
             p.content,
-            p.commentatorInfo.userId,
-            p.commentatorInfo.userLogin,
+            p.userId,
+            p.login,
             p.createdAt,
-            p.likesInfo.countLike,
-            p.likesInfo.countDislike,
-            await this.likesCommentsService.getMyStatus(
-              p._id.toString(),
-              p.commentatorInfo.userId,
+            await this.likesCommentsService.getLikeCount(p.id),
+            await this.likesCommentsService.getDislikeCount(p.id),
+            await this.likesCommentsService.getMyStatusToComment(
+              p.id,
+              command.userId,
             ),
           ),
       ),

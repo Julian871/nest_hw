@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UsersModule } from '../users/users.module';
-import { MongooseModule } from '@nestjs/mongoose';
 import { BlogsService } from './application/blogs-service';
 import { CreateBlogUseCase } from './application/use-cases/create-blog-use-case';
 import { CreatePostToBlogUseCase } from './application/use-cases/create-post-to-blog-use-case';
@@ -10,7 +9,6 @@ import { GetBlogByIdUseCase } from './application/use-cases/get-blog-by-id-use-c
 import { GetBlogsUseCase } from './application/use-cases/get-blogs-use-case';
 import { GetPostsToBlogUseCase } from './application/use-cases/get-posts-to-blog-use-case';
 import { UpdateBlogUseCase } from './application/use-cases/update-blog-use-case';
-import { Blog, BlogSchema } from './blogs-schema';
 import { BlogsController } from './api/blogs.controller';
 import { BlogsRepository } from './infrastructure/blogs-repository';
 import { PostsModule } from '../posts/posts.module';
@@ -57,15 +55,9 @@ const useCases = [
     UsersModule,
     CommentsModule,
     TypeOrmModule.forFeature([BlogEntity]),
-    MongooseModule.forFeature([
-      {
-        name: Blog.name,
-        schema: BlogSchema,
-      },
-    ]),
   ],
   providers: [...services, ...repositories, ...useCases, EmailManager],
   controllers: [BlogsController, SaBlogsController],
-  exports: [MongooseModule, TypeOrmModule],
+  exports: [TypeOrmModule],
 })
 export class BlogsModule {}

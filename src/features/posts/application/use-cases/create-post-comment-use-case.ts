@@ -1,12 +1,13 @@
 import { PostsRepository } from '../../infrastructure/posts-repository';
 import { UsersRepository } from '../../../users/infrastructure/users-repository';
-import { CommentCreator } from '../../../comments/application/comments-input';
 import { CommentInformation } from '../../../comments/application/comments-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { AuthService } from '../../../../security/auth-service';
+import { NotFoundException } from '@nestjs/common';
+import { CommentsRepository } from '../../../comments/infrastructure/comments-repository';
 export class CreatePostCommentCommand {
   constructor(
-    public postId: string,
+    public postId: number,
     public content: string,
     public accessToken: string,
   ) {}
@@ -19,6 +20,7 @@ export class CreatePostCommentUseCase
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly usersRepository: UsersRepository,
+    private readonly commentsRepository: CommentsRepository,
     private readonly authService: AuthService,
   ) {}
 
@@ -26,23 +28,24 @@ export class CreatePostCommentUseCase
     const userId = await this.authService.getUserIdFromAccessToken(
       command.accessToken,
     );
-    if (userId === null) return false;
+    if (userId === null) throw new NotFoundException();
     const checkPost = await this.postsRepository.getPostById(command.postId);
-    if (!checkPost) return false;
+    if (!checkPost) throw new NotFoundException();
+
     const user = await this.usersRepository.getUserById(userId);
-    const newComment = new CommentCreator(
-      command.content,
-      userId,
-      user!.accountData.login,
+
+    const comment = await this.commentsRepository.createNewPostComment(
       command.postId,
-    );
-    const comment = await this.postsRepository.createNewPostComment(newComment);
-    return new CommentInformation(
-      comment._id.toString(),
       command.content,
       userId,
-      comment.commentatorInfo.userLogin,
-      comment.createdAt.toString(),
+      user[0].login,
+    );
+    return new CommentInformation(
+      comment.id,
+      command.content,
+      userId,
+      user[0].login,
+      comment.createdAt,
       0,
       0,
       'None',

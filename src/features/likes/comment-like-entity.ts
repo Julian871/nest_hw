@@ -1,12 +1,12 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity({ name: 'PostLikes' })
-export class PostLikeEntity {
+@Entity({ name: 'CommentLikes' })
+export class CommentLikeEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'integer' })
-  postId: number;
+  commentId: number;
 
   @Column({ type: 'integer' })
   userId: number;

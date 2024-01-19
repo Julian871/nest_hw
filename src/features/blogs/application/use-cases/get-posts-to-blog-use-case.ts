@@ -8,8 +8,8 @@ import { NotFoundException } from '@nestjs/common';
 export class GetPostsToBlogCommand {
   constructor(
     public query: BlogsDefaultQuery,
-    public blogId: string,
-    public userId: string | null,
+    public blogId: number,
+    public userId: number | null,
   ) {}
 }
 
@@ -37,7 +37,7 @@ export class GetPostsToBlogUseCase
             p.title,
             p.shortDescription,
             p.content,
-            command.blogId,
+            +command.blogId,
             p.blogName,
             p.createdAt,
             0,

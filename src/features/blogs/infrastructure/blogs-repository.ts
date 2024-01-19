@@ -32,7 +32,7 @@ export class BlogsRepository {
     );
   }
 
-  async getBlogById(blogId: string) {
+  async getBlogById(blogId: number) {
     const blog = await this.dataSource.query(
       `
     SELECT *
@@ -40,10 +40,10 @@ export class BlogsRepository {
     WHERE "id" = $1`,
       [blogId],
     );
-    return blog[0];
+    return blog[0].name;
   }
 
-  async getPostByBlogId(query: BlogsDefaultQuery, blogId: string) {
+  async getPostByBlogId(query: BlogsDefaultQuery, blogId: number) {
     return await this.dataSource.query(
       `
     SELECT *
@@ -90,7 +90,7 @@ export class BlogsRepository {
     return result[0].count;
   }
 
-  async countPostsByBlogId(blogId: string) {
+  async countPostsByBlogId(blogId: number) {
     const result = await this.dataSource.query(
       `
     SELECT count(*)

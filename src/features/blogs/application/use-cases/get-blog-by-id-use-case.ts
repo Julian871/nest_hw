@@ -4,7 +4,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
 
 export class GetBlogByIdCommand {
-  constructor(public blogId: string) {}
+  constructor(public blogId: number) {}
 }
 
 @CommandHandler(GetBlogByIdCommand)

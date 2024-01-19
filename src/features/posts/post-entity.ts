@@ -14,8 +14,8 @@ export class PostEntity {
   @Column({ type: 'varchar', nullable: true })
   content: string;
 
-  @Column({ type: 'varchar' })
-  blogId: string;
+  @Column({ type: 'integer' })
+  blogId: number;
 
   @Column({ type: 'varchar' })
   blogName: string;

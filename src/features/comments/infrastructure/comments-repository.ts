@@ -1,109 +1,139 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Comment, commentDocument } from '../comments-schema';
+import { DataSource } from 'typeorm';
+import { PostsDefaultQuery } from '../../posts/default-query';
 
 @Injectable()
 export class CommentsRepository {
-  constructor(
-    @InjectModel(Comment.name) private CommentsModel: Model<commentDocument>,
-  ) {}
-  async getCommentById(commentId: string) {
-    return this.CommentsModel.findOne({ _id: commentId });
-  }
+  constructor(private dataSource: DataSource) {}
+  async createNewPostComment(
+    postId: number,
+    content: string,
+    userId: number,
+    login: string,
+  ) {
+    return await this.dataSource.query(
+      `
+    INSERT INTO public."Comments"("postId", "content", "createdAt", "userId", "login")
 
-  async deleteCommentById(commentId: string) {
-    await this.CommentsModel.deleteOne({ _id: commentId });
-  }
-
-  async deleteAllCollection() {
-    await this.CommentsModel.deleteMany();
-  }
-
-  async updateCommentById(commentId: string, content: string) {
-    await this.CommentsModel.updateOne(
-      { _id: commentId },
-      {
-        $set: {
-          content: content,
-        },
-      },
+    VALUES ($1, $2, now(), $3, $4)
+    returning "id", "blogName", "createdAt";`,
+      [postId, content, userId, login],
     );
   }
 
-  async getLikeStatus(commentId: string, userId: string) {
-    return this.CommentsModel.findOne({
-      _id: commentId,
-      'likesInfo.likeList': userId,
-    });
+  async countCommentToPost(postId: number) {
+    const result = await this.dataSource.query(
+      `
+    SELECT count(*)
+    FROM public."Comments"
+    WHERE "postId" = $1
+    `,
+      [postId],
+    );
+    return result[0].count;
   }
 
-  async getDislikeStatus(commentId: string, userId: string) {
-    return this.CommentsModel.findOne({
-      _id: commentId,
-      'likesInfo.dislikeList': userId,
-    });
-  }
-
-  async updateLikeStatus(commentId: string, userId: string) {
-    await this.CommentsModel.updateOne(
-      { _id: commentId },
-      {
-        $inc: { 'likesInfo.countLike': 1 },
-        $push: { 'likesInfo.likeList': userId },
-      },
+  async getAllCommentsToPost(query: PostsDefaultQuery, postId: number) {
+    return await this.dataSource.query(
+      `
+    SELECT *
+    FROM public."Comments"
+    WHERE "postId" = $1
+    ORDER by "${query.sortBy}" ${query.sortDirection}
+    LIMIT ${query.pageSize} offset (${query.pageNumber} - 1) * ${query.pageSize}
+    `,
+      [postId],
     );
   }
 
-  async updateDislikeStatus(commentId: string, userId: string) {
-    await this.CommentsModel.updateOne(
-      { _id: commentId },
-      {
-        $inc: { 'likesInfo.countDislike': 1 },
-        $push: { 'likesInfo.dislikeList': userId },
-      },
+  async getCommentById(commentId: number) {
+    const result = await this.dataSource.query(
+      `
+    SELECT *
+    FROM public."Comments"
+    WHERE "id" = $1
+    `,
+      [commentId],
+    );
+    return result[0];
+  }
+
+  async updateCommentById(commentId: number, content: string) {
+    await this.dataSource.query(
+      `
+    UPDATE public."Comments"
+    SET "content" = $2
+    WHERE "id" = $1`,
+      [commentId, content],
     );
   }
 
-  async updateLikeToNoneStatus(commentId: string, userId: string) {
-    await this.CommentsModel.updateOne(
-      { _id: commentId },
-      {
-        $pull: { 'likesInfo.likeList': userId },
-        $inc: { 'likesInfo.countLike': -1 },
-      },
+  async deleteCommentById(commentId: number) {
+    await this.dataSource.query(
+      `
+    DELETE FROM public."Comments"
+    WHERE "id" = $1`,
+      [commentId],
     );
   }
 
-  async updateDislikeToNoneStatus(commentId: string, userId: string) {
-    await this.CommentsModel.updateOne(
-      { _id: commentId },
-      {
-        $pull: { 'likesInfo.dislikeList': userId },
-        $inc: { 'likesInfo.countDislike': -1 },
-      },
+  async getUserLikeInfoToComment(userId: number, commentId: number) {
+    const likeInfo = await this.dataSource.query(
+      `
+    SELECT *
+    FROM public."CommentLikes"
+    WHERE "userId" = $1 and "commentId" = $2
+    `,
+      [userId, commentId],
+    );
+    return likeInfo[0];
+  }
+
+  async takeLikeOrDislike(
+    commentId: number,
+    likeStatus: string,
+    userId: number,
+    login: string,
+  ) {
+    return await this.dataSource.query(
+      `
+    INSERT INTO public."CommentLikes"("commentId", "userId", "userLogin", "status", "addedAt")
+
+    VALUES ($1, $2, $3, $4, now())`,
+      [commentId, userId, login, likeStatus],
     );
   }
 
-  async updateLikeToDislike(commentId: string, userId: string) {
-    await this.CommentsModel.updateOne(
-      { _id: commentId },
-      {
-        $pull: { 'likesInfo.likeList': userId },
-        $inc: { 'likesInfo.countLike': -1, 'likesInfo.countDislike': 1 },
-        $push: { 'likesInfo.dislikeList': userId },
-      },
+  async deleteLikeOrDislikeInfo(likeId: number) {
+    await this.dataSource.query(
+      `
+    DELETE FROM public."CommentLikes"
+    WHERE "id" = $1`,
+      [likeId],
     );
   }
 
-  async updateDislikeToLike(commentId: string, userId: string) {
-    await this.CommentsModel.updateOne(
-      { _id: commentId },
-      {
-        $pull: { 'likesInfo.dislikeList': userId },
-        $inc: { 'likesInfo.countDislike': -1, 'likesInfo.countLike': 1 },
-        $push: { 'likesInfo.likeList': userId },
-      },
+  async countCommentLike(commentId: number) {
+    const result = await this.dataSource.query(
+      `
+    SELECT count(*)
+    FROM public."CommentLikes"
+    WHERE "commentId" = $1 and "status" = 'Like'
+    `,
+      [commentId],
     );
+    return result[0].count;
+  }
+
+  async countCommentDislike(commentId: number) {
+    const result = await this.dataSource.query(
+      `
+    SELECT count(*)
+    FROM public."CommentLikes"
+    WHERE "commentId" = $1 and "status" = 'Dislike'
+    `,
+      [commentId],
+    );
+    return result[0].count;
   }
 }

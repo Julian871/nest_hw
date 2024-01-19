@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { AppController } from './features/app/app.controller';
 import { AppService } from './features/app/app.service';
@@ -21,6 +20,9 @@ import { UserEntity } from './features/users/user-entity';
 import { SessionEntity } from './features/devices/session-entity';
 import { BlogEntity } from './features/blogs/blog-entity';
 import { PostEntity } from './features/posts/post-entity';
+import { PostLikeEntity } from './features/likes/post-like-entity';
+import { CommentEntity } from './features/comments/comment-entity';
+import { CommentLikeEntity } from './features/likes/comment-like-entity';
 dotenv.config();
 
 @Module({
@@ -28,21 +30,21 @@ dotenv.config();
     ConfigModule,
     CqrsModule,
     TypeOrmModule.forRoot({
-      entities: [UserEntity, SessionEntity, BlogEntity, PostEntity],
+      entities: [
+        UserEntity,
+        SessionEntity,
+        BlogEntity,
+        PostEntity,
+        PostLikeEntity,
+        CommentEntity,
+        CommentLikeEntity,
+      ],
       synchronize: true,
       type: 'postgres',
       url: process.env.SQL_URL,
       ssl: true,
     }),
-    TypeOrmModule.forFeature([
-      UserEntity,
-      SessionEntity,
-      BlogEntity,
-      PostEntity,
-    ]),
-    MongooseModule.forRoot(process.env.MONGO_URL || 'local connectio', {
-      dbName: 'hw3',
-    }),
+    TypeOrmModule.forFeature([]),
     MailerModule.forRootAsync({
       useFactory: () => ({
         transport: {
@@ -66,7 +68,6 @@ dotenv.config();
       }),
     }),
     JwtModule.register({}),
-    MongooseModule.forFeature([]),
     UsersModule,
     PostsModule,
     BlogsModule,

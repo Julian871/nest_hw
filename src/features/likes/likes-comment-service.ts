@@ -5,20 +5,21 @@ import { CommentsRepository } from '../comments/infrastructure/comments-reposito
 export class LikesCommentsService {
   constructor(private readonly commentsRepository: CommentsRepository) {}
 
-  async getMyStatus(commentId: string, userId: string | null) {
+  async getMyStatusToComment(commentId: number, userId: number | null) {
     if (userId === null) return 'None';
-
-    const checkLikeStatus = await this.commentsRepository.getLikeStatus(
-      commentId,
+    const likeInfo = await this.commentsRepository.getUserLikeInfoToComment(
       userId,
-    );
-    if (checkLikeStatus) return 'Like';
-
-    const checkDislikeStatus = await this.commentsRepository.getDislikeStatus(
       commentId,
-      userId,
     );
-    if (checkDislikeStatus) return 'Dislike';
-    return 'None';
+    if (!likeInfo) return 'None';
+    return likeInfo.status;
+  }
+
+  async getLikeCount(commentId: number) {
+    return await this.commentsRepository.countCommentLike(commentId);
+  }
+
+  async getDislikeCount(commentId: number) {
+    return await this.commentsRepository.countCommentDislike(commentId);
   }
 }

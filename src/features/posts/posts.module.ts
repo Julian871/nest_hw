@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AuthService } from '../../security/auth-service';
-import { Post, PostSchema } from './posts-schema';
 import { PostsRepository } from './infrastructure/posts-repository';
 import { UsersService } from '../users/application/users-service';
 import { JwtService } from '@nestjs/jwt';
@@ -23,11 +21,13 @@ import { LikesCommentsService } from '../likes/likes-comment-service';
 import { CommentsRepository } from '../comments/infrastructure/comments-repository';
 import { LikesPostService } from '../likes/likes-post-service';
 import { CommentsModule } from '../comments/comments.module';
-import { Blog, BlogSchema } from '../blogs/blogs-schema';
 import { GetBlogByIdUseCase } from '../blogs/application/use-cases/get-blog-by-id-use-case';
 import { IsBlogExistConstraint } from './application/blogId.exist';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostEntity } from './post-entity';
+import { PostLikeEntity } from '../likes/post-like-entity';
+import { CommentLikeEntity } from '../likes/comment-like-entity';
+import { CommentEntity } from '../comments/comment-entity';
 
 const services = [
   AuthService,
@@ -54,22 +54,14 @@ const useCases = [
   GetBlogByIdUseCase,
 ];
 
+const Entity = [PostEntity, PostLikeEntity, CommentLikeEntity, CommentEntity];
+
 @Module({
   imports: [
     CqrsModule,
     UsersModule,
     CommentsModule,
-    TypeOrmModule.forFeature([PostEntity]),
-    MongooseModule.forFeature([
-      {
-        name: Post.name,
-        schema: PostSchema,
-      },
-      {
-        name: Blog.name,
-        schema: BlogSchema,
-      },
-    ]),
+    TypeOrmModule.forFeature([...Entity]),
   ],
   providers: [
     ...services,
@@ -79,6 +71,6 @@ const useCases = [
     IsBlogExistConstraint,
   ],
   controllers: [PostsController],
-  exports: [MongooseModule, TypeOrmModule],
+  exports: [TypeOrmModule],
 })
 export class PostsModule {}

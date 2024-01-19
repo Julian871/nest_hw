@@ -33,7 +33,7 @@ export class BlogsController {
     @Param('id') blogId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const blog = await this.commandBus.execute(new GetBlogByIdCommand(blogId));
+    const blog = await this.commandBus.execute(new GetBlogByIdCommand(+blogId));
     res.status(HttpStatus.OK).send(blog);
   }
 
@@ -44,7 +44,7 @@ export class BlogsController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    let userId: string | null;
+    let userId: number | null;
     if (!req.cookies.refreshToken) {
       userId = null;
     } else {
@@ -54,7 +54,7 @@ export class BlogsController {
     }
 
     const postsList = await this.commandBus.execute(
-      new GetPostsToBlogCommand(query, blogId, userId),
+      new GetPostsToBlogCommand(query, +blogId, userId),
     );
     res.status(HttpStatus.OK).send(postsList);
   }

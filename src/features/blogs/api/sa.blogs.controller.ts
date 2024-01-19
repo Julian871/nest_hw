@@ -55,7 +55,7 @@ export class SaBlogsController {
     @Param('id') blogId: string,
   ) {
     const post = await this.commandBus.execute(
-      new CreatePostToBlogCommand(blogId, dto),
+      new CreatePostToBlogCommand(+blogId, dto),
     );
     if (!post) {
       res.status(HttpStatus.NOT_FOUND);
@@ -72,10 +72,8 @@ export class SaBlogsController {
     @Param('id') blogId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const blog = await this.commandBus.execute(new GetBlogByIdCommand(blogId));
-    if (!blog) {
-      res.status(HttpStatus.NOT_FOUND);
-    } else res.status(HttpStatus.OK).send(blog);
+    const blog = await this.commandBus.execute(new GetBlogByIdCommand(+blogId));
+    res.status(HttpStatus.OK).send(blog);
   }
 
   @Get('/:id/posts')
@@ -85,7 +83,7 @@ export class SaBlogsController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    let userId: string | null;
+    let userId: number | null;
     if (!req.cookies.refreshToken) {
       userId = null;
     } else {
@@ -95,11 +93,9 @@ export class SaBlogsController {
     }
 
     const postsList = await this.commandBus.execute(
-      new GetPostsToBlogCommand(query, blogId, userId),
+      new GetPostsToBlogCommand(query, +blogId, userId),
     );
-    if (!postsList) {
-      res.status(HttpStatus.NOT_FOUND);
-    } else res.status(HttpStatus.OK).send(postsList);
+    res.status(HttpStatus.OK).send(postsList);
   }
 
   @Put('/:id')
@@ -108,12 +104,8 @@ export class SaBlogsController {
     @Body() dto: UpdateBlogInputModel,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const isUpdate = await this.commandBus.execute(
-      new UpdateBlogCommand(blogId, dto),
-    );
-    if (!isUpdate) {
-      res.status(HttpStatus.NOT_FOUND);
-    } else res.status(HttpStatus.NO_CONTENT);
+    await this.commandBus.execute(new UpdateBlogCommand(blogId, dto));
+    res.status(HttpStatus.NO_CONTENT);
   }
 
   @Put('/:blogId/posts/:postId')

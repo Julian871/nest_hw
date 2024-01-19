@@ -1,7 +1,6 @@
 import { PostsRepository } from '../../infrastructure/posts-repository';
 import { BlogsRepository } from '../../../blogs/infrastructure/blogs-repository';
 import { CreatePostInputModel } from '../../api/posts-models';
-import { PostCreator } from '../posts-input';
 import { PostInformation } from '../posts-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
@@ -17,23 +16,25 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
   ) {}
 
   async execute(command: CreatePostCommand) {
-    const blog = await this.blogsRepository.getBlogById(command.dto.blogId);
-    const newPost = new PostCreator(
+    const blogName = await this.blogsRepository.getBlogById(
+      +command.dto.blogId,
+    );
+
+    const post = await this.postsRepository.createNewPost(
+      command.dto.title,
+      command.dto.shortDescription,
+      +command.dto.blogId,
+      blogName,
+      command.dto.content,
+    );
+
+    return new PostInformation(
+      post.id,
       command.dto.title,
       command.dto.shortDescription,
       command.dto.content,
-      command.dto.blogId,
-      blog!.name,
-    );
-    const post = await this.postsRepository.createNewPost(newPost);
-
-    return new PostInformation(
-      post._id.toString(),
-      newPost.title,
-      newPost.shortDescription,
-      newPost.content,
-      newPost.blogId,
-      post.blogName,
+      +command.dto.blogId,
+      blogName,
       post.createdAt,
       0,
       0,

@@ -15,13 +15,9 @@ export class IsBlogExistConstraint implements ValidatorConstraintInterface {
   async validate(blogId: string) {
     const validObjectId = Types.ObjectId.isValid(blogId);
     if (!validObjectId) return false;
-    const blog = await this.blogsRepository.getBlogById(blogId);
+    const blog = await this.blogsRepository.getBlogById(+blogId);
 
-    if (!blog) {
-      return false;
-    }
-
-    return true;
+    return !blog;
   }
 }
 

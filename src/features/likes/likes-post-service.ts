@@ -5,26 +5,32 @@ import { PostsRepository } from '../posts/infrastructure/posts-repository';
 export class LikesPostService {
   constructor(private readonly postsRepository: PostsRepository) {}
 
-  async getLikeListToPost(postId: string) {
-    const post = await this.postsRepository.getLikeListToPost(postId);
-    if (!post) return;
-    return post.extendedLikesInfo.likeList.reverse();
+  async getLikeListToPost(postId: number) {
+    const list = await this.postsRepository.getListLike(postId);
+    return await Promise.all(
+      list.map(async (p) => {
+        p.addedAt.toISOString();
+        p.userId.toString;
+        p.userLogin;
+      }),
+    );
   }
 
-  async getMyStatusToPost(postId: string, userId: string | null) {
-    if (!userId) return 'None';
-
-    const checkLikeStatus = await this.postsRepository.getLikeStatus(
-      postId,
+  async getMyStatusToPost(postId: number, userId: number | null) {
+    if (userId === null) return 'None';
+    const likeInfo = await this.postsRepository.getUserLikeInfoToPost(
       userId,
-    );
-    if (checkLikeStatus) return 'Like';
-
-    const checkDislikeStatus = await this.postsRepository.getDislikeStatus(
       postId,
-      userId,
     );
-    if (checkDislikeStatus) return 'Dislike';
-    return 'None';
+    if (!likeInfo) return 'None';
+    return likeInfo.status;
+  }
+
+  async getLikeCount(postId: number) {
+    return await this.postsRepository.countPostLike(postId);
+  }
+
+  async getDislikeCount(postId: number) {
+    return await this.postsRepository.countPostDislike(postId);
   }
 }

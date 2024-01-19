@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class UpdateCommentCommand {
   constructor(
-    public commentId: string,
+    public commentId: number,
     public content: string,
   ) {}
 }
@@ -15,7 +15,7 @@ export class UpdateCommentUseCase
   constructor(private readonly commentsRepository: CommentsRepository) {}
 
   async execute(command: UpdateCommentCommand) {
-    return await this.commentsRepository.updateCommentById(
+    await this.commentsRepository.updateCommentById(
       command.commentId,
       command.content,
     );

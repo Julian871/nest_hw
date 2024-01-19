@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Put,
   Req,
@@ -38,7 +40,7 @@ export class CommentsController {
     @Param('id') commentId: string,
     @Req() req: Re,
   ) {
-    let userId: string | null;
+    let userId: number | null;
     if (!req.cookies.refreshToken) {
       userId = null;
     } else {
@@ -47,7 +49,7 @@ export class CommentsController {
       );
     }
     const comment = await this.commandBus.execute(
-      new GetCommentCommand(commentId, userId),
+      new GetCommentCommand(+commentId, userId),
     );
     if (!comment) {
       res.status(HttpStatus.NOT_FOUND);
@@ -60,27 +62,20 @@ export class CommentsController {
   async likesOperation(
     @Param('id') commentId: string,
     @Body() dto: LikeStatusInputModel,
-    @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
-    let userId: string | null;
-    if (!req.headers.authorization) {
-      userId = null;
-    } else {
-      userId = await this.authService.getUserIdFromAccessToken(
-        req.headers.authorization,
-      );
-    }
-    const checkComment =
-      await this.commentsRepository.getCommentById(commentId);
-    if (!checkComment) {
-      res.status(404);
-      return;
-    }
-    await this.commandBus.execute(
-      new UpdateCommentLikeStatusCommand(commentId, dto.likeStatus, userId),
+    const userId = await this.authService.getUserIdFromAccessToken(
+      req.headers.authorization!,
     );
-    return true;
+
+    const checkComment =
+      await this.commentsRepository.getCommentById(+commentId);
+    if (!checkComment) throw new NotFoundException();
+
+    await this.commandBus.execute(
+      new UpdateCommentLikeStatusCommand(+commentId, dto.likeStatus, userId),
+    );
+    return;
   }
 
   @UseGuards(BearerAuthGuard)
@@ -89,46 +84,32 @@ export class CommentsController {
   async updateComment(
     @Param('id') commentId: string,
     @Body() dto: CreateCommentInputModel,
-    @Res({ passthrough: true }) res: Response,
     @Req() req: Re,
   ) {
     const userId = await this.authService.getUserIdFromAccessToken(
       req.headers.authorization!,
     );
-    const checkOwner = await this.commentsService.checkOwner(userId, commentId);
-    if (checkOwner === null) {
-      res.sendStatus(404);
-      return;
-    } else if (!checkOwner) {
-      res.sendStatus(403);
-      return;
-    }
+    if (!userId) throw new ForbiddenException();
+
+    await this.commentsService.checkOwner(+userId, +commentId);
     await this.commandBus.execute(
-      new UpdateCommentCommand(commentId, dto.content),
+      new UpdateCommentCommand(+commentId, dto.content),
     );
-    return true;
+    return;
   }
 
   @UseGuards(BearerAuthGuard)
   @Delete('/:id')
   @HttpCode(204)
-  async deleteComment(
-    @Param('id') commentId: string,
-    @Res({ passthrough: true }) res: Response,
-    @Req() req: Re,
-  ) {
+  async deleteComment(@Param('id') commentId: string, @Req() req: Re) {
     const userId = await this.authService.getUserIdFromAccessToken(
       req.headers.authorization!,
     );
-    const checkOwner = await this.commentsService.checkOwner(userId, commentId);
-    if (checkOwner === null) {
-      res.sendStatus(404);
-      return;
-    } else if (!checkOwner) {
-      res.sendStatus(403);
-      return;
-    }
-    await this.commentsRepository.deleteCommentById(commentId);
+    if (!userId) throw new ForbiddenException();
+
+    await this.commentsService.checkOwner(+userId, +commentId);
+
+    await this.commentsRepository.deleteCommentById(+commentId);
     return true;
   }
 }

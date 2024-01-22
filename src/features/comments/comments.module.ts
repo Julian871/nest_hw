@@ -17,6 +17,7 @@ import { UpdateCommentUseCase } from './application/use-cases/update-comment-use
 import { CommentsService } from './application/comments-service';
 import { CommentsRepository } from './infrastructure/comments-repository';
 import { LikesCommentsService } from '../likes/likes-comment-service';
+import { UpdateCommentLikeStatusUseCase } from '../likes/use-cases/update-comment-like-status-use-case';
 
 const services = [
   AuthService,
@@ -26,7 +27,11 @@ const services = [
   LikesCommentsService,
 ];
 const repositories = [UsersRepository, SessionRepository, CommentsRepository];
-const useCases = [GetCommentUseCase, UpdateCommentUseCase];
+const useCases = [
+  GetCommentUseCase,
+  UpdateCommentUseCase,
+  UpdateCommentLikeStatusUseCase,
+];
 const entities = [PostEntity, CommentLikeEntity, CommentEntity];
 
 @Module({

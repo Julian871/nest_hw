@@ -8,9 +8,11 @@ export class LikesPostService {
   async getLikeListToPost(postId: number) {
     const list = await this.postsRepository.getListLike(postId);
     return list.map((p) => {
-      p.userId.toString();
-      p.userLogin;
-      p.addedAt.toISOString();
+      return {
+        userId: p.userId.toString(),
+        userLogin: p.userLogin,
+        addedAt: p.addedAt.toISOString(),
+      };
     });
   }
 
@@ -21,7 +23,7 @@ export class LikesPostService {
       postId,
     );
     if (!likeInfo) return 'None';
-    return likeInfo.status;
+    return likeInfo[0].status;
   }
 
   async getLikeCount(postId: number) {

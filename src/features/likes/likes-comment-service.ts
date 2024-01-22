@@ -12,17 +12,14 @@ export class LikesCommentsService {
       commentId,
     );
     if (!likeInfo) return 'None';
-    return likeInfo.status;
+    return likeInfo[0].status;
   }
 
   async getLikeCount(commentId: number) {
-    const likeCount = await this.commentsRepository.countCommentLike(commentId);
-    return +likeCount;
+    return await this.commentsRepository.countCommentLike(commentId);
   }
 
   async getDislikeCount(commentId: number) {
-    const dislikeCount =
-      await this.commentsRepository.countCommentDislike(commentId);
-    return +dislikeCount;
+    return await this.commentsRepository.countCommentDislike(commentId);
   }
 }

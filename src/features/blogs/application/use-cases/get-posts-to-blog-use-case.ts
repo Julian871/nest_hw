@@ -4,6 +4,7 @@ import { PostInformation } from '../../../posts/application/posts-output';
 import { PageInformation } from '../../../page-information';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
+import { LikesPostService } from '../../../likes/likes-post-service';
 
 export class GetPostsToBlogCommand {
   constructor(
@@ -17,7 +18,10 @@ export class GetPostsToBlogCommand {
 export class GetPostsToBlogUseCase
   implements ICommandHandler<GetPostsToBlogCommand>
 {
-  constructor(private readonly blogsRepository: BlogsRepository) {}
+  constructor(
+    private readonly blogsRepository: BlogsRepository,
+    private readonly likesPostService: LikesPostService,
+  ) {}
 
   async execute(command: GetPostsToBlogCommand) {
     const blog = await this.blogsRepository.getBlogById(command.blogId);
@@ -40,10 +44,10 @@ export class GetPostsToBlogUseCase
             +command.blogId,
             p.blogName,
             p.createdAt,
-            0,
-            0,
-            'None',
-            [],
+            await this.likesPostService.getLikeCount(p.id),
+            await this.likesPostService.getDislikeCount(p.id),
+            await this.likesPostService.getMyStatusToPost(p.id, command.userId),
+            await this.likesPostService.getLikeListToPost(p.id),
           ),
       ),
     );

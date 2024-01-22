@@ -7,6 +7,7 @@ export class LikesPostService {
 
   async getLikeListToPost(postId: number) {
     const list = await this.postsRepository.getListLike(postId);
+    if (list[0].status === 'Dislike') return [];
     return list.map((p) => {
       return {
         userId: p.userId.toString(),

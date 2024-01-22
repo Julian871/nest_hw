@@ -14,7 +14,7 @@ export class AuthService {
   async createRefreshToken(userId: string, deviceId: string) {
     return this.jwtService.sign(
       { userId: userId, deviceId: deviceId },
-      { secret: process.env.JWT_SECRET_REFRESH, expiresIn: '20s' },
+      { secret: process.env.JWT_SECRET_REFRESH, expiresIn: '200s' },
     );
   }
 

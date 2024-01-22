@@ -66,11 +66,18 @@ export class PostsController {
     let userId: number | null;
     if (!req.cookies.refreshToken) {
       userId = null;
-    } else {
+    } else if (req.cookies.refreshToken) {
       userId = await this.authService.getUserIdFromRefreshToken(
         req.cookies.refreshToken,
       );
+    } else if (!req.headers.authorization) {
+      userId = null;
+    } else {
+      userId = await this.authService.getUserIdFromAccessToken(
+        req.headers.authorization,
+      );
     }
+
     return await this.commandBus.execute(new GetAllPostsCommand(query, userId));
   }
 
@@ -83,11 +90,18 @@ export class PostsController {
     let userId: number | null;
     if (!req.cookies.refreshToken) {
       userId = null;
-    } else {
+    } else if (req.cookies.refreshToken) {
       userId = await this.authService.getUserIdFromRefreshToken(
         req.cookies.refreshToken,
       );
+    } else if (!req.headers.authorization) {
+      userId = null;
+    } else {
+      userId = await this.authService.getUserIdFromAccessToken(
+        req.headers.authorization,
+      );
     }
+
     const post = await this.commandBus.execute(
       new GetPostByIdCommand(+postId, userId),
     );
@@ -104,11 +118,18 @@ export class PostsController {
     let userId: number | null;
     if (!req.cookies.refreshToken) {
       userId = null;
-    } else {
+    } else if (req.cookies.refreshToken) {
       userId = await this.authService.getUserIdFromRefreshToken(
         req.cookies.refreshToken,
       );
+    } else if (!req.headers.authorization) {
+      userId = null;
+    } else {
+      userId = await this.authService.getUserIdFromAccessToken(
+        req.headers.authorization,
+      );
     }
+
     const comments = await this.commandBus.execute(
       new GetAllPostCommentCommand(query, +postId, userId),
     );

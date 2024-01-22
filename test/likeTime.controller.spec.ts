@@ -58,7 +58,7 @@ describe('Like testing', () => {
     let user1: any;
     let newPost: any;
     let user2: any;
-    it('Should create post, return status 201 and post information', async () => {
+    it('Create blog/post', async () => {
       const newBlog1 = await agent
         .post('/sa/blogs')
         .auth('admin', 'qwerty')

@@ -43,9 +43,15 @@ export class CommentsController {
     let userId: number | null;
     if (!req.cookies.refreshToken) {
       userId = null;
-    } else {
+    } else if (req.cookies.refreshToken) {
       userId = await this.authService.getUserIdFromRefreshToken(
         req.cookies.refreshToken,
+      );
+    } else if (!req.headers.authorization) {
+      userId = null;
+    } else {
+      userId = await this.authService.getUserIdFromAccessToken(
+        req.headers.authorization,
       );
     }
     const comment = await this.commandBus.execute(

@@ -23,7 +23,7 @@ export class LikesPostService {
       userId,
       postId,
     );
-    if (!likeInfo) return 'None';
+    if (!likeInfo.length) return 'None';
     return likeInfo[0].status;
   }
 

@@ -7,7 +7,7 @@ export class BlogInformation {
   isMembership: boolean;
 
   constructor(
-    id: string,
+    id: number,
     name: string,
     description: string,
     websiteUrl: string,

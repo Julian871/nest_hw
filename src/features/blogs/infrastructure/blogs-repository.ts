@@ -41,7 +41,7 @@ export class BlogsRepository {
       [blogId],
     );
     if (blog.length === 0) throw new NotFoundException();
-    return blog[0].name;
+    return blog[0];
   }
 
   async getPostByBlogId(query: BlogsDefaultQuery, blogId: number) {

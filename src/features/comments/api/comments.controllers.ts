@@ -41,17 +41,16 @@ export class CommentsController {
     @Req() req: Re,
   ) {
     let userId: number | null;
-    if (!req.cookies.refreshToken) {
+    if (!req.cookies.refreshToken && !req.headers.authorization) {
       userId = null;
-    } else if (req.cookies.refreshToken) {
+    }
+    if (req.cookies.refreshToken) {
       userId = await this.authService.getUserIdFromRefreshToken(
         req.cookies.refreshToken,
       );
-    } else if (!req.headers.authorization) {
-      userId = null;
     } else {
       userId = await this.authService.getUserIdFromAccessToken(
-        req.headers.authorization,
+        req.headers.authorization!,
       );
     }
     const comment = await this.commandBus.execute(

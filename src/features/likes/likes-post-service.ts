@@ -11,7 +11,7 @@ export class LikesPostService {
     return list.map((p) => {
       return {
         userId: p.userId.toString(),
-        userLogin: p.userLogin,
+        login: p.userLogin,
         addedAt: p.addedAt.toISOString(),
       };
     });

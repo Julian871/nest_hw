@@ -92,7 +92,7 @@ export class PostsRepository {
     `,
       [postId],
     );
-    return result[0].count;
+    return +result[0].count;
   }
 
   async countPostDislike(postId: number) {
@@ -104,7 +104,7 @@ export class PostsRepository {
     `,
       [postId],
     );
-    return result[0].count;
+    return +result[0].count;
   }
 
   async getListLike(postId: number) {

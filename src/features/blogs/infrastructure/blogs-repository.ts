@@ -49,12 +49,12 @@ export class BlogsRepository {
       `
     SELECT *
     FROM public."Posts"
-    WHERE "blogId" ilike $1
+    WHERE "blogId" = $1
     
     ORDER by "${query.sortBy}" ${query.sortDirection}
     LIMIT ${query.pageSize} offset (${query.pageNumber} - 1) * ${query.pageSize}
     `,
-      [`%${blogId}%`],
+      [blogId],
     );
   }
 
@@ -96,9 +96,9 @@ export class BlogsRepository {
       `
     SELECT count(*)
     FROM public."Posts"
-    WHERE "blogId" ilike $1
+    WHERE "blogId" = $1
     `,
-      [`%${blogId}%`],
+      [blogId],
     );
     return result[0].count;
   }

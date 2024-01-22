@@ -121,7 +121,7 @@ export class CommentsRepository {
     `,
       [commentId],
     );
-    return result[0].count;
+    return +result[0].count;
   }
 
   async countCommentDislike(commentId: number) {
@@ -133,6 +133,6 @@ export class CommentsRepository {
     `,
       [commentId],
     );
-    return result[0].count;
+    return +result[0].count;
   }
 }

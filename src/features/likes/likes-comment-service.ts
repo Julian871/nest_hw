@@ -11,7 +11,7 @@ export class LikesCommentsService {
       userId,
       commentId,
     );
-    if (!likeInfo) return 'None';
+    if (!likeInfo.length) return 'None';
     return likeInfo[0].status;
   }
 

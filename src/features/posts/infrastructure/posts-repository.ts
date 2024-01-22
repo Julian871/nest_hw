@@ -112,7 +112,7 @@ export class PostsRepository {
       `
     SELECT *
     FROM public."PostLikes"
-    WHERE "postId" = $1
+    WHERE "postId" = $1 and "status" = 'Like'
     ORDER BY "addedAt" DESC
     LIMIT 3
     `,

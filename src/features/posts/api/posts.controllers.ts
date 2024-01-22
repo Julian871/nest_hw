@@ -64,17 +64,16 @@ export class PostsController {
   @Get()
   async getPosts(@Query() query: PostsDefaultQuery, @Req() req: Re) {
     let userId: number | null;
-    if (!req.cookies.refreshToken && !req.headers.authorization) {
-      userId = null;
-    }
     if (req.cookies.refreshToken) {
       userId = await this.authService.getUserIdFromRefreshToken(
         req.cookies.refreshToken,
       );
-    } else {
+    } else if (req.headers.authorization) {
       userId = await this.authService.getUserIdFromAccessToken(
         req.headers.authorization!,
       );
+    } else {
+      userId = null;
     }
 
     return await this.commandBus.execute(new GetAllPostsCommand(query, userId));
@@ -87,17 +86,16 @@ export class PostsController {
     @Req() req: Re,
   ) {
     let userId: number | null;
-    if (!req.cookies.refreshToken && !req.headers.authorization) {
-      userId = null;
-    }
     if (req.cookies.refreshToken) {
       userId = await this.authService.getUserIdFromRefreshToken(
         req.cookies.refreshToken,
       );
-    } else {
+    } else if (req.headers.authorization) {
       userId = await this.authService.getUserIdFromAccessToken(
         req.headers.authorization!,
       );
+    } else {
+      userId = null;
     }
 
     const post = await this.commandBus.execute(
@@ -114,17 +112,16 @@ export class PostsController {
     @Query() query: PostsDefaultQuery,
   ) {
     let userId: number | null;
-    if (!req.cookies.refreshToken && !req.headers.authorization) {
-      userId = null;
-    }
     if (req.cookies.refreshToken) {
       userId = await this.authService.getUserIdFromRefreshToken(
         req.cookies.refreshToken,
       );
-    } else {
+    } else if (req.headers.authorization) {
       userId = await this.authService.getUserIdFromAccessToken(
         req.headers.authorization!,
       );
+    } else {
+      userId = null;
     }
 
     const comments = await this.commandBus.execute(

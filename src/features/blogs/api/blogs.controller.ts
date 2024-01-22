@@ -45,17 +45,16 @@ export class BlogsController {
     @Req() req: Re,
   ) {
     let userId: number | null;
-    if (!req.cookies.refreshToken && !req.headers.authorization) {
-      userId = null;
-    }
     if (req.cookies.refreshToken) {
       userId = await this.authService.getUserIdFromRefreshToken(
         req.cookies.refreshToken,
       );
-    } else {
+    } else if (req.headers.authorization) {
       userId = await this.authService.getUserIdFromAccessToken(
         req.headers.authorization!,
       );
+    } else {
+      userId = null;
     }
 
     const postsList = await this.commandBus.execute(

@@ -108,17 +108,16 @@ export class PostsRepository {
   }
 
   async getListLike(postId: number) {
-    const result = await this.dataSource.query(
+    return await this.dataSource.query(
       `
     SELECT *
     FROM public."PostLikes"
     WHERE "postId" = $1
-    ORDER BY "createdAt" DESC
+    ORDER BY "addedAt" DESC
     LIMIT 3
     `,
       [postId],
     );
-    return result[0];
   }
 
   async updatePostById(

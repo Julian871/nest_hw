@@ -7,13 +7,11 @@ export class LikesPostService {
 
   async getLikeListToPost(postId: number) {
     const list = await this.postsRepository.getListLike(postId);
-    return await Promise.all(
-      list.map(async (p) => {
-        p.addedAt.toISOString();
-        p.userId.toString;
-        p.userLogin;
-      }),
-    );
+    return list.map((p) => {
+      p.userId.toString();
+      p.userLogin;
+      p.addedAt.toISOString();
+    });
   }
 
   async getMyStatusToPost(postId: number, userId: number | null) {

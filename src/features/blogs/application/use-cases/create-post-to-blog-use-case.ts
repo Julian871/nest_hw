@@ -21,14 +21,14 @@ export class CreatePostToBlogUseCase
   ) {}
 
   async execute(command: CreatePostToBlogCommand) {
-    const blogName = await this.blogsRepository.getBlogById(command.blogId);
-    if (!blogName) return false;
+    const blog = await this.blogsRepository.getBlogById(command.blogId);
+    if (!blog) return false;
 
     const post = await this.postsRepository.createNewPost(
       command.dto.title,
       command.dto.shortDescription,
       +command.blogId,
-      blogName,
+      blog.name,
       command.dto.content,
     );
     return new PostInformation(
@@ -37,7 +37,7 @@ export class CreatePostToBlogUseCase
       command.dto.shortDescription,
       command.dto.content,
       +command.blogId,
-      blogName,
+      blog.name,
       post[0].createdAt,
       0,
       0,

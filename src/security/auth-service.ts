@@ -7,14 +7,14 @@ export class AuthService {
   async createAccessToken(userId: number) {
     return this.jwtService.sign(
       { userId: userId },
-      { secret: process.env.JWT_SECRET_ACCESS, expiresIn: '300s' },
+      { secret: process.env.JWT_SECRET_ACCESS, expiresIn: '10s' },
     );
   }
 
   async createRefreshToken(userId: number, deviceId: string) {
     return this.jwtService.sign(
       { userId: userId, deviceId: deviceId },
-      { secret: process.env.JWT_SECRET_REFRESH, expiresIn: '200s' },
+      { secret: process.env.JWT_SECRET_REFRESH, expiresIn: '20s' },
     );
   }
 

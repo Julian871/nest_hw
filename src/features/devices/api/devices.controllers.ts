@@ -73,7 +73,10 @@ export class DevicesController {
     const userId = await this.authService.getUserIdFromRefreshToken(
       req.cookies.refreshToken,
     );
-    if (!userId) throw new UnauthorizedException();
+    if (!userId) {
+      res.status(401).send('no user id');
+      return;
+    }
 
     const checkSession =
       await this.sessionRepository.getSessionByDeviceId(deviceId);

@@ -32,7 +32,7 @@ export class UsersService {
       dto.loginOrEmail,
     );
     if (!user) throw new UnauthorizedException();
-    const passwordHash = await bcrypt.hash(dto.password, user[0].passwordSalt);
+    const passwordHash = await bcrypt.hash(dto.password, user.passwordSalt);
     if (user.passwordHash !== passwordHash) throw new UnauthorizedException();
     return user;
   }

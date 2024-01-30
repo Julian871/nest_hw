@@ -69,7 +69,7 @@ export class AuthController {
   ) {
     const user = await this.usersService.checkCredentials(dto);
 
-    const accessToken = await this.authService.createAccessToken(user[0].id);
+    const accessToken = await this.authService.createAccessToken(user.id);
     const refreshToken = await this.authService.createRefreshToken(
       user.id,
       req.connect.deviceId!,

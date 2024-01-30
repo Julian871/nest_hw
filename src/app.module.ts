@@ -34,6 +34,7 @@ dotenv.config();
       synchronize: true,
       type: 'postgres',
       url: process.env.SQL_URL,
+      autoLoadEntities: true,
       ssl: true,
     }),
     TypeOrmModule.forFeature([]),

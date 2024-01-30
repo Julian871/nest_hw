@@ -3,9 +3,11 @@ import {
   Delete,
   Get,
   HttpCode,
+  NotFoundException,
   Param,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from '../../../security/auth-service';
@@ -51,10 +53,7 @@ export class DevicesController {
       req.cookies.refreshToken,
     );
 
-    if (!userId) {
-      res.sendStatus(401);
-      return;
-    }
+    if (!userId) throw new UnauthorizedException();
 
     await this.connectService.deleteUserSession(
       userId,
@@ -74,27 +73,17 @@ export class DevicesController {
     const userId = await this.authService.getUserIdFromRefreshToken(
       req.cookies.refreshToken,
     );
-    if (!userId) {
-      res.sendStatus(401);
-      return;
-    }
+    if (!userId) throw new UnauthorizedException();
+
     const checkSession =
       await this.sessionRepository.getSessionByDeviceId(deviceId);
-    if (!checkSession) {
-      res.sendStatus(404);
-      return;
-    }
+    if (!checkSession) throw new NotFoundException();
 
-    const deleteSession = await this.connectService.checkDeviceId(
+    await this.connectService.checkDeviceId(
       deviceId,
       req.cookies.refreshToken,
-      checkSession[0].userId,
+      checkSession.userId,
     );
-
-    if (!deleteSession) {
-      res.sendStatus(403);
-      return;
-    }
     return true;
   }
 }

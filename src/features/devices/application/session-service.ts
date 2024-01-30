@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { AuthService } from '../../../security/auth-service';
 import { SessionRepo } from '../infrastructure/session-repo';
 
@@ -22,19 +22,17 @@ export class SessionService {
     });
   }
 
-  async checkDeviceId(deviceId: string, token: string, userId: string | null) {
+  async checkDeviceId(deviceId: string, token: string, userId: number | null) {
     const tokenUserId = await this.authService.getUserIdFromRefreshToken(token);
-    if (userId == tokenUserId.toString()) {
-      await this.sessionRepo.deleteSessionByDeviceId(deviceId);
-      return true;
-    } else {
-      return false;
-    }
+    if (userId !== tokenUserId) throw new ForbiddenException();
+
+    await this.sessionRepo.getSessionByDeviceId(deviceId);
+    return;
   }
 
-  async deleteUserSession(userId: string, token: string) {
+  async deleteUserSession(userId: number, token: string) {
     const deviceId = await this.authService.getDeviceIdRefreshToken(token);
-    await this.sessionRepo.deleteSessionByDeviceIdAndUserId(userId, deviceId);
+    await this.sessionRepo.deleteSessionByDeviceIdAndUserId(deviceId, userId);
   }
 
   async activeDate(token: string) {

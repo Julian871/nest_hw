@@ -1,23 +1,25 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { AuthService } from '../../security/auth-service';
 import { JwtService } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module';
 import { UsersService } from '../users/application/users-service';
-import { UsersRepository } from '../users/infrastructure/users-repository';
-import { SessionRepository } from '../devices/infrastructure/session-repository';
-import { EmailManager } from '../../email/email-manager';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PostEntity } from '../posts/post-entity';
-import { CommentLikeEntity } from '../likes/comment-like-entity';
-import { CommentEntity } from './comment-entity';
+import { Post } from '../posts/post-entity';
+import { CommentLike } from '../likes/comment-like-entity';
+import { Comment } from './comment-entity';
 import { CommentsController } from './api/comments.controllers';
 import { GetCommentUseCase } from './application/use-cases/get-comment-use-case';
 import { UpdateCommentUseCase } from './application/use-cases/update-comment-use-case';
 import { CommentsService } from './application/comments-service';
-import { CommentsRepository } from './infrastructure/comments-repository';
-import { LikesCommentsService } from '../likes/likes-comment-service';
-import { UpdateCommentLikeStatusUseCase } from '../likes/use-cases/update-comment-like-status-use-case';
+import { LikesCommentsService } from '../likes/application/likes-comment-service';
+import { UpdateCommentLikeStatusUseCase } from '../likes/application/use-cases/update-comment-like-status-use-case';
+import { UsersRepo } from '../users/infrastructure/users-repo';
+import { UsersQueryRepo } from '../users/infrastructure/users-query-repo';
+import { SessionRepo } from '../devices/infrastructure/session-repo';
+import { CommentsRepo } from './infrastructure/comments-repo';
+import { DevicesModule } from '../devices/devices.module';
+import { Repository } from 'typeorm';
 
 const services = [
   AuthService,
@@ -26,17 +28,28 @@ const services = [
   CommentsService,
   LikesCommentsService,
 ];
-const repositories = [UsersRepository, SessionRepository, CommentsRepository];
+const repositories = [
+  SessionRepo,
+  UsersRepo,
+  UsersQueryRepo,
+  CommentsRepo,
+  Repository,
+];
 const useCases = [
   GetCommentUseCase,
   UpdateCommentUseCase,
   UpdateCommentLikeStatusUseCase,
 ];
-const entities = [PostEntity, CommentLikeEntity, CommentEntity];
+const entities = [Post, CommentLike, Comment];
 
 @Module({
-  imports: [CqrsModule, UsersModule, TypeOrmModule.forFeature([...entities])],
-  providers: [...services, ...repositories, ...useCases, EmailManager],
+  imports: [
+    CqrsModule,
+    UsersModule,
+    DevicesModule,
+    TypeOrmModule.forFeature([...entities]),
+  ],
+  providers: [...services, ...repositories, ...useCases],
   controllers: [CommentsController],
   exports: [TypeOrmModule],
 })

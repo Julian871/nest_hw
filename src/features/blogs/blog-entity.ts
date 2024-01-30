@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'Blogs' })
-export class BlogEntity {
+export class Blog {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -17,6 +17,6 @@ export class BlogEntity {
   @Column({ type: 'timestamp with time zone', nullable: true })
   createdAt: Date;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: true })
   isMembership: boolean;
 }

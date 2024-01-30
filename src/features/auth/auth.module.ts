@@ -1,28 +1,39 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UsersModule } from '../users/users.module';
-import { EmailManager } from '../../email/email-manager';
 import { AuthController } from './api/auth.controller';
-import { SessionRepository } from '../devices/infrastructure/session-repository';
 import { AuthService } from '../../security/auth-service';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/application/users-service';
-import { UsersRepository } from '../users/infrastructure/users-repository';
 import { SessionService } from '../devices/application/session-service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '../users/user-entity';
+import { User } from '../users/user-entity';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { RegistrationUserUseCase } from './registration-user-use-cases';
+import { RegistrationUserUseCase } from './use-cases/registration-user-use-case';
+import { UsersRepo } from '../users/infrastructure/users-repo';
+import { LogoutUseCase } from './use-cases/logout-use-case';
+import { SendConfirmationCodeUseCase } from '../../email/send-caonfirmation-code-use-case';
+import { SendRecoveryCodeUseCase } from '../../email/send-recovery-code-use-case';
+import { UsersQueryRepo } from '../users/infrastructure/users-query-repo';
+import { SessionRepo } from '../devices/infrastructure/session-repo';
+import { DevicesModule } from '../devices/devices.module';
 
 const services = [AuthService, JwtService, UsersService, SessionService];
-const repositories = [SessionRepository, UsersRepository];
-const useCases = [RegistrationUserUseCase];
+const repositories = [SessionRepo, UsersRepo, UsersQueryRepo];
+const useCases = [
+  RegistrationUserUseCase,
+  LogoutUseCase,
+  RegistrationUserUseCase,
+  SendConfirmationCodeUseCase,
+  SendRecoveryCodeUseCase,
+];
 
 @Module({
   imports: [
     CqrsModule,
     UsersModule,
-    TypeOrmModule.forFeature([UserEntity]),
+    DevicesModule,
+    TypeOrmModule.forFeature([User]),
     ThrottlerModule.forRoot([
       {
         ttl: 10000,
@@ -30,7 +41,7 @@ const useCases = [RegistrationUserUseCase];
       },
     ]),
   ],
-  providers: [...services, ...repositories, ...useCases, EmailManager],
+  providers: [...services, ...repositories, ...useCases],
   controllers: [AuthController],
   exports: [TypeOrmModule],
 })

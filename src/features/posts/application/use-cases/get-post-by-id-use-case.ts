@@ -1,8 +1,8 @@
-import { PostsRepository } from '../../infrastructure/posts-repository';
 import { PostInformation } from '../posts-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
-import { LikesPostService } from '../../../likes/likes-post-service';
+import { LikesPostService } from '../../../likes/application/likes-post-service';
+import { PostsRepo } from '../../infrastructure/post-repo';
 
 export class GetPostByIdCommand {
   constructor(
@@ -14,12 +14,12 @@ export class GetPostByIdCommand {
 @CommandHandler(GetPostByIdCommand)
 export class GetPostByIdUseCase implements ICommandHandler<GetPostByIdCommand> {
   constructor(
-    private readonly postsRepository: PostsRepository,
+    private readonly postsRepo: PostsRepo,
     private readonly likesPostService: LikesPostService,
   ) {}
 
   async execute(command: GetPostByIdCommand) {
-    const post = await this.postsRepository.getPostById(command.postId);
+    const post = await this.postsRepo.getPostById(command.postId);
     if (!post) throw new NotFoundException();
 
     return new PostInformation(

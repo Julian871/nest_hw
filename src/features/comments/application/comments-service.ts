@@ -3,14 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CommentsRepository } from '../infrastructure/comments-repository';
+import { CommentsRepo } from '../infrastructure/comments-repo';
 
 @Injectable()
 export class CommentsService {
-  constructor(private readonly commentsRepository: CommentsRepository) {}
+  constructor(private readonly commentsRepo: CommentsRepo) {}
 
   async checkOwner(userId: number, commentId: number) {
-    const comment = await this.commentsRepository.getCommentById(commentId);
+    const comment = await this.commentsRepo.getCommentById(commentId);
     if (!comment) throw new NotFoundException();
     if (userId !== +comment.userId) throw new ForbiddenException();
     return;

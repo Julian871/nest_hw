@@ -1,8 +1,9 @@
-import { BlogsRepository } from '../../infrastructure/blogs-repository';
-import { PostsRepository } from '../../../posts/infrastructure/posts-repository';
 import { CreatePostForBlogInputModel } from '../../../posts/api/posts-models';
 import { PostInformation } from '../../../posts/application/posts-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { BlogsRepo } from '../../infrastructure/blogs-repo';
+import { PostsRepo } from '../../../posts/infrastructure/post-repo';
+import { Post } from '../../../posts/post-entity';
 
 export class CreatePostToBlogCommand {
   constructor(
@@ -16,29 +17,32 @@ export class CreatePostToBlogUseCase
   implements ICommandHandler<CreatePostToBlogCommand>
 {
   constructor(
-    private readonly blogsRepository: BlogsRepository,
-    private readonly postsRepository: PostsRepository,
+    private readonly blogsRepo: BlogsRepo,
+    private readonly postsRepo: PostsRepo,
   ) {}
 
   async execute(command: CreatePostToBlogCommand) {
-    const blog = await this.blogsRepository.getBlogById(command.blogId);
+    const blog = await this.blogsRepo.getBlogById(command.blogId);
     if (!blog) return false;
 
-    const post = await this.postsRepository.createNewPost(
-      command.dto.title,
-      command.dto.shortDescription,
-      +command.blogId,
-      blog.name,
-      command.dto.content,
-    );
+    const post = new Post();
+    post.title = command.dto.title;
+    post.shortDescription = command.dto.shortDescription;
+    post.content = command.dto.content;
+    post.blogId = blog.id;
+    post.blogName = blog.name;
+    post.createdAt = new Date();
+
+    await this.postsRepo.savePost(post);
+
     return new PostInformation(
-      post[0].id,
+      post.id,
       command.dto.title,
       command.dto.shortDescription,
       command.dto.content,
       +command.blogId,
       blog.name,
-      post[0].createdAt,
+      post.createdAt,
       0,
       0,
       'None',

@@ -17,19 +17,19 @@ import { Request as Re, Response } from 'express';
 import { CommentsService } from '../application/comments-service';
 import { BearerAuthGuard } from '../../../security/auth-guard';
 import { LikeStatusInputModel } from '../../likes/likes-models';
-import { CommentsRepository } from '../infrastructure/comments-repository';
 import { CreateCommentInputModel } from './comments-model';
 import { CommandBus } from '@nestjs/cqrs';
 import { GetCommentCommand } from '../application/use-cases/get-comment-use-case';
 import { UpdateCommentCommand } from '../application/use-cases/update-comment-use-case';
-import { UpdateCommentLikeStatusCommand } from '../../likes/use-cases/update-comment-like-status-use-case';
+import { UpdateCommentLikeStatusCommand } from '../../likes/application/use-cases/update-comment-like-status-use-case';
 import { AuthService } from '../../../security/auth-service';
+import { CommentsRepo } from '../infrastructure/comments-repo';
 
 @Controller('comments')
 export class CommentsController {
   constructor(
     private readonly commentsService: CommentsService,
-    private readonly commentsRepository: CommentsRepository,
+    private readonly commentsRepo: CommentsRepo,
     private authService: AuthService,
     private commandBus: CommandBus,
   ) {}
@@ -73,8 +73,7 @@ export class CommentsController {
       req.headers.authorization!,
     );
 
-    const checkComment =
-      await this.commentsRepository.getCommentById(+commentId);
+    const checkComment = await this.commentsRepo.getCommentById(+commentId);
     if (!checkComment) throw new NotFoundException();
 
     await this.commandBus.execute(
@@ -113,7 +112,7 @@ export class CommentsController {
     if (!userId) throw new ForbiddenException();
     await this.commentsService.checkOwner(+userId, +commentId);
 
-    await this.commentsRepository.deleteCommentById(+commentId);
+    await this.commentsRepo.deleteCommentById(+commentId);
     return true;
   }
 }

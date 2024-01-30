@@ -1,11 +1,12 @@
-import { PostsRepository } from '../../infrastructure/posts-repository';
-import { LikesCommentsService } from '../../../likes/likes-comment-service';
+import { LikesCommentsService } from '../../../likes/application/likes-comment-service';
 import { PostsDefaultQuery } from '../../default-query';
 import { CommentInformation } from '../../../comments/application/comments-output';
 import { PageInformation } from '../../../page-information';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
-import { CommentsRepository } from '../../../comments/infrastructure/comments-repository';
+import { PostsRepo } from '../../infrastructure/post-repo';
+import { CommentsRepo } from '../../../comments/infrastructure/comments-repo';
+import { CommentsQueryRepo } from '../../../comments/infrastructure/comments-query-repo';
 
 export class GetAllPostCommentCommand {
   constructor(
@@ -20,19 +21,19 @@ export class GetAllPostCommentUseCase
   implements ICommandHandler<GetAllPostCommentCommand>
 {
   constructor(
-    private readonly postsRepository: PostsRepository,
-    private readonly commentsRepository: CommentsRepository,
+    private readonly postsRepo: PostsRepo,
+    private readonly commentsQueryRepo: CommentsQueryRepo,
+    private readonly commentsRepo: CommentsRepo,
     private readonly likesCommentsService: LikesCommentsService,
   ) {}
 
   async execute(command: GetAllPostCommentCommand) {
-    const isFindPost = await this.postsRepository.getPostById(command.postId);
+    const isFindPost = await this.postsRepo.getPostById(command.postId);
     if (!isFindPost) throw new NotFoundException();
 
-    const countPostsComments = await this.commentsRepository.countCommentToPost(
-      command.postId,
-    );
-    const allPostsComments = await this.commentsRepository.getAllCommentsToPost(
+    const countPostsComments =
+      await this.commentsRepo.getCountAllCommentsToPost(command.postId);
+    const allPostsComments = await this.commentsQueryRepo.getAllCommentsToPost(
       command.query,
       command.postId,
     );

@@ -1,17 +1,17 @@
-import { UsersRepository } from '../../infrastructure/users-repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
+import { UsersRepo } from '../../infrastructure/users-repo';
 
 export class DeleteUserCommand {
-  constructor(public userId: string) {}
+  constructor(public userId: number) {}
 }
 
 @CommandHandler(DeleteUserCommand)
 export class DeleteUserUseCase implements ICommandHandler<DeleteUserCommand> {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(private readonly usersRepo: UsersRepo) {}
 
   async execute(command: DeleteUserCommand) {
-    const isDelete = await this.usersRepository.deleteUserById(command.userId);
+    const isDelete = await this.usersRepo.deleteUserById(command.userId);
     if (!isDelete) throw new NotFoundException();
   }
 }

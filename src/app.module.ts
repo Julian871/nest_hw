@@ -16,13 +16,13 @@ import { AuthModule } from './features/auth/auth.module';
 import { CommentsModule } from './features/comments/comments.module';
 import { DevicesModule } from './features/devices/devices.module';
 import { TestingModule } from './features/testing/testing.module';
-import { UserEntity } from './features/users/user-entity';
-import { SessionEntity } from './features/devices/session-entity';
-import { BlogEntity } from './features/blogs/blog-entity';
-import { PostEntity } from './features/posts/post-entity';
-import { PostLikeEntity } from './features/likes/post-like-entity';
-import { CommentEntity } from './features/comments/comment-entity';
-import { CommentLikeEntity } from './features/likes/comment-like-entity';
+import { User } from './features/users/user-entity';
+import { Session } from './features/devices/session-entity';
+import { Blog } from './features/blogs/blog-entity';
+import { Post } from './features/posts/post-entity';
+import { PostLike } from './features/likes/post-like-entity';
+import { Comment } from './features/comments/comment-entity';
+import { CommentLike } from './features/likes/comment-like-entity';
 dotenv.config();
 
 @Module({
@@ -30,15 +30,7 @@ dotenv.config();
     ConfigModule,
     CqrsModule,
     TypeOrmModule.forRoot({
-      entities: [
-        UserEntity,
-        SessionEntity,
-        BlogEntity,
-        PostEntity,
-        PostLikeEntity,
-        CommentEntity,
-        CommentLikeEntity,
-      ],
+      entities: [User, Session, Blog, Post, PostLike, Comment, CommentLike],
       synchronize: true,
       type: 'postgres',
       url: process.env.SQL_URL,

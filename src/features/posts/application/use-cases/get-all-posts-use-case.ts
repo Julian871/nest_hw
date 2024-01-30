@@ -1,9 +1,10 @@
-import { PostsRepository } from '../../infrastructure/posts-repository';
 import { PostsDefaultQuery } from '../../default-query';
 import { PostInformation } from '../posts-output';
 import { PageInformation } from '../../../page-information';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { LikesPostService } from '../../../likes/likes-post-service';
+import { LikesPostService } from '../../../likes/application/likes-post-service';
+import { PostsRepo } from '../../infrastructure/post-repo';
+import { PostsQueryRepo } from '../../infrastructure/post-query-repo';
 
 export class GetAllPostsCommand {
   constructor(
@@ -15,13 +16,14 @@ export class GetAllPostsCommand {
 @CommandHandler(GetAllPostsCommand)
 export class GetAllPostsUseCase implements ICommandHandler<GetAllPostsCommand> {
   constructor(
-    private readonly postsRepository: PostsRepository,
+    private readonly postsRepo: PostsRepo,
+    private readonly postsQueryRepo: PostsQueryRepo,
     private readonly likesPostService: LikesPostService,
   ) {}
 
   async execute(command: GetAllPostsCommand) {
-    const countPosts = await this.postsRepository.countPosts();
-    const allPosts = await this.postsRepository.getAllPosts(command.query);
+    const countPosts = await this.postsRepo.getCountAllPosts();
+    const allPosts = await this.postsQueryRepo.getAllPosts(command.query);
     const filterPosts = await Promise.all(
       allPosts.map(
         async (p) =>

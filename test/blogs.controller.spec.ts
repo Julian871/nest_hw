@@ -79,7 +79,7 @@ describe('Blogs testing', () => {
         description: correctBlog1.description,
         websiteUrl: correctBlog1.websiteUrl,
         createdAt: expect.any(String),
-        isMembership: false,
+        isMembership: true,
       });
     });
 
@@ -337,10 +337,6 @@ describe('Blogs testing', () => {
         .auth('admin', 'qwerty')
         .expect(404);
     });
-
-    /*it('Should not get posts, if blogID is not objectId. Return 400', async () => {
-      await agent.get('/blogs/invalidId/posts').expect(400);
-    });*/
   });
 
   // PUT: /blogs/:id

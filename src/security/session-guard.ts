@@ -1,19 +1,20 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthService } from './auth-service';
 import { Request } from 'express';
-import { SessionRepository } from '../features/devices/infrastructure/session-repository';
-import { ConnectCreator } from '../features/devices/application/session-input';
+import { Session } from '../features/devices/session-entity';
+import { SessionRepo } from '../features/devices/infrastructure/session-repo';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class SessionGuard implements CanActivate {
   constructor(
     private readonly authService: AuthService,
-    private readonly connectRepository: SessionRepository,
+    private readonly sessionRepo: SessionRepo,
   ) {}
 
   async canActivate(context: ExecutionContext) {
     const req: Request = context.switchToHttp().getRequest();
-    let userId: string | null = null;
+    let userId: number | null = null;
     let deviceId: string | null = null;
     let tokenLastActiveDate: string | any;
 
@@ -43,17 +44,18 @@ export class SessionGuard implements CanActivate {
 
     const IP = req.ip ?? '';
     const deviceName = req.headers['user-agent'] || 'hacker';
-    const newConnection = new ConnectCreator(
-      IP,
-      deviceName,
-      userId,
-      deviceId,
-      tokenLastActiveDate,
-    );
-    await this.connectRepository.createConnectionInfo(newConnection);
+
+    const connection = new Session();
+    connection.IP = IP;
+    connection.deviceName = deviceName;
+    connection.userId = userId;
+    connection.deviceId = deviceId ?? uuidv4();
+    connection.lastActiveDate = tokenLastActiveDate;
+
+    await this.sessionRepo.saveSession(connection);
     req.connect = {
       userId,
-      deviceId: newConnection.deviceId,
+      deviceId: connection.deviceId,
       tokenLastActiveDate,
     };
     return true;

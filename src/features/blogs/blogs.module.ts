@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UsersModule } from '../users/users.module';
 import { BlogsService } from './application/blogs-service';
@@ -10,20 +10,23 @@ import { GetBlogsUseCase } from './application/use-cases/get-blogs-use-case';
 import { GetPostsToBlogUseCase } from './application/use-cases/get-posts-to-blog-use-case';
 import { UpdateBlogUseCase } from './application/use-cases/update-blog-use-case';
 import { BlogsController } from './api/blogs.controller';
-import { BlogsRepository } from './infrastructure/blogs-repository';
-import { PostsModule } from '../posts/posts.module';
-import { PostsRepository } from '../posts/infrastructure/posts-repository';
-import { LikesPostService } from '../likes/likes-post-service';
+import { LikesPostService } from '../likes/application/likes-post-service';
 import { AuthService } from '../../security/auth-service';
 import { UsersService } from '../users/application/users-service';
 import { JwtService } from '@nestjs/jwt';
-import { UsersRepository } from '../users/infrastructure/users-repository';
-import { EmailManager } from '../../email/email-manager';
-import { SessionRepository } from '../devices/infrastructure/session-repository';
 import { CommentsModule } from '../comments/comments.module';
 import { SaBlogsController } from './api/sa.blogs.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BlogEntity } from './blog-entity';
+import { Blog } from './blog-entity';
+import { UsersRepo } from '../users/infrastructure/users-repo';
+import { UsersQueryRepo } from '../users/infrastructure/users-query-repo';
+import { BlogsRepo } from './infrastructure/blogs-repo';
+import { BlogsQueryRepo } from './infrastructure/blogs-query-repo';
+import { PostsQueryRepo } from '../posts/infrastructure/post-query-repo';
+import { PostsRepo } from '../posts/infrastructure/post-repo';
+import { SessionRepo } from '../devices/infrastructure/session-repo';
+import { Repository } from 'typeorm';
+import { DevicesModule } from '../devices/devices.module';
 
 const services = [
   BlogsService,
@@ -33,10 +36,14 @@ const services = [
   JwtService,
 ];
 const repositories = [
-  BlogsRepository,
-  PostsRepository,
-  UsersRepository,
-  SessionRepository,
+  BlogsRepo,
+  BlogsQueryRepo,
+  PostsRepo,
+  PostsQueryRepo,
+  SessionRepo,
+  UsersRepo,
+  UsersQueryRepo,
+  Repository,
 ];
 const useCases = [
   CreateBlogUseCase,
@@ -51,12 +58,12 @@ const useCases = [
 @Module({
   imports: [
     CqrsModule,
-    PostsModule,
     UsersModule,
     CommentsModule,
-    TypeOrmModule.forFeature([BlogEntity]),
+    DevicesModule,
+    TypeOrmModule.forFeature([Blog]),
   ],
-  providers: [...services, ...repositories, ...useCases, EmailManager],
+  providers: [...services, ...repositories, ...useCases],
   controllers: [BlogsController, SaBlogsController],
   exports: [TypeOrmModule],
 })

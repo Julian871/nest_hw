@@ -11,8 +11,8 @@ import {
 import { AuthService } from '../../../security/auth-service';
 import { Request as Re, Response } from 'express';
 import { SessionService } from '../application/session-service';
-import { SessionRepository } from '../infrastructure/session-repository';
 import { CheckSessionGuard } from '../../../security/checkSession-guard';
+import { SessionRepo } from '../infrastructure/session-repo';
 
 @UseGuards(CheckSessionGuard)
 @Controller('security/devices')
@@ -20,7 +20,7 @@ export class DevicesController {
   constructor(
     private readonly authService: AuthService,
     private readonly connectService: SessionService,
-    private readonly connectRepository: SessionRepository,
+    private readonly sessionRepository: SessionRepo,
   ) {}
 
   @Get()
@@ -78,8 +78,9 @@ export class DevicesController {
       res.sendStatus(401);
       return;
     }
-    const checkSession = await this.connectRepository.findSession(deviceId);
-    if (checkSession.length === 0) {
+    const checkSession =
+      await this.sessionRepository.getSessionByDeviceId(deviceId);
+    if (!checkSession) {
       res.sendStatus(404);
       return;
     }

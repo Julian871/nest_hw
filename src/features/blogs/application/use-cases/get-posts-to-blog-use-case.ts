@@ -1,10 +1,12 @@
-import { BlogsRepository } from '../../infrastructure/blogs-repository';
 import { BlogsDefaultQuery } from '../../default-query';
 import { PostInformation } from '../../../posts/application/posts-output';
 import { PageInformation } from '../../../page-information';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
-import { LikesPostService } from '../../../likes/likes-post-service';
+import { LikesPostService } from '../../../likes/application/likes-post-service';
+import { BlogsRepo } from '../../infrastructure/blogs-repo';
+import { PostsRepo } from '../../../posts/infrastructure/post-repo';
+import { PostsQueryRepo } from '../../../posts/infrastructure/post-query-repo';
 
 export class GetPostsToBlogCommand {
   constructor(
@@ -19,18 +21,20 @@ export class GetPostsToBlogUseCase
   implements ICommandHandler<GetPostsToBlogCommand>
 {
   constructor(
-    private readonly blogsRepository: BlogsRepository,
+    private readonly blogsRepo: BlogsRepo,
+    private readonly postsRepo: PostsRepo,
+    private readonly postsQueryRepo: PostsQueryRepo,
     private readonly likesPostService: LikesPostService,
   ) {}
 
   async execute(command: GetPostsToBlogCommand) {
-    const blog = await this.blogsRepository.getBlogById(command.blogId);
+    const blog = await this.blogsRepo.getBlogById(command.blogId);
     if (!blog) throw new NotFoundException();
-    const allPosts = await this.blogsRepository.getPostByBlogId(
+    const allPosts = await this.postsQueryRepo.getPostToBlog(
       command.query,
       command.blogId,
     );
-    const countPost = await this.blogsRepository.countPostsByBlogId(
+    const countPost = await this.postsRepo.getCountAllPostsByBlogId(
       command.blogId,
     );
     const filterPostsByBlogId = await Promise.all(

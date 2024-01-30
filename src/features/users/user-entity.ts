@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'Users' })
-export class UserEntity {
+export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -20,8 +20,8 @@ export class UserEntity {
   @Column({ type: 'timestamp with time zone' })
   createdAt: Date;
 
-  @Column({ type: 'varchar' })
-  confirmationCode: string;
+  @Column({ type: 'varchar', nullable: true })
+  confirmationCode: string | null;
 
   @Column({ type: 'timestamp with time zone' })
   expirationDate: Date;

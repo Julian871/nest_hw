@@ -1,24 +1,28 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { AuthService } from '../../security/auth-service';
 import { JwtService } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module';
 import { UsersService } from '../users/application/users-service';
-import { UsersRepository } from '../users/infrastructure/users-repository';
-import { SessionRepository } from './infrastructure/session-repository';
-import { EmailManager } from '../../email/email-manager';
 import { DevicesController } from './api/devices.controllers';
 import { SessionService } from './application/session-service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SessionEntity } from './session-entity';
+import { Session } from './session-entity';
+import { UsersRepo } from '../users/infrastructure/users-repo';
+import { UsersQueryRepo } from '../users/infrastructure/users-query-repo';
+import { SessionRepo } from './infrastructure/session-repo';
 
 const services = [AuthService, JwtService, UsersService, SessionService];
-const repositories = [UsersRepository, SessionRepository];
+const repositories = [UsersRepo, UsersQueryRepo, SessionRepo];
 const useCases = [];
 
 @Module({
-  imports: [CqrsModule, UsersModule, TypeOrmModule.forFeature([SessionEntity])],
-  providers: [...services, ...repositories, ...useCases, EmailManager],
+  imports: [
+    CqrsModule,
+    forwardRef(() => UsersModule),
+    TypeOrmModule.forFeature([Session]),
+  ],
+  providers: [...services, ...repositories, ...useCases],
   controllers: [DevicesController],
   exports: [TypeOrmModule],
 })

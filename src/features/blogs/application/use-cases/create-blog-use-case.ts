@@ -1,8 +1,8 @@
-import { BlogsRepository } from '../../infrastructure/blogs-repository';
 import { CreateBlogInputModel } from '../../api/blogs-dto-models';
-import { BlogCreator } from '../blogs-input';
 import { BlogInformation } from '../blogs-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Blog } from '../../blog-entity';
+import { BlogsRepo } from '../../infrastructure/blogs-repo';
 
 export class CreateBlogCommand {
   constructor(public data: CreateBlogInputModel) {}
@@ -10,21 +10,25 @@ export class CreateBlogCommand {
 
 @CommandHandler(CreateBlogCommand)
 export class CreateBlogUseCase implements ICommandHandler<CreateBlogCommand> {
-  constructor(private readonly blogsRepository: BlogsRepository) {}
+  constructor(private readonly blogsRepo: BlogsRepo) {}
 
   async execute(command: CreateBlogCommand) {
-    const blog = await this.blogsRepository.createNewBlog(
-      command.data.name,
-      command.data.description,
-      command.data.websiteUrl,
-    );
+    const blog = new Blog();
+    blog.name = command.data.name;
+    blog.description = command.data.description;
+    blog.websiteUrl = command.data.websiteUrl;
+    blog.createdAt = new Date();
+    blog.isMembership = true;
+
+    await this.blogsRepo.saveBlog(blog);
+
     return new BlogInformation(
-      blog[0].id.toString(),
+      blog.id,
       command.data.name,
       command.data.description,
       command.data.websiteUrl,
-      blog[0].createdAt,
-      false,
+      blog.createdAt,
+      true,
     );
   }
 }

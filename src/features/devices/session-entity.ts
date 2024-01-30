@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'Session' })
-export class SessionEntity {
+export class Session {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -14,8 +14,8 @@ export class SessionEntity {
   @Column({ type: 'varchar' })
   deviceName: string;
 
-  @Column({ type: 'varchar' })
-  deviceId: string;
+  @Column({ type: 'varchar', nullable: true })
+  deviceId: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   userId: number | null;

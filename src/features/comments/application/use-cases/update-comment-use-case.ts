@@ -1,5 +1,6 @@
-import { CommentsRepository } from '../../infrastructure/comments-repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommentsRepo } from '../../infrastructure/comments-repo';
+import { NotFoundException } from '@nestjs/common';
 
 export class UpdateCommentCommand {
   constructor(
@@ -12,12 +13,14 @@ export class UpdateCommentCommand {
 export class UpdateCommentUseCase
   implements ICommandHandler<UpdateCommentCommand>
 {
-  constructor(private readonly commentsRepository: CommentsRepository) {}
+  constructor(private readonly commentsRepo: CommentsRepo) {}
 
   async execute(command: UpdateCommentCommand) {
-    await this.commentsRepository.updateCommentById(
-      command.commentId,
-      command.content,
-    );
+    const comment = await this.commentsRepo.getCommentById(command.commentId);
+    if (!comment) throw new NotFoundException();
+
+    // update comment
+    comment.content = command.content;
+    await this.commentsRepo.saveComment(comment);
   }
 }

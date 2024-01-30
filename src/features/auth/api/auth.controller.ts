@@ -18,23 +18,25 @@ import {
 } from './auth-model';
 import { Response, Request as Re } from 'express';
 import { AuthService } from '../../../security/auth-service';
-import { UsersRepository } from '../../users/infrastructure/users-repository';
-import { SessionRepository } from '../../devices/infrastructure/session-repository';
 import { CreateUserInputModel } from '../../users/api/users-models';
 import { BearerAuthGuard } from '../../../security/auth-guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { CheckSessionGuard } from '../../../security/checkSession-guard';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { RegistrationUserCommand } from '../registration-user-use-cases';
+import { RegistrationUserCommand } from '../use-cases/registration-user-use-case';
 import { SessionGuard } from '../../../security/session-guard';
+import { SendRecoveryCodeCommand } from '../../../email/send-recovery-code-use-case';
+import { UpdatePasswordCommand } from '../../users/application/use-cases/update-password-use-case';
+import { LogoutCommand } from '../use-cases/logout-use-case';
+import { RegistrationEmailResendingCommand } from '../use-cases/registration-email-resending-use-case';
+import { SessionRepo } from '../../devices/infrastructure/session-repo';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
-    private readonly sessionRepository: SessionRepository,
-    private readonly usersRepository: UsersRepository,
+    private readonly sessionRepo: SessionRepo,
     private commandBus: CommandBus,
   ) {}
 
@@ -43,7 +45,7 @@ export class AuthController {
   @Post('/password-recovery')
   @HttpCode(204)
   async passwordRecovery(@Body() dto: EmailInputModel) {
-    await this.usersService.sendRecoveryCode(dto.email);
+    await this.commandBus.execute(new SendRecoveryCodeCommand(dto.email));
     return true;
   }
 
@@ -52,7 +54,7 @@ export class AuthController {
   @Post('/new-password')
   @HttpCode(204)
   async createNewPassword(@Body() body: NewPasswordInputModel) {
-    await this.usersService.updatePassword(body);
+    await this.commandBus.execute(new UpdatePasswordCommand(body));
     return true;
   }
 
@@ -69,8 +71,8 @@ export class AuthController {
 
     const accessToken = await this.authService.createAccessToken(user[0].id);
     const refreshToken = await this.authService.createRefreshToken(
-      user[0].id,
-      req.connect.deviceId,
+      user.id,
+      req.connect.deviceId!,
     );
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -79,11 +81,13 @@ export class AuthController {
     res.status(200).send({ accessToken: accessToken });
     const tokenLastActiveDate =
       await this.authService.getLastActiveDateRefreshToken(refreshToken);
-    await this.sessionRepository.updateUserId(
-      user[0].id,
-      req.connect.deviceId,
-      tokenLastActiveDate,
+
+    const session = await this.sessionRepo.getSessionByDeviceId(
+      req.connect.deviceId!,
     );
+    session!.userId = user.id;
+    session!.lastActiveDate = tokenLastActiveDate;
+    await this.sessionRepo.saveSession(session!);
     return;
   }
 
@@ -108,10 +112,10 @@ export class AuthController {
     );
     const tokenLastActiveDate =
       await this.authService.getLastActiveDateRefreshToken(refreshToken);
-    await this.sessionRepository.updateConnectDate(
-      deviceId,
-      tokenLastActiveDate,
-    );
+
+    const session = await this.sessionRepo.getSessionByDeviceId(deviceId);
+    session!.lastActiveDate = tokenLastActiveDate;
+    await this.sessionRepo.saveSession(session!);
 
     res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
     res.status(200).send({ accessToken: token });
@@ -122,9 +126,9 @@ export class AuthController {
   @Post('/registration-confirmation')
   @HttpCode(204)
   async registrationConfirmation(@Body() dto: CodeInputModel, @Req() req: Re) {
-    await this.usersService.checkConfirmationCode(
+    await this.usersService.registrationConfirmation(
       dto.code,
-      req.connect.deviceId,
+      req.connect.deviceId!,
       req.connect.tokenLastActiveDate,
     );
     return true;
@@ -143,10 +147,12 @@ export class AuthController {
   @Post('/registration-email-resending')
   @HttpCode(204)
   async emailResending(@Body() dto: EmailInputModel, @Req() req: Re) {
-    return await this.usersService.checkEmail(
-      dto.email,
-      req.connect.deviceId,
-      req.connect.tokenLastActiveDate,
+    return await this.commandBus.execute(
+      new RegistrationEmailResendingCommand(
+        dto.email,
+        req.connect.deviceId!,
+        req.connect.tokenLastActiveDate,
+      ),
     );
   }
 
@@ -154,25 +160,7 @@ export class AuthController {
   @Post('/logout')
   @HttpCode(204)
   async logout(@Req() req: Re) {
-    const userId = await this.authService.getUserIdFromRefreshToken(
-      req.cookies.refreshToken,
-    );
-    if (!userId) throw new UnauthorizedException();
-
-    const user = await this.usersRepository.getUserById(userId);
-    if (user.length === 0) throw new UnauthorizedException();
-
-    const deviceId = await this.authService.getDeviceIdRefreshToken(
-      req.cookies.refreshToken,
-    );
-    const tokenActiveDate =
-      await this.authService.getLastActiveDateRefreshToken(
-        req.cookies.refreshToken,
-      );
-    await this.sessionRepository.deleteCurrentSession(
-      deviceId,
-      tokenActiveDate,
-    );
+    await this.commandBus.execute(new LogoutCommand(req.cookies.refreshToken));
     return true;
   }
 

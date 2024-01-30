@@ -104,7 +104,7 @@ export class SaBlogsController {
     @Body() dto: UpdateBlogInputModel,
     @Res({ passthrough: true }) res: Response,
   ) {
-    await this.commandBus.execute(new UpdateBlogCommand(blogId, dto));
+    await this.commandBus.execute(new UpdateBlogCommand(+blogId, dto));
     res.status(HttpStatus.NO_CONTENT);
   }
 
@@ -115,11 +115,9 @@ export class SaBlogsController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const isUpdate = await this.commandBus.execute(
-      new UpdatePostCommand(params.postId, params.blogId, dto),
+      new UpdatePostCommand(+params.postId, +params.blogId, dto),
     );
-    if (!isUpdate) {
-      res.status(HttpStatus.NOT_FOUND);
-    } else res.status(HttpStatus.NO_CONTENT);
+    res.status(HttpStatus.NO_CONTENT);
   }
 
   @Delete('/:id')
@@ -128,11 +126,9 @@ export class SaBlogsController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const isDelete = await this.commandBus.execute(
-      new DeleteBLogCommand(blogId),
+      new DeleteBLogCommand(+blogId),
     );
-    if (!isDelete) {
-      res.status(HttpStatus.NOT_FOUND);
-    } else res.status(HttpStatus.NO_CONTENT);
+    res.status(HttpStatus.NO_CONTENT);
   }
 
   @Delete('/:blogId/posts/:postId')
@@ -141,7 +137,7 @@ export class SaBlogsController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const isDelete = await this.commandBus.execute(
-      new DeletePostCommand(params.postId, params.blogId),
+      new DeletePostCommand(+params.postId, +params.blogId),
     );
     if (!isDelete) {
       res.status(HttpStatus.NOT_FOUND);

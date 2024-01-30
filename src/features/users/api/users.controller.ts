@@ -4,16 +4,14 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpStatus,
   Param,
   Post,
   Query,
-  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Response, Request as Re } from 'express';
-import { UsersQuery } from '../users-query';
+import { Response } from 'express';
+import { UsersQuery } from './users-query';
 import { CreateUserInputModel } from './users-models';
 import { BasicAuthGuard } from '../../../security/auth-guard';
 import { CreateUserCommand } from '../application/use-cases/create-user-use-case';
@@ -32,7 +30,6 @@ export class UsersController {
   async createUser(
     @Body() dto: CreateUserInputModel,
     @Res({ passthrough: true }) res: Response,
-    @Req() req: Re,
   ) {
     const createUser = await this.commandBus.execute(
       new CreateUserCommand(dto),
@@ -46,12 +43,8 @@ export class UsersController {
   }
 
   @Delete('/:id')
-  async deleteUser(
-    @Param('id', IsNumberPipe) userId: string,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    await this.commandBus.execute(new DeleteUserCommand(userId));
-    res.status(HttpStatus.NO_CONTENT);
-    return;
+  @HttpCode(204)
+  async deleteUser(@Param('id', IsNumberPipe) userId: string) {
+    return this.commandBus.execute(new DeleteUserCommand(+userId));
   }
 }

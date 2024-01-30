@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'PostLikes' })
-export class PostLikeEntity {
+export class PostLike {
   @PrimaryGeneratedColumn()
   id: number;
 

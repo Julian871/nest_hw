@@ -1,9 +1,10 @@
-import { PostsRepository } from '../../infrastructure/posts-repository';
-import { BlogsRepository } from '../../../blogs/infrastructure/blogs-repository';
 import { CreatePostInputModel } from '../../api/posts-models';
 import { PostInformation } from '../posts-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
+import { BlogsRepo } from '../../../blogs/infrastructure/blogs-repo';
+import { Post } from '../../post-entity';
+import { PostsRepo } from '../../infrastructure/post-repo';
 
 export class CreatePostCommand {
   constructor(public dto: CreatePostInputModel) {}
@@ -12,23 +13,23 @@ export class CreatePostCommand {
 @CommandHandler(CreatePostCommand)
 export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
   constructor(
-    private readonly postsRepository: PostsRepository,
-    private readonly blogsRepository: BlogsRepository,
+    private readonly postsRepo: PostsRepo,
+    private readonly blogsRepo: BlogsRepo,
   ) {}
 
   async execute(command: CreatePostCommand) {
-    const blogName = await this.blogsRepository.getBlogById(
-      +command.dto.blogId,
-    );
-    if (!blogName) throw new NotFoundException();
+    const blog = await this.blogsRepo.getBlogById(+command.dto.blogId);
+    if (!blog) throw new NotFoundException();
 
-    const post = await this.postsRepository.createNewPost(
-      command.dto.title,
-      command.dto.shortDescription,
-      +command.dto.blogId,
-      blogName,
-      command.dto.content,
-    );
+    const post = new Post();
+    post.title = command.dto.title;
+    post.shortDescription = command.dto.shortDescription;
+    post.content = command.dto.content;
+    post.blogId = blog.id;
+    post.blogName = blog.name;
+    post.createdAt = new Date();
+
+    await this.postsRepo.savePost(post);
 
     return new PostInformation(
       post.id,
@@ -36,7 +37,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
       command.dto.shortDescription,
       command.dto.content,
       +command.dto.blogId,
-      blogName,
+      blog.name,
       post.createdAt,
       0,
       0,

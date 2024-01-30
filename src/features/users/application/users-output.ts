@@ -17,7 +17,7 @@ export class UserInfoToMe {
   email: string;
   userId: string;
 
-  constructor(userId: string, login: string, email: string) {
+  constructor(userId: number, login: string, email: string) {
     this.userId = userId.toString();
     this.login = login;
     this.email = email;

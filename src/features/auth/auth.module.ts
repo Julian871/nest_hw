@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './api/auth.controller';
@@ -17,6 +17,7 @@ import { SendRecoveryCodeUseCase } from '../../email/send-recovery-code-use-case
 import { UsersQueryRepo } from '../users/infrastructure/users-query-repo';
 import { SessionRepo } from '../devices/infrastructure/session-repo';
 import { DevicesModule } from '../devices/devices.module';
+import { RegistrationEmailResendingUseCase } from './use-cases/registration-email-resending-use-case';
 
 const services = [AuthService, JwtService, UsersService, SessionService];
 const repositories = [SessionRepo, UsersRepo, UsersQueryRepo];
@@ -24,6 +25,7 @@ const useCases = [
   RegistrationUserUseCase,
   LogoutUseCase,
   RegistrationUserUseCase,
+  RegistrationEmailResendingUseCase,
   SendConfirmationCodeUseCase,
   SendRecoveryCodeUseCase,
 ];

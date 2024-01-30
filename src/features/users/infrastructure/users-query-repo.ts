@@ -49,6 +49,6 @@ export class UsersQueryRepo {
       .where('u.login = :loginOrEmail OR u.email = :loginOrEmail', {
         loginOrEmail,
       })
-      .getOneOrFail();
+      .getOne();
   }
 }

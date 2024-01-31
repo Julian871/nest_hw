@@ -20,7 +20,7 @@ export class CheckSessionGuard implements CanActivate {
       req.cookies.refreshToken,
     );
     if (!checkLastActiveDate) {
-      throw new UnauthorizedException(checkLastActiveDate);
+      throw new UnauthorizedException('active date' + checkLastActiveDate);
     }
     return true;
   }

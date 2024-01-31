@@ -14,13 +14,13 @@ export class CheckSessionGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const req: Request = context.switchToHttp().getRequest();
     if (!req.cookies.refreshToken) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('no token');
     }
     const checkLastActiveDate = await this.sessionService.activeDate(
       req.cookies.refreshToken,
     );
     if (!checkLastActiveDate) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('active date');
     }
     return true;
   }

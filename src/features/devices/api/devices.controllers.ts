@@ -74,7 +74,7 @@ export class DevicesController {
       req.cookies.refreshToken,
     );
     if (!userId) {
-      res.status(402);
+      res.status(401);
       return;
     }
 

@@ -32,7 +32,14 @@ export class SessionRepo {
   }
 
   async deleteSessionByDeviceIdAndUserId(deviceId: string, userId: number) {
-    const result = await this.sessionRepository.delete({ deviceId, userId });
+    const result = await this.sessionRepository
+      .createQueryBuilder()
+      .delete()
+      .from(Session)
+      .where('userId = :userId', { userId })
+      .andWhere('deviceId != :deviceId', { deviceId })
+      .execute();
+
     return result.affected;
   }
 

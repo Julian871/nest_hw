@@ -16,6 +16,7 @@ import {
   incorrectUser1,
 } from './input-models/users-input-model';
 import cookieParser from 'cookie-parser';
+import { sleep } from './input-models/auth-input-model';
 
 describe('Auth testing', () => {
   let app: INestApplication;
@@ -283,6 +284,52 @@ describe('Auth testing', () => {
         .post('/auth/login')
         .send({ loginOrEmail: 'someLogin', password: 'incorrect' })
         .expect(401);
+    });
+  });
+
+  describe('Login 4 times and get devices', () => {
+    jest.setTimeout(10000);
+    beforeAll(async () => {
+      await agent.delete('/testing/all-data');
+    });
+
+    let token: string = '';
+
+    it('Should login user, return status 200', async () => {
+      await agent.post('/auth/registration').send(correctUser1).expect(204);
+      await agent
+        .post('/auth/login')
+        .send(correctLoginUser1)
+        .set('user-agent', 'browser1')
+        .expect(200);
+
+      await agent
+        .post('/auth/login')
+        .send(correctLoginUser1)
+        .set('user-agent', 'browser2')
+        .expect(200);
+
+      await agent
+        .post('/auth/login')
+        .send(correctLoginUser1)
+        .set('user-agent', 'browser3')
+        .expect(200);
+
+      const login = await agent
+        .post('/auth/login')
+        .send(correctLoginUser1)
+        .set('user-agent', 'browser4')
+        .expect(200);
+      token = login.headers['set-cookie'][0];
+    });
+
+    it('Should get 4 session', async () => {
+      await sleep(1000);
+      const session = await agent
+        .get('/security/devices')
+        .set('Cookie', token)
+        .expect(200);
+      expect(session.body).toHaveLength(4);
     });
   });
 

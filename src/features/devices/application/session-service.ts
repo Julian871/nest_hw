@@ -22,11 +22,11 @@ export class SessionService {
     });
   }
 
-  async checkDeviceId(deviceId: string, token: string, userId: number | null) {
+  async deleteSessionById(deviceId: string, token: string, userId: number) {
     const tokenUserId = await this.authService.getUserIdFromRefreshToken(token);
-    if (userId !== tokenUserId) throw new ForbiddenException();
+    if (userId !== tokenUserId.toString()) throw new ForbiddenException();
 
-    await this.sessionRepo.getSessionByDeviceId(deviceId);
+    await this.sessionRepo.deleteSessionByDeviceId(deviceId);
     return;
   }
 

@@ -82,10 +82,10 @@ export class DevicesController {
       await this.sessionRepository.getSessionByDeviceId(deviceId);
     if (!checkSession) throw new NotFoundException();
 
-    await this.connectService.checkDeviceId(
+    await this.connectService.deleteSessionById(
       deviceId,
       req.cookies.refreshToken,
-      checkSession.userId,
+      checkSession.userId!,
     );
     return true;
   }

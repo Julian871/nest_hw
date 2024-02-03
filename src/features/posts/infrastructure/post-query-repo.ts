@@ -28,7 +28,7 @@ export class PostsQueryRepo {
     return this.postsLikeRepository
       .createQueryBuilder('l')
       .where(`l.postId = :postId AND l.status = 'Like'`, { postId })
-      .orderBy(`l.addedAt`)
+      .orderBy(`l.addedAt`, 'DESC')
       .limit(3)
       .getMany();
   }

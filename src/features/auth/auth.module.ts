@@ -39,7 +39,7 @@ const useCases = [
     ThrottlerModule.forRoot([
       {
         ttl: 10000,
-        limit: 15,
+        limit: 5,
       },
     ]),
   ],

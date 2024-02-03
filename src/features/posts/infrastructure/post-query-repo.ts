@@ -34,9 +34,9 @@ export class PostsQueryRepo {
   }
 
   async getPostToBlog(query: BlogsDefaultQuery, blogId: number) {
-    return this.postsRepository
+    return await this.postsRepository
       .createQueryBuilder('p')
-      .where(`p.blogId = :blogId'`, { blogId })
+      .where('p.blogId = :blogId', { blogId })
       .orderBy(`p.${query.sortBy}`, query.sortDirection)
       .skip((query.pageNumber - 1) * query.pageSize)
       .take(query.pageSize)

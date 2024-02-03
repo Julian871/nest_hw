@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UsersModule } from '../users/users.module';
 import { BlogsService } from './application/blogs-service';
@@ -27,6 +27,7 @@ import { PostsRepo } from '../posts/infrastructure/post-repo';
 import { SessionRepo } from '../devices/infrastructure/session-repo';
 import { Repository } from 'typeorm';
 import { DevicesModule } from '../devices/devices.module';
+import { PostLike } from '../likes/post-like-entity';
 
 const services = [
   BlogsService,
@@ -61,7 +62,7 @@ const useCases = [
     UsersModule,
     CommentsModule,
     DevicesModule,
-    TypeOrmModule.forFeature([Blog]),
+    TypeOrmModule.forFeature([Blog, PostLike]),
   ],
   providers: [...services, ...repositories, ...useCases],
   controllers: [BlogsController, SaBlogsController],

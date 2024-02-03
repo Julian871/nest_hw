@@ -33,14 +33,10 @@ export class DevicesController {
     const userId = await this.authService.getUserIdFromRefreshToken(
       req.cookies.refreshToken,
     );
-    if (!userId) {
-      res.sendStatus(401);
-      return;
-    } else {
-      const deviceList = await this.connectService.getDeviceList(userId);
-      res.status(200).send(deviceList);
-      return;
-    }
+    if (!userId) return res.sendStatus(401);
+
+    const deviceList = await this.connectService.getDeviceList(userId);
+    return res.status(200).send(deviceList);
   }
 
   @Delete()

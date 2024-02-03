@@ -11,6 +11,7 @@ export class PostsQueryRepo {
   constructor(
     @InjectRepository(Post)
     private readonly postsRepository: Repository<Post>,
+    @InjectRepository(PostLike)
     private readonly postsLikeRepository: Repository<PostLike>,
   ) {}
 

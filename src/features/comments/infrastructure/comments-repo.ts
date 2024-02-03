@@ -9,6 +9,7 @@ export class CommentsRepo {
   constructor(
     @InjectRepository(Comment)
     private readonly commentsRepository: Repository<Comment>,
+    @InjectRepository(CommentLike)
     private readonly commentsLikeRepository: Repository<CommentLike>,
   ) {}
 

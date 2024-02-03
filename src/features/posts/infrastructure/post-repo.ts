@@ -9,6 +9,7 @@ export class PostsRepo {
   constructor(
     @InjectRepository(Post)
     private readonly postsRepository: Repository<Post>,
+    @InjectRepository(PostLike)
     private readonly postsLikeRepository: Repository<PostLike>,
   ) {}
 
@@ -42,11 +43,14 @@ export class PostsRepo {
   }
 
   getCountLikeToPost(postId: number) {
-    return this.postsLikeRepository.countBy({ postId, status: 'Like' });
+    return this.postsLikeRepository.countBy({ postId: postId, status: 'Like' });
   }
 
   getCountDislikeToPost(postId: number) {
-    return this.postsLikeRepository.countBy({ postId, status: 'Dislike' });
+    return this.postsLikeRepository.countBy({
+      postId: postId,
+      status: 'Dislike',
+    });
   }
 
   savePostLike(likeStatus: PostLike) {

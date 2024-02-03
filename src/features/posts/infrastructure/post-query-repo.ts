@@ -27,7 +27,7 @@ export class PostsQueryRepo {
   async getListLike(postId: number) {
     return this.postsLikeRepository
       .createQueryBuilder('l')
-      .where(`l.postId = $1 AND l.status = 'Like'`, { postId })
+      .where(`l.postId = :postId AND l.status = 'Like'`, { postId })
       .orderBy(`l.addedAt`)
       .limit(3)
       .getMany();
@@ -36,7 +36,7 @@ export class PostsQueryRepo {
   async getPostToBlog(query: BlogsDefaultQuery, blogId: number) {
     return this.postsRepository
       .createQueryBuilder('p')
-      .where(`p.blogId = $1'`, { blogId })
+      .where(`p.blogId = :blogId'`, { blogId })
       .orderBy(`p.${query.sortBy}`, query.sortDirection)
       .skip((query.pageNumber - 1) * query.pageSize)
       .take(query.pageSize)

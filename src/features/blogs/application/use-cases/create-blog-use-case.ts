@@ -18,7 +18,7 @@ export class CreateBlogUseCase implements ICommandHandler<CreateBlogCommand> {
     blog.description = command.data.description;
     blog.websiteUrl = command.data.websiteUrl;
     blog.createdAt = new Date();
-    blog.isMembership = true;
+    blog.isMembership = false;
 
     await this.blogsRepo.saveBlog(blog);
 

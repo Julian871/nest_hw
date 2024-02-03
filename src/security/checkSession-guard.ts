@@ -19,7 +19,6 @@ export class CheckSessionGuard implements CanActivate {
     const checkLastActiveDate = await this.sessionService.activeDate(
       req.cookies.refreshToken,
     );
-    console.log({ checkLastActiveDate: checkLastActiveDate });
     if (!checkLastActiveDate) {
       throw new UnauthorizedException(`active date`);
     }

@@ -25,8 +25,10 @@ export class UpdatePostLikeStatusUseCase
       command.userId,
       command.postId,
     );
-    const user = await this.usersRepo.checkUser(command.userId);
+
     if (!infoLike && command.likeStatus === 'None') return;
+
+    const user = await this.usersRepo.checkUser(command.userId);
 
     const takeLikeOrDislike = new PostLike();
     takeLikeOrDislike.postId = command.postId;

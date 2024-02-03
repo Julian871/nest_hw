@@ -38,7 +38,6 @@ export class SessionService {
   async activeDate(token: string) {
     const tokenLastActiveDate =
       await this.authService.getLastActiveDateRefreshToken(token);
-    console.log({ tokenLastActiveDate: tokenLastActiveDate });
     const deviceId = await this.authService.getDeviceIdRefreshToken(token);
     return this.sessionRepo.getSessionByDeviceIdAndDate(
       deviceId,

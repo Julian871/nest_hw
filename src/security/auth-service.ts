@@ -54,6 +54,12 @@ export class AuthService {
 
   async getLastActiveDateRefreshToken(token: string) {
     const result: any = this.jwtService.decode(token);
-    return new Date(result.iat).toISOString();
+    console.log({
+      res: result,
+      currentDate: new Date().getTime(),
+      currentDate1: new Date(),
+    });
+
+    return new Date(result.iat * 1000).toISOString();
   }
 }

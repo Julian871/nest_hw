@@ -7,7 +7,7 @@ export class AuthService {
   async createAccessToken(userId: number) {
     return this.jwtService.sign(
       { userId: userId },
-      { secret: process.env.JWT_SECRET_ACCESS, expiresIn: '300s' },
+      { secret: process.env.JWT_SECRET_ACCESS, expiresIn: '10s' },
     );
   }
 

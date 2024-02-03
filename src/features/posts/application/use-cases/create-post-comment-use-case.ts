@@ -45,11 +45,11 @@ export class CreatePostCommentUseCase
     await this.commentsRepo.saveComment(comment);
 
     return new CommentInformation(
-      comment[0].id,
+      comment.id,
       command.content,
       userId,
       user!.login,
-      comment[0].createdAt,
+      comment.createdAt,
       0,
       0,
       'None',

@@ -28,7 +28,7 @@ export class CreateBlogUseCase implements ICommandHandler<CreateBlogCommand> {
       command.data.description,
       command.data.websiteUrl,
       blog.createdAt,
-      true,
+      false,
     );
   }
 }

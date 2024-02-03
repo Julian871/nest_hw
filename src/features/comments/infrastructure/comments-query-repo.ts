@@ -15,7 +15,7 @@ export class CommentsQueryRepo {
     return this.commentsRepository
       .createQueryBuilder('c')
       .where(`c.postId = :postId`, { postId })
-      .orderBy(`u.${query.sortBy}`, query.sortDirection)
+      .orderBy(`c.${query.sortBy}`, query.sortDirection)
       .skip((query.pageNumber - 1) * query.pageSize)
       .take(query.pageSize)
       .getMany();

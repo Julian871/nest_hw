@@ -11,15 +11,12 @@ export class SessionService {
 
   async getDeviceList(userId: number) {
     const result = await this.sessionRepo.getSessionByUserId(userId);
-
-    return result.map((e) => {
-      return {
-        ip: e.IP,
-        title: e.deviceName,
-        lastActiveDate: new Date(e.lastActiveDate),
-        deviceId: e.deviceId,
-      };
-    });
+    return result.map((p) => ({
+      ip: p.IP,
+      title: p.deviceName,
+      lastActiveDate: new Date(p.lastActiveDate),
+      deviceId: p.deviceId,
+    }));
   }
 
   async deleteSessionById(deviceId: string, token: string, userId: number) {

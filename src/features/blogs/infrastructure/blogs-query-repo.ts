@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BlogsQuery } from '../blogs-query';
-import { Blog } from '../blog-entity';
+import { Blog } from '../../../entities/blog-entity';
 
 @Injectable()
 export class BlogsQueryRepo {

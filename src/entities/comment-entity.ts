@@ -14,9 +14,9 @@ export class Comment {
   @Column({ type: 'timestamp with time zone' })
   createdAt: Date;
 
-  @Column({ type: 'integer' })
-  userId: number;
-
   @Column({ type: 'varchar' })
   login: string;
+
+  @Column({ type: 'integer' })
+  userId: number;
 }

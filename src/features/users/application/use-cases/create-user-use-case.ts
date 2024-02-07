@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BadRequestException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { User } from '../../user-entity';
+import { User } from '../../../../entities/user-entity';
 import { UsersRepo } from '../../infrastructure/users-repo';
 import { add } from 'date-fns';
 

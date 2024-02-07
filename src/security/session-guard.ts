@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthService } from './auth-service';
 import { Request } from 'express';
-import { Session } from '../features/devices/session-entity';
+import { Session } from '../entities/session-entity';
 import { SessionRepo } from '../features/devices/infrastructure/session-repo';
 import { v4 as uuidv4 } from 'uuid';
 

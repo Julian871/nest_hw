@@ -3,7 +3,7 @@ import { PostInformation } from '../../../posts/application/posts-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogsRepo } from '../../infrastructure/blogs-repo';
 import { PostsRepo } from '../../../posts/infrastructure/post-repo';
-import { Post } from '../../../posts/post-entity';
+import { Post } from '../../../../entities/post-entity';
 
 export class CreatePostToBlogCommand {
   constructor(

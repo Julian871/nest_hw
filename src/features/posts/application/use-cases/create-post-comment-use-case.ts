@@ -4,7 +4,7 @@ import { AuthService } from '../../../../security/auth-service';
 import { NotFoundException } from '@nestjs/common';
 import { UsersRepo } from '../../../users/infrastructure/users-repo';
 import { PostsRepo } from '../../infrastructure/post-repo';
-import { Comment } from '../../../comments/comment-entity';
+import { Comment } from '../../../../entities/comment-entity';
 import { CommentsRepo } from '../../../comments/infrastructure/comments-repo';
 
 export class CreatePostCommentCommand {

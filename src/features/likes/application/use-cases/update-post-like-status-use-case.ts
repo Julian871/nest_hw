@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepo } from '../../../users/infrastructure/users-repo';
 import { PostsRepo } from '../../../posts/infrastructure/post-repo';
-import { PostLike } from '../../post-like-entity';
+import { PostLike } from '../../../../entities/post-like-entity';
 
 export class UpdatePostLikeStatusCommand {
   constructor(

@@ -7,7 +7,7 @@ import { UsersService } from '../users/application/users-service';
 import { DevicesController } from './api/devices.controllers';
 import { SessionService } from './application/session-service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Session } from './session-entity';
+import { Session } from '../../entities/session-entity';
 import { UsersRepo } from '../users/infrastructure/users-repo';
 import { UsersQueryRepo } from '../users/infrastructure/users-query-repo';
 import { SessionRepo } from './infrastructure/session-repo';

@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepo } from '../../../users/infrastructure/users-repo';
 import { CommentsRepo } from '../../../comments/infrastructure/comments-repo';
-import { CommentLike } from '../../comment-like-entity';
+import { CommentLike } from '../../../../entities/comment-like-entity';
 
 export class UpdateCommentLikeStatusCommand {
   constructor(

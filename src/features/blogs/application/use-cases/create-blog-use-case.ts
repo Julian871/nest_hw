@@ -1,7 +1,7 @@
 import { CreateBlogInputModel } from '../../api/blogs-dto-models';
 import { BlogInformation } from '../blogs-output';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Blog } from '../../blog-entity';
+import { Blog } from '../../../../entities/blog-entity';
 import { BlogsRepo } from '../../infrastructure/blogs-repo';
 
 export class CreateBlogCommand {

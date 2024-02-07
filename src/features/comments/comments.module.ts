@@ -1,13 +1,13 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { AuthService } from '../../security/auth-service';
 import { JwtService } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module';
 import { UsersService } from '../users/application/users-service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Post } from '../posts/post-entity';
-import { CommentLike } from '../likes/comment-like-entity';
-import { Comment } from './comment-entity';
+import { Post } from '../../entities/post-entity';
+import { CommentLike } from '../../entities/comment-like-entity';
+import { Comment } from '../../entities/comment-entity';
 import { CommentsController } from './api/comments.controllers';
 import { GetCommentUseCase } from './application/use-cases/get-comment-use-case';
 import { UpdateCommentUseCase } from './application/use-cases/update-comment-use-case';

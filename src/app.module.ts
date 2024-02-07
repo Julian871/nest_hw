@@ -16,13 +16,13 @@ import { AuthModule } from './features/auth/auth.module';
 import { CommentsModule } from './features/comments/comments.module';
 import { DevicesModule } from './features/devices/devices.module';
 import { TestingModule } from './features/testing/testing.module';
-import { User } from './features/users/user-entity';
-import { Session } from './features/devices/session-entity';
-import { Blog } from './features/blogs/blog-entity';
-import { Post } from './features/posts/post-entity';
-import { PostLike } from './features/likes/post-like-entity';
-import { Comment } from './features/comments/comment-entity';
-import { CommentLike } from './features/likes/comment-like-entity';
+import { User } from './entities/user-entity';
+import { Session } from './entities/session-entity';
+import { Blog } from './entities/blog-entity';
+import { Post } from './entities/post-entity';
+import { PostLike } from './entities/post-like-entity';
+import { Comment } from './entities/comment-entity';
+import { CommentLike } from './entities/comment-like-entity';
 dotenv.config();
 
 @Module({

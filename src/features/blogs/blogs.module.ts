@@ -17,7 +17,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CommentsModule } from '../comments/comments.module';
 import { SaBlogsController } from './api/sa.blogs.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Blog } from './blog-entity';
+import { Blog } from '../../entities/blog-entity';
 import { UsersRepo } from '../users/infrastructure/users-repo';
 import { UsersQueryRepo } from '../users/infrastructure/users-query-repo';
 import { BlogsRepo } from './infrastructure/blogs-repo';
@@ -27,7 +27,7 @@ import { PostsRepo } from '../posts/infrastructure/post-repo';
 import { SessionRepo } from '../devices/infrastructure/session-repo';
 import { Repository } from 'typeorm';
 import { DevicesModule } from '../devices/devices.module';
-import { PostLike } from '../likes/post-like-entity';
+import { PostLike } from '../../entities/post-like-entity';
 
 const services = [
   BlogsService,

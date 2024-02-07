@@ -3,7 +3,7 @@ import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateUserInputModel } from '../../users/api/users-models';
 import { BadRequestException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { User } from '../../users/user-entity';
+import { User } from '../../../entities/user-entity';
 import { add } from 'date-fns';
 import { UsersRepo } from '../../users/infrastructure/users-repo';
 import { SendConfirmationCodeCommand } from '../../../email/send-caonfirmation-code-use-case';

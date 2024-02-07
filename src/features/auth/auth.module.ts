@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/application/users-service';
 import { SessionService } from '../devices/application/session-service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../users/user-entity';
+import { User } from '../../entities/user-entity';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { RegistrationUserUseCase } from './use-cases/registration-user-use-case';
 import { UsersRepo } from '../users/infrastructure/users-repo';
@@ -39,7 +39,7 @@ const useCases = [
     ThrottlerModule.forRoot([
       {
         ttl: 10000,
-        limit: 5,
+        limit: 15,
       },
     ]),
   ],

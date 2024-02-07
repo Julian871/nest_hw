@@ -46,7 +46,7 @@ export class CommentsRepo {
   }
 
   saveCommentLike(likeStatus: CommentLike) {
-    return this.commentsRepository.save(likeStatus);
+    return this.commentsLikeRepository.save(likeStatus);
   }
 
   async deleteLikeOrDislikeInfo(likeId: number) {

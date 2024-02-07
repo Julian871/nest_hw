@@ -42,11 +42,12 @@ export class UpdateCommentLikeStatusUseCase
       return;
     }
 
-    if (command.likeStatus === infoLike[0].status) return;
+    if (command.likeStatus === infoLike.status) return;
 
     // if user like in db differs from input like, delete there likeStatus in db
     await this.commentsRepo.deleteLikeOrDislikeInfo(infoLike.id);
 
+    console.log('point 4');
     // if likeStatus = like or dislike, create new likeInfo
     if (command.likeStatus !== 'None') {
       await this.commentsRepo.saveCommentLike(takeLikeOrDislike);

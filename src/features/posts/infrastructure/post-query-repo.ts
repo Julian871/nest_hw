@@ -18,6 +18,7 @@ export class PostsQueryRepo {
   async getAllPosts(query: PostsDefaultQuery) {
     return this.postsRepository
       .createQueryBuilder('p')
+      .leftJoinAndSelect('p.blog', 'blog')
       .orderBy(`p.${query.sortBy}`, query.sortDirection)
       .skip((query.pageNumber - 1) * query.pageSize)
       .take(query.pageSize)
@@ -27,6 +28,7 @@ export class PostsQueryRepo {
   async getListLike(postId: number) {
     return this.postsLikeRepository
       .createQueryBuilder('l')
+      .leftJoinAndSelect('l.owner', 'owner')
       .where(`l.postId = :postId AND l.status = 'Like'`, { postId })
       .orderBy(`l.addedAt`, 'DESC')
       .limit(3)
@@ -36,6 +38,7 @@ export class PostsQueryRepo {
   async getPostToBlog(query: BlogsDefaultQuery, blogId: number) {
     return await this.postsRepository
       .createQueryBuilder('p')
+      .leftJoinAndSelect('p.blog', 'blog')
       .where('p.blogId = :blogId', { blogId })
       .orderBy(`p.${query.sortBy}`, query.sortDirection)
       .skip((query.pageNumber - 1) * query.pageSize)

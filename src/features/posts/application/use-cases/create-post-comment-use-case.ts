@@ -31,17 +31,16 @@ export class CreatePostCommentUseCase
       command.accessToken,
     );
     if (userId === null) throw new NotFoundException();
-    const checkPost = await this.postsRepo.getPostById(command.postId);
-    if (!checkPost) throw new NotFoundException();
+    const post = await this.postsRepo.getPostById(command.postId);
+    if (!post) throw new NotFoundException();
 
     const user = await this.usersRepo.checkUser(userId);
 
     const comment = new Comment();
-    comment.postId = command.postId;
+    comment.post = post;
     comment.content = command.content;
     comment.createdAt = new Date();
-    comment.userId = userId;
-    comment.login = user!.login;
+    comment.owner = user!;
     await this.commentsRepo.saveComment(comment);
 
     return new CommentInformation(

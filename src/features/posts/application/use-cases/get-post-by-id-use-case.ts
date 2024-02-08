@@ -20,6 +20,7 @@ export class GetPostByIdUseCase implements ICommandHandler<GetPostByIdCommand> {
 
   async execute(command: GetPostByIdCommand) {
     const post = await this.postsRepo.getPostById(command.postId);
+    console.log(post);
     if (!post) throw new NotFoundException();
 
     return new PostInformation(
@@ -27,8 +28,8 @@ export class GetPostByIdUseCase implements ICommandHandler<GetPostByIdCommand> {
       post.title,
       post.shortDescription,
       post.content,
-      post.blogId,
-      post.blogName,
+      post.blog.id,
+      post.blog.name,
       post.createdAt,
       await this.likesPostService.getLikeCount(command.postId),
       await this.likesPostService.getDislikeCount(command.postId),

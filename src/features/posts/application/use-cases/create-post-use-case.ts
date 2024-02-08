@@ -25,8 +25,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
     post.title = command.dto.title;
     post.shortDescription = command.dto.shortDescription;
     post.content = command.dto.content;
-    post.blogId = blog.id;
-    post.blogName = blog.name;
+    post.blog = blog;
     post.createdAt = new Date();
 
     await this.postsRepo.savePost(post);

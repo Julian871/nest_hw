@@ -1,12 +1,18 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
+import { User } from './user-entity';
+import { Post } from './post-entity';
+import { CommentLike } from './comment-like-entity';
 
 @Entity({ name: 'Comments' })
 export class Comment {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ type: 'integer' })
-  postId: number;
 
   @Column({ type: 'varchar' })
   content: string;
@@ -14,9 +20,12 @@ export class Comment {
   @Column({ type: 'timestamp with time zone' })
   createdAt: Date;
 
-  @Column({ type: 'varchar' })
-  login: string;
+  @ManyToOne('User', 'comments')
+  owner: User;
 
-  @Column({ type: 'integer' })
-  userId: number;
+  @ManyToOne('Post', 'comments')
+  post: Post;
+
+  @OneToMany('CommentLike', 'comment')
+  commentLikes: CommentLike[];
 }

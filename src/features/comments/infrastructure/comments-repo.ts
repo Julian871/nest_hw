@@ -17,12 +17,15 @@ export class CommentsRepo {
     return this.commentsRepository.save(comment);
   }
 
-  getCommentById(commentId: number) {
-    return this.commentsRepository.findOneBy({ id: commentId });
+  async getCommentById(commentId: number) {
+    return this.commentsRepository.findOne({
+      where: { id: commentId },
+      relations: ['owner'],
+    });
   }
 
   getCountAllCommentsToPost(postId: number) {
-    return this.commentsRepository.countBy({ postId });
+    return this.commentsRepository.countBy({ post: { id: postId } });
   }
 
   async deleteCommentById(commentId: number) {
@@ -30,17 +33,28 @@ export class CommentsRepo {
     return result.affected;
   }
 
-  getUserLikeInfoToComment(userId: number, commentId: number) {
-    return this.commentsLikeRepository.findOneBy({ userId, commentId });
+  async getUserLikeInfoToComment(userId: number, commentId: number) {
+    return this.commentsLikeRepository.findOne({
+      where: {
+        comment: { id: commentId },
+        owner: {
+          id: userId,
+        },
+      },
+      relations: ['owner'],
+    });
   }
 
   getCountLikeToComment(commentId: number) {
-    return this.commentsLikeRepository.countBy({ commentId, status: 'Like' });
+    return this.commentsLikeRepository.countBy({
+      comment: { id: commentId },
+      status: 'Like',
+    });
   }
 
   getCountDislikeToComment(commentId: number) {
     return this.commentsLikeRepository.countBy({
-      commentId,
+      comment: { id: commentId },
       status: 'Dislike',
     });
   }

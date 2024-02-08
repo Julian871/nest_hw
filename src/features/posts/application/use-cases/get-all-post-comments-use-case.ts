@@ -44,8 +44,8 @@ export class GetAllPostCommentUseCase
           new CommentInformation(
             p.id,
             p.content,
-            p.userId,
-            p.login,
+            p.owner.id,
+            p.owner.login,
             p.createdAt,
             await this.likesCommentsService.getLikeCount(p.id),
             await this.likesCommentsService.getDislikeCount(p.id),

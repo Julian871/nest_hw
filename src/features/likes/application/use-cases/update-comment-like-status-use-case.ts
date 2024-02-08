@@ -29,12 +29,13 @@ export class UpdateCommentLikeStatusUseCase
     const user = await this.usersRepo.checkUser(command.userId);
     if (!infoLike && command.likeStatus === 'None') return;
 
+    const comment = await this.commentsRepo.getCommentById(command.commentId);
+
     const takeLikeOrDislike = new CommentLike();
-    takeLikeOrDislike.commentId = command.commentId;
     takeLikeOrDislike.status = command.likeStatus;
-    takeLikeOrDislike.userId = command.userId;
-    takeLikeOrDislike.userLogin = user!.login;
     takeLikeOrDislike.addedAt = new Date();
+    takeLikeOrDislike.owner = user!;
+    takeLikeOrDislike.comment = comment!;
 
     // if user didn't like or dislike post
     if (!infoLike) {

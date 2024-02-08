@@ -29,9 +29,8 @@ export class CreatePostToBlogUseCase
     post.title = command.dto.title;
     post.shortDescription = command.dto.shortDescription;
     post.content = command.dto.content;
-    post.blogId = blog.id;
-    post.blogName = blog.name;
     post.createdAt = new Date();
+    post.blog = blog;
 
     await this.postsRepo.savePost(post);
 

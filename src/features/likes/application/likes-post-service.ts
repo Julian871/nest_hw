@@ -13,8 +13,8 @@ export class LikesPostService {
     const list = await this.postsQueryRepo.getListLike(postId);
     return list.map((p) => {
       return {
-        userId: p.userId.toString(),
-        login: p.userLogin,
+        userId: p.owner.id.toString(),
+        login: p.owner.login,
         addedAt: p.addedAt.toISOString(),
       };
     });

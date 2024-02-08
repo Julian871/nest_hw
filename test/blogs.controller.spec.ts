@@ -79,7 +79,7 @@ describe('Blogs testing', () => {
         description: correctBlog1.description,
         websiteUrl: correctBlog1.websiteUrl,
         createdAt: expect.any(String),
-        isMembership: true,
+        isMembership: false,
       });
     });
 
@@ -138,7 +138,7 @@ describe('Blogs testing', () => {
             description: correctBlog2.description,
             websiteUrl: correctBlog2.websiteUrl,
             createdAt: expect.any(String),
-            isMembership: true,
+            isMembership: false,
           },
           {
             id: expect.any(String),
@@ -146,7 +146,7 @@ describe('Blogs testing', () => {
             description: correctBlog1.description,
             websiteUrl: correctBlog1.websiteUrl,
             createdAt: expect.any(String),
-            isMembership: true,
+            isMembership: false,
           },
         ],
       });
@@ -167,7 +167,7 @@ describe('Blogs testing', () => {
         description: correctBlog1.description,
         websiteUrl: correctBlog1.websiteUrl,
         createdAt: expect.any(String),
-        isMembership: true,
+        isMembership: false,
       });
     });
 

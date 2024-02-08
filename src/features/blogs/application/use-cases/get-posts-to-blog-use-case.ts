@@ -46,7 +46,7 @@ export class GetPostsToBlogUseCase
             p.shortDescription,
             p.content,
             +command.blogId,
-            p.blogName,
+            p.blog.name,
             p.createdAt,
             await this.likesPostService.getLikeCount(p.id),
             await this.likesPostService.getDislikeCount(p.id),

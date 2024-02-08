@@ -14,6 +14,7 @@ export class CommentsQueryRepo {
   async getAllCommentsToPost(query: PostsDefaultQuery, postId: number) {
     return this.commentsRepository
       .createQueryBuilder('c')
+      .leftJoinAndSelect('c.owner', 'owner')
       .where(`c.postId = :postId`, { postId })
       .orderBy(`c.${query.sortBy}`, query.sortDirection)
       .skip((query.pageNumber - 1) * query.pageSize)

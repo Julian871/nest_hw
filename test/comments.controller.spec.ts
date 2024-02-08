@@ -79,25 +79,24 @@ describe('Comments testing', () => {
 
     it('Create blog and post', async () => {
       newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
       newPost1 = await agent
-        .post('/posts')
+        .post(`/sa/blogs/${newBlog1.body.id}/posts`)
         .auth('admin', 'qwerty')
         .send({
           title: 'new title',
           shortDescription: 'new description',
           content: 'new content',
-          blogId: newBlog1.body.id,
         })
         .expect(201);
     });
 
     it('Should create comment, return status 201', async () => {
       newUser1 = await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(201);
@@ -149,9 +148,7 @@ describe('Comments testing', () => {
     });
 
     it('Should not get comment, if comment id incorrect return status 404', async () => {
-      const getPostComments = await agent
-        .get('/comments/658fcb001c34ccb6b9e9e4a8')
-        .expect(404);
+      const getPostComments = await agent.get('/comments/658').expect(404);
     });
   });
 
@@ -170,25 +167,24 @@ describe('Comments testing', () => {
 
     it('Create blog and post', async () => {
       newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
       newPost1 = await agent
-        .post('/posts')
+        .post(`/sa/blogs/${newBlog1.body.id}/posts`)
         .auth('admin', 'qwerty')
         .send({
           title: 'new title',
           shortDescription: 'new description',
           content: 'new content',
-          blogId: newBlog1.body.id,
         })
         .expect(201);
     });
 
     it('Should create comment, return status 201', async () => {
       newUser1 = await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(201);
@@ -221,7 +217,7 @@ describe('Comments testing', () => {
 
     it('Should create and login new user, return status 201', async () => {
       await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser2)
         .expect(201);
@@ -281,25 +277,24 @@ describe('Comments testing', () => {
 
     it('Create blog and post', async () => {
       newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
       newPost1 = await agent
-        .post('/posts')
+        .post(`/sa/blogs/${newBlog1.body.id}/posts`)
         .auth('admin', 'qwerty')
         .send({
           title: 'new title',
           shortDescription: 'new description',
           content: 'new content',
-          blogId: newBlog1.body.id,
         })
         .expect(201);
     });
 
     it('Should create comment, return status 201', async () => {
       newUser1 = await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(201);
@@ -332,7 +327,7 @@ describe('Comments testing', () => {
 
     it('Should create and login new user, return status 201', async () => {
       await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser2)
         .expect(201);
@@ -374,9 +369,7 @@ describe('Comments testing', () => {
     });
 
     it('Should not update comment, if comment id incorrect return status 404', async () => {
-      const getPostComments = await agent
-        .get('/comments/658fcb001c34ccb6b9e9e4a8')
-        .expect(404);
+      const getPostComments = await agent.get('/comments/658').expect(404);
     });
   });
 
@@ -395,25 +388,24 @@ describe('Comments testing', () => {
 
     it('Create blog and post', async () => {
       newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
       newPost1 = await agent
-        .post('/posts')
+        .post(`/sa/blogs/${newBlog1.body.id}/posts`)
         .auth('admin', 'qwerty')
         .send({
           title: 'new title',
           shortDescription: 'new description',
           content: 'new content',
-          blogId: newBlog1.body.id,
         })
         .expect(201);
     });
 
     it('Should create comment, return status 201', async () => {
       newUser1 = await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(201);
@@ -471,7 +463,7 @@ describe('Comments testing', () => {
 
     it('Should not take None, if comment id incorrect return status 404', async () => {
       const getPostComments = await agent
-        .get('/comments/658fcb001c34ccb6b9e9e4a8')
+        .get('/comments/658')
         .auth(expireToken, {
           type: 'bearer',
         })

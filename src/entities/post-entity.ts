@@ -1,4 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  ManyToOne,
+} from 'typeorm';
+import { PostLike } from './post-like-entity';
+import { Comment } from './comment-entity';
+import { Blog } from './blog-entity';
 
 @Entity({ name: 'Posts' })
 export class Post {
@@ -14,12 +23,15 @@ export class Post {
   @Column({ type: 'varchar', nullable: true })
   content: string;
 
-  @Column({ type: 'integer' })
-  blogId: number;
-
-  @Column({ type: 'varchar' })
-  blogName: string;
-
   @Column({ type: 'timestamp with time zone', nullable: true })
   createdAt: Date;
+
+  @OneToMany('PostLike', 'post')
+  postLikes: PostLike[];
+
+  @OneToMany('Comment', 'post')
+  comments: Comment[];
+
+  @ManyToOne('Blog', 'posts')
+  blog: Blog;
 }

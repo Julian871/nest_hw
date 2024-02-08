@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersRepo } from '../../../users/infrastructure/users-repo';
 import { PostsRepo } from '../../../posts/infrastructure/post-repo';
 import { PostLike } from '../../../../entities/post-like-entity';
+import { UsersRepo } from '../../../users/infrastructure/users-repo';
 
 export class UpdatePostLikeStatusCommand {
   constructor(
@@ -27,15 +27,14 @@ export class UpdatePostLikeStatusUseCase
     );
 
     if (!infoLike && command.likeStatus === 'None') return;
-
     const user = await this.usersRepo.checkUser(command.userId);
+    const post = await this.postsRepo.getPostById(command.postId);
 
     const takeLikeOrDislike = new PostLike();
-    takeLikeOrDislike.postId = command.postId;
     takeLikeOrDislike.status = command.likeStatus;
-    takeLikeOrDislike.userId = command.userId;
-    takeLikeOrDislike.userLogin = user!.login;
     takeLikeOrDislike.addedAt = new Date();
+    takeLikeOrDislike.owner = user!;
+    takeLikeOrDislike.post = post!;
 
     // if user didn't like or dislike post
     if (!infoLike) {

@@ -12,7 +12,7 @@ export class CommentsService {
   async checkOwner(userId: number, commentId: number) {
     const comment = await this.commentsRepo.getCommentById(commentId);
     if (!comment) throw new NotFoundException();
-    if (userId !== +comment.userId) throw new ForbiddenException();
+    if (userId !== +comment.owner.id) throw new ForbiddenException();
     return;
   }
 }

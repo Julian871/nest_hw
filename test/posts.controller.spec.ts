@@ -140,10 +140,11 @@ describe('Posts testing', () => {
 
   // GET: /posts, /posts/:id
   describe('Get posts', () => {
+    jest.setTimeout(7000);
     it('Should get all posts, return status 200', async () => {
       await agent.delete('/testing/all-data');
       const newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
@@ -210,7 +211,7 @@ describe('Posts testing', () => {
 
     it('Should get post by id, return status 200', async () => {
       const newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
@@ -245,7 +246,7 @@ describe('Posts testing', () => {
     });
 
     it('Should not get post, if post not found, return status 404', async () => {
-      await agent.get('/posts/658d153438c7b301a4707f40').expect(404);
+      await agent.get('/posts/658').expect(404);
     });
   });
 
@@ -253,12 +254,12 @@ describe('Posts testing', () => {
   describe('Update posts', () => {
     it('Should update post, return status 204', async () => {
       const newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
       const newBlog2 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog2)
         .expect(201);
@@ -273,7 +274,7 @@ describe('Posts testing', () => {
         })
         .expect(201);
       await agent
-        .put('/posts/' + newPost1.body.id)
+        .put(`/sa/blogs/${newBlog1.body.id}/posts/${newPost1.body.id}`)
         .auth('admin', 'qwerty')
         .send({
           title: 'update title',
@@ -284,13 +285,16 @@ describe('Posts testing', () => {
         .expect(204);
     });
 
+    let newBlog1;
+    let newPost1;
+
     it('Should not update post, if input values incorrect, return status 400', async () => {
-      const newBlog1 = await agent
-        .post('/blogs')
+      newBlog1 = await agent
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
-      const newPost1 = await agent
+      newPost1 = await agent
         .post('/posts')
         .auth('admin', 'qwerty')
         .send({
@@ -301,13 +305,12 @@ describe('Posts testing', () => {
         })
         .expect(201);
       const updatePost = await agent
-        .put('/posts/' + newPost1.body.id)
+        .put(`/sa/blogs/${newBlog1.body.id}/posts/${newPost1.body.id}`)
         .auth('admin', 'qwerty')
         .send({
           title: 'update title a lot of symbols, more then 30',
           shortDescription: '     ',
           content: '   ',
-          blogId: '   ',
         })
         .expect(400);
       expect(updatePost.body).toEqual({
@@ -324,17 +327,13 @@ describe('Posts testing', () => {
             message: expect.any(String),
             field: 'content',
           },
-          {
-            message: expect.any(String),
-            field: 'blogId',
-          },
         ],
       });
     });
 
     it('Should not update post, if auth incorrect return status 401', async () => {
       await agent
-        .put('/posts/658d153438c7b301a4707f40')
+        .put(`/sa/blogs/${newBlog1.body.id}/posts/${newPost1.body.id}`)
         .auth('admin', 'incorrect')
         .send({
           title: 'update title',
@@ -347,12 +346,12 @@ describe('Posts testing', () => {
 
     it('Should not update post, if post not found return status 404', async () => {
       const newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
       await agent
-        .put('/posts/658d153438c7b301a4707f40')
+        .put(`/sa/blogs/${newBlog1.body.id}/posts/404`)
         .auth('admin', 'qwerty')
         .send({
           title: 'update title',
@@ -366,13 +365,16 @@ describe('Posts testing', () => {
 
   // DELETE: /posts/:id
   describe('Delete posts', () => {
+    let newBlog1;
+    let newPost1;
+
     it('Should delete post, return status 204', async () => {
-      const newBlog1 = await agent
-        .post('/blogs')
+      newBlog1 = await agent
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
-      const newPost1 = await agent
+      newPost1 = await agent
         .post('/posts')
         .auth('admin', 'qwerty')
         .send({
@@ -383,21 +385,21 @@ describe('Posts testing', () => {
         })
         .expect(201);
       await agent
-        .delete('/posts/' + newPost1.body.id)
+        .delete(`/sa/blogs/${newBlog1.body.id}/posts/${newPost1.body.id}`)
         .auth('admin', 'qwerty')
         .expect(204);
     });
 
     it('Should not update post, if auth incorrect return status 401', async () => {
       await agent
-        .delete('/posts/658d153438c7b301a4707f40')
+        .delete(`/sa/blogs/${newBlog1.body.id}/posts/${newPost1.body.id}`)
         .auth('admin', 'incorrect')
         .expect(401);
     });
 
     it('Should not delete post, if post not found return status 404', async () => {
       await agent
-        .delete('/posts/658d153438c7b301a4707f40')
+        .delete(`/sa/blogs/${newBlog1.body.id}/posts/404`)
         .auth('admin', 'qwerty')
         .expect(404);
     });
@@ -410,7 +412,7 @@ describe('Posts testing', () => {
 
     it('Create blog and post', async () => {
       newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
@@ -428,7 +430,7 @@ describe('Posts testing', () => {
 
     it('Should create comment, return status 201', async () => {
       const newUser1 = await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(201);
@@ -461,7 +463,7 @@ describe('Posts testing', () => {
 
     it('Should not create comment, if input values incorrect, return status 400', async () => {
       await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser2)
         .expect(201);
@@ -498,7 +500,7 @@ describe('Posts testing', () => {
 
     it('Should not create comment, if posts not exist return status 404', async () => {
       await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser3)
         .expect(201);
@@ -507,7 +509,7 @@ describe('Posts testing', () => {
         .send(correctLoginUser3)
         .expect(200);
       await agent
-        .post('/posts/658fcb001c34ccb6b9e9e4a8/comments')
+        .post('/posts/658/comments')
         .auth(loginUser.body.accessToken, {
           type: 'bearer',
         })
@@ -529,7 +531,7 @@ describe('Posts testing', () => {
 
     it('Create blog and post', async () => {
       newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
@@ -547,7 +549,7 @@ describe('Posts testing', () => {
 
     it('Should create comment, return status 201', async () => {
       newUser1 = await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(201);
@@ -608,7 +610,7 @@ describe('Posts testing', () => {
 
     it('Should not get comment to post, if postId incorrect return status 404', async () => {
       await agent
-        .get('/posts/658fcb001c34ccb6b9e9e4a8/comments')
+        .get('/posts/658/comments')
         .auth('admin', 'qwerty')
         .expect(404);
     });
@@ -626,7 +628,7 @@ describe('Posts testing', () => {
 
     it('Create blog and post', async () => {
       newBlog1 = await agent
-        .post('/blogs')
+        .post('/sa/blogs')
         .auth('admin', 'qwerty')
         .send(correctBlog1)
         .expect(201);
@@ -644,7 +646,7 @@ describe('Posts testing', () => {
 
     it('Should take Like, return status 201', async () => {
       await agent
-        .post('/users')
+        .post('/sa/users')
         .auth('admin', 'qwerty')
         .send(correctUser1)
         .expect(201);

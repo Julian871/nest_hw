@@ -1,4 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Comment } from './comment-entity';
+import { CommentLike } from './comment-like-entity';
+import { PostLike } from './post-like-entity';
 
 @Entity({ name: 'Users' })
 export class User {
@@ -31,4 +34,13 @@ export class User {
 
   @Column({ type: 'varchar', nullable: true, default: null })
   recoveryCode: string | null;
+
+  @OneToMany('Comment', 'owner')
+  comments: Comment[];
+
+  @OneToMany('CommentLike', 'owner')
+  commentLikes: CommentLike[];
+
+  @OneToMany('PostLike', 'owner')
+  postLikes: PostLike[];
 }

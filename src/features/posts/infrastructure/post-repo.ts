@@ -18,11 +18,16 @@ export class PostsRepo {
   }
 
   getPostById(postId: number) {
-    return this.postsRepository.findOneBy({ id: postId });
+    return this.postsRepository.findOne({
+      where: {
+        id: postId,
+      },
+      relations: ['blog'],
+    });
   }
 
   getPostByPostIdAndBlogId(postId: number, blogId: number) {
-    return this.postsRepository.findOneBy({ id: postId, blogId });
+    return this.postsRepository.findOneBy({ id: postId, blog: { id: blogId } });
   }
 
   getCountAllPosts() {
@@ -30,25 +35,39 @@ export class PostsRepo {
   }
 
   getCountAllPostsByBlogId(blogId: number) {
-    return this.postsRepository.countBy({ blogId });
+    return this.postsRepository.countBy({ blog: { id: blogId } });
   }
 
   async deletePostById(postId: number, blogId: number) {
-    const result = await this.postsRepository.delete({ id: postId, blogId });
+    const result = await this.postsRepository.delete({
+      id: postId,
+      blog: { id: blogId },
+    });
     return result.affected;
   }
 
   getUserLikeInfoToPost(userId: number, postId: number) {
-    return this.postsLikeRepository.findOneBy({ userId, postId });
+    return this.postsLikeRepository.findOne({
+      where: {
+        post: { id: postId },
+        owner: {
+          id: userId,
+        },
+      },
+      relations: ['owner'],
+    });
   }
 
   getCountLikeToPost(postId: number) {
-    return this.postsLikeRepository.countBy({ postId: postId, status: 'Like' });
+    return this.postsLikeRepository.countBy({
+      post: { id: postId },
+      status: 'Like',
+    });
   }
 
   getCountDislikeToPost(postId: number) {
     return this.postsLikeRepository.countBy({
-      postId: postId,
+      post: { id: postId },
       status: 'Dislike',
     });
   }

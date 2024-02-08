@@ -19,8 +19,8 @@ export class TestingController {
   @Delete('all-data')
   @HttpCode(204)
   async deleteAll() {
-    await this.entityManager.delete(Comment, {});
     await this.entityManager.delete(CommentLike, {});
+    await this.entityManager.delete(Comment, {});
     await this.entityManager.delete(PostLike, {});
     await this.entityManager.delete(Post, {});
     await this.entityManager.delete(Session, {});

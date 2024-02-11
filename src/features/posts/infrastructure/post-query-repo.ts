@@ -19,7 +19,6 @@ export class PostsQueryRepo {
     return this.postsRepository
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.blog', 'blog')
-      .leftJoinAndSelect('p.blog.name', 'blogName')
       .orderBy(`p.${query.sortBy}`, query.sortDirection)
       .skip((query.pageNumber - 1) * query.pageSize)
       .take(query.pageSize)

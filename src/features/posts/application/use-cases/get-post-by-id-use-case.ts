@@ -20,7 +20,6 @@ export class GetPostByIdUseCase implements ICommandHandler<GetPostByIdCommand> {
 
   async execute(command: GetPostByIdCommand) {
     const post = await this.postsRepo.getPostById(command.postId);
-    console.log(post);
     if (!post) throw new NotFoundException();
 
     return new PostInformation(

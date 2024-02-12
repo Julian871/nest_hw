@@ -9,13 +9,8 @@ export class TestingController {
   @HttpCode(204)
   async deleteAll() {
     await this.dataSource.query(`
-        DELETE FROM public."Users";
-        DELETE FROM public."Session";
-        DELETE FROM public."Blogs";
-        DELETE FROM public."Posts";
-        DELETE FROM public."Comments";
-        DELETE FROM public."PostLikes";
-        DELETE FROM public."CommentLikes";
+      TRUNCATE TABLE public."Users", public."Session", public."Blogs", 
+      public."Posts", public."Comments", public."PostLikes", public."CommentLikes";
     `);
   }
 }

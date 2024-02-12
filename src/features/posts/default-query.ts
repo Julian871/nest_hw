@@ -1,6 +1,15 @@
 import { Transform } from 'class-transformer';
 
 export class PostsDefaultQuery {
+  @Transform(({ value }) => {
+    if (value.toLowerCase() === 'blogid') {
+      return 'blog.id';
+    } else if (value.toLowerCase() === 'blogname') {
+      return 'blog.name';
+    } else {
+      return value;
+    }
+  })
   sortBy: string = 'createdAt';
 
   @Transform(({ value }) => {
